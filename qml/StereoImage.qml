@@ -31,7 +31,7 @@ Rectangle {
     property string source: "qrc:/test.pns"
 
     Image {
-        x: isLeft ? -parent.width : 0
+        x: DV.isLeft ? -parent.width : 0
         id: img
         source: parent.source
     }

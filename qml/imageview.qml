@@ -1,4 +1,5 @@
 import QtQuick 2.5
+import DepthView 2.0
 
 Rectangle {
     color: "black"
@@ -6,6 +7,34 @@ Rectangle {
     StereoImage {
         anchors.centerIn: parent
         id: image
+    }
+
+    MouseArea {
+        width: viewMode.width + 20
+        height: viewMode.height + 10
+
+        Rectangle {
+            anchors.fill: parent
+            Text {
+                anchors.centerIn: parent
+                id: viewMode
+                text: "Mode: " + DV.drawMode
+            }
+        }
+
+        onClicked: {
+            switch(DV.drawMode) {
+            case DepthView.AnglaphFull:
+                DV.drawMode = DepthView.AnglaphHalf
+                break;
+            case DepthView.AnglaphHalf:
+                DV.drawMode = DepthView.AnglaphGrey
+                break;
+            case DepthView.AnglaphGrey:
+                DV.drawMode = DepthView.AnglaphFull
+                break;
+            }
+        }
     }
 
     MouseArea {
@@ -25,7 +54,7 @@ Rectangle {
 
             /* This puts the cursor a little bit above the screen. */
             transform: Translate {
-                x: isLeft ? 4 : -4
+                x: DV.isLeft ? 4 : -4
             }
         }
 
@@ -52,11 +81,8 @@ Rectangle {
         }
 
         onWheel: {
-            console.log("wheel event, scale:", image.scale, "angleDelta:", wheel.angleDelta)
             image.scale += wheel.angleDelta.y * image.scale * 0.001
             image.scale = Math.max(0.2, Math.min(image.scale, 4.0))
-
-            console.log("scale:", image.scale)
         }
     }
 }

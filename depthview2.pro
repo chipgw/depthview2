@@ -5,7 +5,8 @@ QT += qml quick widgets
 CONFIG += C++11
 
 SOURCES += src/main.cpp \
-    src/dvwindow.cpp
+    src/dvwindow.cpp \
+    src/dvqmlcommunication.cpp
 
 RESOURCES += qml.qrc
 
@@ -16,6 +17,7 @@ QML_IMPORT_PATH =
 include(deployment.pri)
 
 HEADERS += \
-    include/dvwindow.hpp
+    include/dvwindow.hpp \
+    include/dvqmlcommunication.hpp
 
 INCLUDEPATH += include

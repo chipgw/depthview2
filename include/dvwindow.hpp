@@ -3,6 +3,7 @@
 #include <QOpenGLWindow>
 #include <QOpenGLShaderProgram>
 
+class DVQmlCommunication;
 class QQuickRenderControl;
 class QQuickWindow;
 class QQuickItem;
@@ -31,6 +32,8 @@ private:
     QQuickWindow* qmlWindow;
     QQmlEngine* qmlEngine;
     QQuickItem* qmlRoot;
+
+    DVQmlCommunication* qmlCommunication;
 
     QOpenGLShaderProgram shaderAnglaph;
 

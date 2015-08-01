@@ -1,4 +1,5 @@
 #include "dvwindow.hpp"
+#include "dvqmlcommunication.hpp"
 #include <QQuickRenderControl>
 #include <QQuickWindow>
 #include <QQuickItem>
@@ -12,7 +13,6 @@
 const GLuint vertex = 0;
 const GLuint uv     = 1;
 
-
 class RenderControl : public QQuickRenderControl {
 private:
     QWindow* window;
@@ -21,19 +21,20 @@ public:
     QWindow* renderWindow(QPoint*) { return window; }
 };
 
-DVWindow::DVWindow() : QOpenGLWindow(), fboRight(nullptr), fboLeft(nullptr) {
+DVWindow::DVWindow() : QOpenGLWindow(), qmlCommunication(new DVQmlCommunication()), fboRight(nullptr), fboLeft(nullptr) {
     qmlRenderControl = new RenderControl(this);
     qmlWindow = new QQuickWindow(qmlRenderControl);
 
-    qmlEngine = new QQmlEngine;
+    qmlEngine = new QQmlEngine(this);
 
     /* WTF does this do? */
     if (qmlEngine->incubationController() == nullptr)
         qmlEngine->setIncubationController(qmlWindow->incubationController());
 
-    qmlEngine->rootContext()->setContextProperty("isLeft", QVariant(false));
+    qmlRegisterUncreatableType<DVQmlCommunication>("DepthView", 2, 0, "DepthView", "Only usable as context property.");
+    qmlEngine->rootContext()->setContextProperty("DV", qmlCommunication);
 
-    setGeometry(0,0, 640, 480);
+    setGeometry(0,0, 800, 600);
 }
 
 DVWindow::~DVWindow() {
@@ -74,7 +75,7 @@ void DVWindow::paintGL() {
     qmlWindow->resetOpenGLState();
 
     /* Render the right eye view. */
-    qmlEngine->rootContext()->setContextProperty("isLeft", QVariant(false));
+    qmlCommunication->rightImage();
     qmlWindow->setRenderTarget(fboRight);
     qmlRenderControl->polishItems();
     qmlRenderControl->sync();
@@ -83,7 +84,7 @@ void DVWindow::paintGL() {
     qmlWindow->resetOpenGLState();
 
     /* Render the left eye view. */
-    qmlEngine->rootContext()->setContextProperty("isLeft", QVariant(true));
+    qmlCommunication->leftImage();
     qmlWindow->setRenderTarget(fboLeft);
     qmlRenderControl->polishItems();
     qmlRenderControl->sync();
@@ -104,6 +105,20 @@ void DVWindow::paintGL() {
     f->glActiveTexture(GL_TEXTURE1);
     f->glBindTexture(GL_TEXTURE_2D, fboRight->texture());
     shaderAnglaph.setUniformValue("textureR", 1);
+
+    switch (qmlCommunication->drawMode()) {
+    case DVQmlCommunication::AnglaphFull:
+        shaderAnglaph.setUniformValue("greyFac", 0.0f);
+        break;
+    case DVQmlCommunication::AnglaphHalf:
+        shaderAnglaph.setUniformValue("greyFac", 0.5f);
+        break;
+    case DVQmlCommunication::AnglaphGrey:
+        shaderAnglaph.setUniformValue("greyFac", 1.0f);
+        break;
+    default:
+        break;
+    }
 
     static const float quad[] {
        -1.0f,-1.0f,
