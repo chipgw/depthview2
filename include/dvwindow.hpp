@@ -20,6 +20,7 @@ protected:
     void paintGL();
     void resizeGL(int w, int h);
 
+    /* We need to relay these events to qmlWindow. */
     void mouseMoveEvent(QMouseEvent* e);
     void mousePressEvent(QMouseEvent* e);
     void mouseReleaseEvent(QMouseEvent* e);

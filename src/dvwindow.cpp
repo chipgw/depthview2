@@ -17,20 +17,20 @@ class RenderControl : public QQuickRenderControl {
 private:
     QWindow* window;
 public:
-    RenderControl(QWindow* win) : window(win) {}
+    RenderControl(QWindow* win) : QQuickRenderControl(win), window(win) {}
     QWindow* renderWindow(QPoint*) { return window; }
 };
 
-DVWindow::DVWindow() : QOpenGLWindow(), qmlCommunication(new DVQmlCommunication()), fboRight(nullptr), fboLeft(nullptr) {
+DVWindow::DVWindow() : QOpenGLWindow(), qmlCommunication(new DVQmlCommunication(this)), fboRight(nullptr), fboLeft(nullptr) {
     qmlRenderControl = new RenderControl(this);
     qmlWindow = new QQuickWindow(qmlRenderControl);
 
     qmlEngine = new QQmlEngine(this);
 
-    /* WTF does this do? */
     if (qmlEngine->incubationController() == nullptr)
         qmlEngine->setIncubationController(qmlWindow->incubationController());
 
+    /* Needs to be registered for enum access. "DepthView" is used for enum values and "DV" is used for accessing members. */
     qmlRegisterUncreatableType<DVQmlCommunication>("DepthView", 2, 0, "DepthView", "Only usable as context property.");
     qmlEngine->rootContext()->setContextProperty("DV", qmlCommunication);
 
@@ -38,7 +38,8 @@ DVWindow::DVWindow() : QOpenGLWindow(), qmlCommunication(new DVQmlCommunication(
 }
 
 DVWindow::~DVWindow() {
-    /* TODO - Garbage collect. */
+    delete fboRight;
+    delete fboLeft;
 }
 
 void DVWindow::initializeGL() {
