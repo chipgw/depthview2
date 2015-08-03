@@ -17,7 +17,11 @@ public:
     enum DrawMode {
         AnglaphFull,
         AnglaphHalf,
-        AnglaphGrey
+        AnglaphGrey,
+        SidebySide,
+        SidebySideMLeft,
+        SidebySideMRight,
+        SidebySideMBoth,
     };
 
     /* Where QML reads the value of the current eye. */

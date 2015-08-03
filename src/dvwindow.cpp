@@ -95,27 +95,60 @@ void DVWindow::paintGL() {
 
     glViewport(0, 0, width(), height());
 
-    shaderAnglaph.bind();
-
     QOpenGLFunctions* f = context()->functions();
 
     f->glActiveTexture(GL_TEXTURE0);
     f->glBindTexture(GL_TEXTURE_2D, fboLeft->texture());
-    shaderAnglaph.setUniformValue("textureL", 0);
 
     f->glActiveTexture(GL_TEXTURE1);
     f->glBindTexture(GL_TEXTURE_2D, fboRight->texture());
-    shaderAnglaph.setUniformValue("textureR", 1);
 
     switch (qmlCommunication->drawMode()) {
     case DVQmlCommunication::AnglaphFull:
+        shaderAnglaph.bind();
         shaderAnglaph.setUniformValue("greyFac", 0.0f);
+        shaderAnglaph.setUniformValue("textureL", 0);
+        shaderAnglaph.setUniformValue("textureR", 1);
         break;
     case DVQmlCommunication::AnglaphHalf:
+        shaderAnglaph.bind();
         shaderAnglaph.setUniformValue("greyFac", 0.5f);
+        shaderAnglaph.setUniformValue("textureL", 0);
+        shaderAnglaph.setUniformValue("textureR", 1);
         break;
     case DVQmlCommunication::AnglaphGrey:
+        shaderAnglaph.bind();
         shaderAnglaph.setUniformValue("greyFac", 1.0f);
+        shaderAnglaph.setUniformValue("textureL", 0);
+        shaderAnglaph.setUniformValue("textureR", 1);
+        break;
+    case DVQmlCommunication::SidebySide:
+        shaderSBS.bind();
+        shaderSBS.setUniformValue("textureL", 0);
+        shaderSBS.setUniformValue("textureR", 1);
+        shaderSBS.setUniformValue("mirrorL", false);
+        shaderSBS.setUniformValue("mirrorR", false);
+        break;
+    case DVQmlCommunication::SidebySideMLeft:
+        shaderSBS.bind();
+        shaderSBS.setUniformValue("textureL", 0);
+        shaderSBS.setUniformValue("textureR", 1);
+        shaderSBS.setUniformValue("mirrorL", true);
+        shaderSBS.setUniformValue("mirrorR", false);
+        break;
+    case DVQmlCommunication::SidebySideMRight:
+        shaderSBS.bind();
+        shaderSBS.setUniformValue("textureL", 0);
+        shaderSBS.setUniformValue("textureR", 1);
+        shaderSBS.setUniformValue("mirrorL", false);
+        shaderSBS.setUniformValue("mirrorR", true);
+        break;
+    case DVQmlCommunication::SidebySideMBoth:
+        shaderSBS.bind();
+        shaderSBS.setUniformValue("textureL", 0);
+        shaderSBS.setUniformValue("textureR", 1);
+        shaderSBS.setUniformValue("mirrorL", true);
+        shaderSBS.setUniformValue("mirrorR", true);
         break;
     default:
         break;
@@ -149,6 +182,7 @@ void DVWindow::paintGL() {
 
 void DVWindow::loadShaders() {
     loadShader(shaderAnglaph, ":/glsl/standard.vsh", ":/glsl/anglaph.fsh");
+    loadShader(shaderSBS, ":/glsl/standard.vsh", ":/glsl/sidebyside.fsh");
 
     /* TODO - Load other shaders. */
 }

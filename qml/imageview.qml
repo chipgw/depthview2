@@ -31,6 +31,18 @@ Rectangle {
                 DV.drawMode = DepthView.AnglaphGrey
                 break;
             case DepthView.AnglaphGrey:
+                DV.drawMode = DepthView.SidebySide
+                break;
+            case DepthView.SidebySide:
+                DV.drawMode = DepthView.SidebySideMLeft
+                break;
+            case DepthView.SidebySideMLeft:
+                DV.drawMode = DepthView.SidebySideMRight
+                break;
+            case DepthView.SidebySideMRight:
+                DV.drawMode = DepthView.SidebySideMBoth
+                break;
+            case DepthView.SidebySideMBoth:
                 DV.drawMode = DepthView.AnglaphFull
                 break;
             }
