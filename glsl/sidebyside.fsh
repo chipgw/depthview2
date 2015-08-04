@@ -7,18 +7,19 @@ uniform bool mirrorL;
 uniform bool mirrorR;
 
 void main(void) {
-    texCoord.s *= 2.0;
-    if (texCoord.s > 1.0) {
-        texCoord.s -= 1.0;
+    vec2 uv = texCoord;
+    uv.s *= 2.0;
+    if (uv.s > 1.0) {
+        uv.s -= 1.0;
         if(mirrorR)
-            texCoord.s = 1.0 - texCoord.s;
+            uv.s = 1.0 - uv.s;
 
-        gl_FragColor = texture2D(textureR, texCoord);
-    } else if (texCoord.s < 1.0) {
+        gl_FragColor = texture2D(textureR, uv);
+    } else if (uv.s < 1.0) {
         if(mirrorL)
-            texCoord.s = 1.0 - texCoord.s;
+            uv.s = 1.0 - uv.s;
 
-        gl_FragColor = texture2D(textureL, texCoord);
+        gl_FragColor = texture2D(textureL, uv);
     } else {
         gl_FragColor = vec4(0.0);
     }

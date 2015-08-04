@@ -1,7 +1,7 @@
 #include "include/dvqmlcommunication.hpp"
 
 DVQmlCommunication::DVQmlCommunication(QObject *parent) : QObject(parent) {
-
+    setDrawMode(AnglaphFull);
 }
 
 bool DVQmlCommunication::isLeft() const {

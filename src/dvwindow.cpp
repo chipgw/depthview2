@@ -10,8 +10,8 @@
 #include <QOpenGLContext>
 #include <QOpenGLFunctions>
 
-const GLuint vertex = 0;
-const GLuint uv     = 1;
+const int vertex = 0;
+const int uv     = 1;
 
 class RenderControl : public QQuickRenderControl {
 private:
@@ -93,9 +93,9 @@ void DVWindow::paintGL() {
 
     qmlWindow->resetOpenGLState();
 
-    glViewport(0, 0, width(), height());
-
     QOpenGLFunctions* f = context()->functions();
+
+    f->glViewport(0, 0, width(), height());
 
     f->glActiveTexture(GL_TEXTURE0);
     f->glBindTexture(GL_TEXTURE_2D, fboLeft->texture());
