@@ -34,6 +34,9 @@ DVWindow::DVWindow() : QOpenGLWindow(), qmlCommunication(new DVQmlCommunication(
     qmlRegisterUncreatableType<DVQmlCommunication>("DepthView", 2, 0, "DepthView", "Only usable as context property.");
     qmlEngine->rootContext()->setContextProperty("DV", qmlCommunication);
 
+    connect(qmlCommunication, &DVQmlCommunication::drawModeChanged, this, &DVWindow::updateQmlSize);
+    connect(qmlCommunication, &DVQmlCommunication::anamorphicDualViewChanged, this, &DVWindow::updateQmlSize);
+
     setGeometry(0,0, 800, 600);
 }
 
@@ -49,7 +52,7 @@ void DVWindow::initializeGL() {
     context()->setFormat(fmt);
     context()->create();
 
-    createFBOs();
+    makeCurrent();
     loadShaders();
 
     QQmlComponent rootComponent(qmlEngine);
@@ -180,6 +183,21 @@ void DVWindow::paintGL() {
     update();
 }
 
+void DVWindow::updateQmlSize() {
+    qmlSize = size();
+
+    if(qmlCommunication->isSideBySide() && !qmlCommunication->anamorphicDualView())
+        qmlSize.setWidth(qmlSize.width() / 2);
+
+    /* Don't recreate fbo's unless they are null or size is wrong. */
+    if(fboLeft == nullptr || fboLeft->size() != qmlSize || fboRight == nullptr || fboRight->size() != qmlSize)
+        createFBOs();
+
+    qmlRoot->setSize(qmlSize);
+
+    qmlWindow->setGeometry(QRect(QPoint(), qmlSize));
+}
+
 void DVWindow::loadShaders() {
     loadShader(shaderAnglaph, ":/glsl/standard.vsh", ":/glsl/anglaph.fsh");
     loadShader(shaderSBS, ":/glsl/standard.vsh", ":/glsl/sidebyside.fsh");
@@ -210,35 +228,50 @@ void DVWindow::createFBOs() {
 
     /* Create the FBOs with the same size as this window. */
     /* TODO - This may need to be smaller in non-anamorphic sbs or t/b */
-    fboRight = new QOpenGLFramebufferObject(size(), QOpenGLFramebufferObject::CombinedDepthStencil);
-    fboLeft = new QOpenGLFramebufferObject(size(), QOpenGLFramebufferObject::CombinedDepthStencil);
+    fboRight = new QOpenGLFramebufferObject(qmlSize, QOpenGLFramebufferObject::CombinedDepthStencil);
+    fboLeft = new QOpenGLFramebufferObject(qmlSize, QOpenGLFramebufferObject::CombinedDepthStencil);
 }
 
-void DVWindow::resizeGL(int w, int h) {
-    createFBOs();
-
-    qmlRoot->setWidth(w);
-    qmlRoot->setHeight(h);
-
-    qmlWindow->setGeometry(0, 0, w, h);
+void DVWindow::resizeGL(int, int) {
+    updateQmlSize();
 }
 
 void DVWindow::mouseMoveEvent(QMouseEvent* e) {
+    fixMouseCoords(&e);
     QCoreApplication::sendEvent(qmlWindow, e);
 }
 
 void DVWindow::mousePressEvent(QMouseEvent* e) {
+    fixMouseCoords(&e);
     QCoreApplication::sendEvent(qmlWindow, e);
 }
 
 void DVWindow::mouseReleaseEvent(QMouseEvent* e) {
+    fixMouseCoords(&e);
     QCoreApplication::sendEvent(qmlWindow, e);
 }
 
 void DVWindow::mouseDoubleClickEvent(QMouseEvent* e) {
+    fixMouseCoords(&e);
     QCoreApplication::sendEvent(qmlWindow, e);
 }
 
 void DVWindow::wheelEvent(QWheelEvent* e) {
     QCoreApplication::sendEvent(qmlWindow, e);
+}
+
+void DVWindow::fixMouseCoords(QMouseEvent** e) {
+    /* This is kind of a hacky way to keep the mouse coordinates from leaving qmlRoot
+     * before leaving the window when the interior size isn't equal to the exterior size. */
+    QMouseEvent* oldEvent = *e;
+    auto pos = oldEvent->localPos();
+
+    if(qmlSize.width() != width())
+        pos.setX(pos.rx() * qreal(qmlSize.width()) / qreal(width()));
+
+    if(qmlSize.height() != height())
+        pos.setY(pos.ry() * qreal(qmlSize.height()) / qreal(height()));
+
+    if(pos != oldEvent->localPos())
+        (*e) = new QMouseEvent(oldEvent->type(), pos, oldEvent->button(), oldEvent->buttons(), oldEvent->modifiers());
 }

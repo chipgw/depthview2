@@ -15,10 +15,13 @@ public:
     DVWindow();
     ~DVWindow();
 
+public slots:
+    void updateQmlSize();
+
 protected:
     void initializeGL();
     void paintGL();
-    void resizeGL(int w, int h);
+    void resizeGL(int, int);
 
     /* We need to relay these events to qmlWindow. */
     void mouseMoveEvent(QMouseEvent* e);
@@ -27,12 +30,17 @@ protected:
     void mouseDoubleClickEvent(QMouseEvent* e);
     void wheelEvent(QWheelEvent* e);
 
+    /* To map mouse coordinates to the smaller size if non-anamorphic Side-By-Side or Top/Bottom. */
+    void fixMouseCoords(QMouseEvent** e);
+
 private:
     /* QML Stuff. */
     QQuickRenderControl* qmlRenderControl;
     QQuickWindow* qmlWindow;
     QQmlEngine* qmlEngine;
     QQuickItem* qmlRoot;
+
+    QSize qmlSize;
 
     DVQmlCommunication* qmlCommunication;
 

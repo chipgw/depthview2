@@ -15,6 +15,17 @@ DVQmlCommunication::DrawMode DVQmlCommunication::drawMode() const {
 void DVQmlCommunication::setDrawMode(DrawMode mode) {
     if(m_drawMode != mode) {
         m_drawMode = mode;
-        emit drawModeChanged();
+        emit drawModeChanged(mode);
+    }
+}
+
+bool DVQmlCommunication::anamorphicDualView() const {
+    return m_anamorphicDualView;
+}
+
+void DVQmlCommunication::setAnamorphicDualView(bool anamorphic) {
+    if(m_anamorphicDualView != anamorphic) {
+        m_anamorphicDualView = anamorphic;
+        emit anamorphicDualViewChanged(anamorphic);
     }
 }
