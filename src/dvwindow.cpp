@@ -126,32 +126,60 @@ void DVWindow::paintGL() {
         shaderAnglaph.setUniformValue("textureR", 1);
         break;
     case DVQmlCommunication::SidebySide:
-        shaderSBS.bind();
-        shaderSBS.setUniformValue("textureL", 0);
-        shaderSBS.setUniformValue("textureR", 1);
-        shaderSBS.setUniformValue("mirrorL", false);
-        shaderSBS.setUniformValue("mirrorR", false);
+        shaderSideBySide.bind();
+        shaderSideBySide.setUniformValue("textureL", 0);
+        shaderSideBySide.setUniformValue("textureR", 1);
+        shaderSideBySide.setUniformValue("mirrorL", false);
+        shaderSideBySide.setUniformValue("mirrorR", false);
         break;
     case DVQmlCommunication::SidebySideMLeft:
-        shaderSBS.bind();
-        shaderSBS.setUniformValue("textureL", 0);
-        shaderSBS.setUniformValue("textureR", 1);
-        shaderSBS.setUniformValue("mirrorL", true);
-        shaderSBS.setUniformValue("mirrorR", false);
+        shaderSideBySide.bind();
+        shaderSideBySide.setUniformValue("textureL", 0);
+        shaderSideBySide.setUniformValue("textureR", 1);
+        shaderSideBySide.setUniformValue("mirrorL", true);
+        shaderSideBySide.setUniformValue("mirrorR", false);
         break;
     case DVQmlCommunication::SidebySideMRight:
-        shaderSBS.bind();
-        shaderSBS.setUniformValue("textureL", 0);
-        shaderSBS.setUniformValue("textureR", 1);
-        shaderSBS.setUniformValue("mirrorL", false);
-        shaderSBS.setUniformValue("mirrorR", true);
+        shaderSideBySide.bind();
+        shaderSideBySide.setUniformValue("textureL", 0);
+        shaderSideBySide.setUniformValue("textureR", 1);
+        shaderSideBySide.setUniformValue("mirrorL", false);
+        shaderSideBySide.setUniformValue("mirrorR", true);
         break;
     case DVQmlCommunication::SidebySideMBoth:
-        shaderSBS.bind();
-        shaderSBS.setUniformValue("textureL", 0);
-        shaderSBS.setUniformValue("textureR", 1);
-        shaderSBS.setUniformValue("mirrorL", true);
-        shaderSBS.setUniformValue("mirrorR", true);
+        shaderSideBySide.bind();
+        shaderSideBySide.setUniformValue("textureL", 0);
+        shaderSideBySide.setUniformValue("textureR", 1);
+        shaderSideBySide.setUniformValue("mirrorL", true);
+        shaderSideBySide.setUniformValue("mirrorR", true);
+        break;
+    case DVQmlCommunication::TopBottom:
+        shaderTopBottom.bind();
+        shaderTopBottom.setUniformValue("textureL", 0);
+        shaderTopBottom.setUniformValue("textureR", 1);
+        shaderTopBottom.setUniformValue("mirrorL", false);
+        shaderTopBottom.setUniformValue("mirrorR", false);
+        break;
+    case DVQmlCommunication::TopBottomMTop:
+        shaderTopBottom.bind();
+        shaderTopBottom.setUniformValue("textureL", 0);
+        shaderTopBottom.setUniformValue("textureR", 1);
+        shaderTopBottom.setUniformValue("mirrorL", true);
+        shaderTopBottom.setUniformValue("mirrorR", false);
+        break;
+    case DVQmlCommunication::TopBottomMBottom:
+        shaderTopBottom.bind();
+        shaderTopBottom.setUniformValue("textureL", 0);
+        shaderTopBottom.setUniformValue("textureR", 1);
+        shaderTopBottom.setUniformValue("mirrorL", false);
+        shaderTopBottom.setUniformValue("mirrorR", true);
+        break;
+    case DVQmlCommunication::TopBottomMBoth:
+        shaderTopBottom.bind();
+        shaderTopBottom.setUniformValue("textureL", 0);
+        shaderTopBottom.setUniformValue("textureR", 1);
+        shaderTopBottom.setUniformValue("mirrorL", true);
+        shaderTopBottom.setUniformValue("mirrorR", true);
         break;
     default:
         break;
@@ -189,6 +217,9 @@ void DVWindow::updateQmlSize() {
     if(qmlCommunication->isSideBySide() && !qmlCommunication->anamorphicDualView())
         qmlSize.setWidth(qmlSize.width() / 2);
 
+    if(qmlCommunication->isTopBottom() && !qmlCommunication->anamorphicDualView())
+        qmlSize.setHeight(qmlSize.height() / 2);
+
     /* Don't recreate fbo's unless they are null or size is wrong. */
     if(fboLeft == nullptr || fboLeft->size() != qmlSize || fboRight == nullptr || fboRight->size() != qmlSize)
         createFBOs();
@@ -200,7 +231,8 @@ void DVWindow::updateQmlSize() {
 
 void DVWindow::loadShaders() {
     loadShader(shaderAnglaph, ":/glsl/standard.vsh", ":/glsl/anglaph.fsh");
-    loadShader(shaderSBS, ":/glsl/standard.vsh", ":/glsl/sidebyside.fsh");
+    loadShader(shaderSideBySide, ":/glsl/standard.vsh", ":/glsl/sidebyside.fsh");
+    loadShader(shaderTopBottom, ":/glsl/standard.vsh", ":/glsl/topbottom.fsh");
 
     /* TODO - Load other shaders. */
 }

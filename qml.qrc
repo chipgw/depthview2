@@ -7,5 +7,6 @@
         <file>glsl/anglaph.fsh</file>
         <file>qml/StereoImage.qml</file>
         <file>glsl/sidebyside.fsh</file>
+        <file>glsl/topbottom.fsh</file>
     </qresource>
 </RCC>

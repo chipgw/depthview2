@@ -23,12 +23,18 @@ public:
         SidebySideMLeft,
         SidebySideMRight,
         SidebySideMBoth,
+        TopBottom,
+        TopBottomMTop,
+        TopBottomMBottom,
+        TopBottomMBoth,
     };
 
     /* Where QML reads the value of the current eye. */
     bool isLeft() const;
 
     Q_INVOKABLE bool isSideBySide() { return m_drawMode == SidebySide || m_drawMode == SidebySideMLeft || m_drawMode == SidebySideMRight || m_drawMode == SidebySideMBoth; }
+    Q_INVOKABLE bool isTopBottom()  { return m_drawMode == TopBottom  || m_drawMode == TopBottomMTop   || m_drawMode == TopBottomMBottom || m_drawMode == TopBottomMBoth; }
+
     /* Set the current eye. */
     void leftImage() { isLeftChanged(m_isLeft = true);  }
     void rightImage() { isLeftChanged(m_isLeft = false); }

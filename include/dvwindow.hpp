@@ -45,7 +45,8 @@ private:
     DVQmlCommunication* qmlCommunication;
 
     QOpenGLShaderProgram shaderAnglaph;
-    QOpenGLShaderProgram shaderSBS;
+    QOpenGLShaderProgram shaderSideBySide;
+    QOpenGLShaderProgram shaderTopBottom;
 
     /* The FBOs that QML renders to. */
     QOpenGLFramebufferObject* fboRight;
