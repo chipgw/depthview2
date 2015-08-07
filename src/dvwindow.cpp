@@ -10,8 +10,8 @@
 #include <QOpenGLContext>
 #include <QOpenGLFunctions>
 
-const int vertex = 0;
-const int uv     = 1;
+const GLuint vertex = 0;
+const GLuint uv     = 1;
 
 class RenderControl : public QQuickRenderControl {
 private:
@@ -110,74 +110,52 @@ void DVWindow::paintGL() {
     case DVQmlCommunication::AnglaphFull:
         shaderAnglaph.bind();
         shaderAnglaph.setUniformValue("greyFac", 0.0f);
-        shaderAnglaph.setUniformValue("textureL", 0);
-        shaderAnglaph.setUniformValue("textureR", 1);
         break;
     case DVQmlCommunication::AnglaphHalf:
         shaderAnglaph.bind();
         shaderAnglaph.setUniformValue("greyFac", 0.5f);
-        shaderAnglaph.setUniformValue("textureL", 0);
-        shaderAnglaph.setUniformValue("textureR", 1);
         break;
     case DVQmlCommunication::AnglaphGrey:
         shaderAnglaph.bind();
         shaderAnglaph.setUniformValue("greyFac", 1.0f);
-        shaderAnglaph.setUniformValue("textureL", 0);
-        shaderAnglaph.setUniformValue("textureR", 1);
         break;
     case DVQmlCommunication::SidebySide:
         shaderSideBySide.bind();
-        shaderSideBySide.setUniformValue("textureL", 0);
-        shaderSideBySide.setUniformValue("textureR", 1);
         shaderSideBySide.setUniformValue("mirrorL", false);
         shaderSideBySide.setUniformValue("mirrorR", false);
         break;
     case DVQmlCommunication::SidebySideMLeft:
         shaderSideBySide.bind();
-        shaderSideBySide.setUniformValue("textureL", 0);
-        shaderSideBySide.setUniformValue("textureR", 1);
         shaderSideBySide.setUniformValue("mirrorL", true);
         shaderSideBySide.setUniformValue("mirrorR", false);
         break;
     case DVQmlCommunication::SidebySideMRight:
         shaderSideBySide.bind();
-        shaderSideBySide.setUniformValue("textureL", 0);
-        shaderSideBySide.setUniformValue("textureR", 1);
         shaderSideBySide.setUniformValue("mirrorL", false);
         shaderSideBySide.setUniformValue("mirrorR", true);
         break;
     case DVQmlCommunication::SidebySideMBoth:
         shaderSideBySide.bind();
-        shaderSideBySide.setUniformValue("textureL", 0);
-        shaderSideBySide.setUniformValue("textureR", 1);
         shaderSideBySide.setUniformValue("mirrorL", true);
         shaderSideBySide.setUniformValue("mirrorR", true);
         break;
     case DVQmlCommunication::TopBottom:
         shaderTopBottom.bind();
-        shaderTopBottom.setUniformValue("textureL", 0);
-        shaderTopBottom.setUniformValue("textureR", 1);
         shaderTopBottom.setUniformValue("mirrorL", false);
         shaderTopBottom.setUniformValue("mirrorR", false);
         break;
     case DVQmlCommunication::TopBottomMTop:
         shaderTopBottom.bind();
-        shaderTopBottom.setUniformValue("textureL", 0);
-        shaderTopBottom.setUniformValue("textureR", 1);
         shaderTopBottom.setUniformValue("mirrorL", true);
         shaderTopBottom.setUniformValue("mirrorR", false);
         break;
     case DVQmlCommunication::TopBottomMBottom:
         shaderTopBottom.bind();
-        shaderTopBottom.setUniformValue("textureL", 0);
-        shaderTopBottom.setUniformValue("textureR", 1);
         shaderTopBottom.setUniformValue("mirrorL", false);
         shaderTopBottom.setUniformValue("mirrorR", true);
         break;
     case DVQmlCommunication::TopBottomMBoth:
         shaderTopBottom.bind();
-        shaderTopBottom.setUniformValue("textureL", 0);
-        shaderTopBottom.setUniformValue("textureR", 1);
         shaderTopBottom.setUniformValue("mirrorL", true);
         shaderTopBottom.setUniformValue("mirrorR", true);
         break;
@@ -199,11 +177,11 @@ void DVWindow::paintGL() {
         0.0f, 1.0f
     };
 
-    shaderAnglaph.enableAttributeArray(vertex);
-    shaderAnglaph.enableAttributeArray(uv);
+    f->glEnableVertexAttribArray(vertex);
+    f->glEnableVertexAttribArray(uv);
 
-    shaderAnglaph.setAttributeArray(vertex, quad, 2);
-    shaderAnglaph.setAttributeArray(uv, quadUV, 2);
+    f->glVertexAttribPointer(vertex, 2, GL_FLOAT, GL_FALSE, 0, quad);
+    f->glVertexAttribPointer(uv,     2, GL_FLOAT, GL_FALSE, 0, quadUV);
 
     f->glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
@@ -214,9 +192,11 @@ void DVWindow::paintGL() {
 void DVWindow::updateQmlSize() {
     qmlSize = size();
 
+    /* If Side-by-Side and not anamorphic we only render QML at half of the window size (horizontally). */
     if(qmlCommunication->isSideBySide() && !qmlCommunication->anamorphicDualView())
         qmlSize.setWidth(qmlSize.width() / 2);
 
+    /* If Top/Bottom and not anamorphic we only render QML at half of the window size (vertically). */
     if(qmlCommunication->isTopBottom() && !qmlCommunication->anamorphicDualView())
         qmlSize.setHeight(qmlSize.height() / 2);
 
@@ -230,9 +210,10 @@ void DVWindow::updateQmlSize() {
 }
 
 void DVWindow::loadShaders() {
-    loadShader(shaderAnglaph, ":/glsl/standard.vsh", ":/glsl/anglaph.fsh");
-    loadShader(shaderSideBySide, ":/glsl/standard.vsh", ":/glsl/sidebyside.fsh");
-    loadShader(shaderTopBottom, ":/glsl/standard.vsh", ":/glsl/topbottom.fsh");
+    /* Most draw modes use the standard vertex shader for a simple fullscreen quad. */
+    loadShader(shaderAnglaph,       ":/glsl/standard.vsh", ":/glsl/anglaph.fsh");
+    loadShader(shaderSideBySide,    ":/glsl/standard.vsh", ":/glsl/sidebyside.fsh");
+    loadShader(shaderTopBottom,     ":/glsl/standard.vsh", ":/glsl/topbottom.fsh");
 
     /* TODO - Load other shaders. */
 }
@@ -247,6 +228,14 @@ void DVWindow::loadShader(QOpenGLShaderProgram& shader, const char* vshader, con
     shader.bindAttributeLocation("uv", uv);
 
     shader.link();
+
+    /* Bind so we set the texture sampler uniform values. */
+    shader.bind();
+
+    /* Left image is TEXTURE0. */
+    shader.setUniformValue("textureL", 0);
+    /* Right image is TEXTURE1. */
+    shader.setUniformValue("textureR", 1);
 }
 
 void DVWindow::createFBOs() {
