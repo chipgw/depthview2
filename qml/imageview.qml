@@ -5,9 +5,29 @@ import DepthView 2.0
 Rectangle {
     color: "black"
 
-    StereoImage {
+    Item {
         anchors.centerIn: parent
-        id: image
+        width: image.width
+        height: image.height
+
+        StereoImage {
+            id: image
+        }
+    }
+
+    MouseArea {
+        anchors.fill: parent
+
+        drag.target: image
+        drag.minimumX: -Math.max(image.width * image.scale - parent.width, 0) / 2
+        drag.maximumX:  Math.max(image.width * image.scale - parent.width, 0) / 2
+        drag.minimumY: -Math.max(image.height * image.scale - parent.height, 0) / 2
+        drag.maximumY:  Math.max(image.height * image.scale - parent.height, 0) / 2
+
+        onWheel: {
+            image.scale += wheel.angleDelta.y * image.scale * 0.001
+            image.scale = Math.max(0.2, Math.min(image.scale, 4.0))
+        }
     }
 
     Rectangle {
@@ -54,6 +74,14 @@ Rectangle {
                         DV.drawMode = DepthView.AnglaphFull
                         break;
                     }
+                }
+            }
+
+            Button {
+                text: "Anamorphic: " + (DV.anamorphicDualView ? "On" : "Off")
+
+                onClicked: {
+                    DV.anamorphicDualView = !DV.anamorphicDualView
                 }
             }
         }

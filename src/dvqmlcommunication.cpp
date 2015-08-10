@@ -1,6 +1,6 @@
 #include "include/dvqmlcommunication.hpp"
 
-DVQmlCommunication::DVQmlCommunication(QObject *parent) : QObject(parent), m_drawMode(AnglaphFull) {
+DVQmlCommunication::DVQmlCommunication(QObject *parent) : QObject(parent), m_drawMode(AnglaphFull), m_anamorphicDualView(false) {
     /* STUB */
 }
 
