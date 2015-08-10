@@ -37,6 +37,8 @@ DVWindow::DVWindow() : QOpenGLWindow(), qmlCommunication(new DVQmlCommunication(
     connect(qmlCommunication, &DVQmlCommunication::drawModeChanged, this, &DVWindow::updateQmlSize);
     connect(qmlCommunication, &DVQmlCommunication::anamorphicDualViewChanged, this, &DVWindow::updateQmlSize);
 
+    setCursor(Qt::BlankCursor);
+
     setGeometry(0,0, 800, 600);
 }
 
@@ -260,25 +262,37 @@ void DVWindow::resizeGL(int, int) {
 void DVWindow::mouseMoveEvent(QMouseEvent* e) {
     fixMouseCoords(&e);
     QCoreApplication::sendEvent(qmlWindow, e);
+
+    emit qmlCommunication->mouseMoved(e->localPos());
+
+    setCursor(Qt::BlankCursor);
 }
 
 void DVWindow::mousePressEvent(QMouseEvent* e) {
     fixMouseCoords(&e);
     QCoreApplication::sendEvent(qmlWindow, e);
+
+    setCursor(Qt::BlankCursor);
 }
 
 void DVWindow::mouseReleaseEvent(QMouseEvent* e) {
     fixMouseCoords(&e);
     QCoreApplication::sendEvent(qmlWindow, e);
+
+    setCursor(Qt::BlankCursor);
 }
 
 void DVWindow::mouseDoubleClickEvent(QMouseEvent* e) {
     fixMouseCoords(&e);
     QCoreApplication::sendEvent(qmlWindow, e);
+
+    setCursor(Qt::BlankCursor);
 }
 
 void DVWindow::wheelEvent(QWheelEvent* e) {
     QCoreApplication::sendEvent(qmlWindow, e);
+
+    setCursor(Qt::BlankCursor);
 }
 
 void DVWindow::fixMouseCoords(QMouseEvent** e) {

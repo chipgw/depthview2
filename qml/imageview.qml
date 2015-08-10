@@ -1,4 +1,5 @@
 import QtQuick 2.5
+import QtQuick.Controls 1.4
 import DepthView 2.0
 
 Rectangle {
@@ -9,104 +10,73 @@ Rectangle {
         id: image
     }
 
-    MouseArea {
-        width: viewMode.width + 20
-        height: viewMode.height + 10
+    Rectangle {
+        id: menuRect
+        width: parent.width
 
-        Rectangle {
-            anchors.fill: parent
-            Text {
-                anchors.centerIn: parent
-                id: viewMode
+        Flow {
+            Button {
                 text: "Mode: " + DV.drawMode
-            }
-        }
 
-        onClicked: {
-            switch(DV.drawMode) {
-            case DepthView.AnglaphFull:
-                DV.drawMode = DepthView.AnglaphHalf
-                break;
-            case DepthView.AnglaphHalf:
-                DV.drawMode = DepthView.AnglaphGrey
-                break;
-            case DepthView.AnglaphGrey:
-                DV.drawMode = DepthView.SidebySide
-                break;
-            case DepthView.SidebySide:
-                DV.drawMode = DepthView.SidebySideMLeft
-                break;
-            case DepthView.SidebySideMLeft:
-                DV.drawMode = DepthView.SidebySideMRight
-                break;
-            case DepthView.SidebySideMRight:
-                DV.drawMode = DepthView.SidebySideMBoth
-                break;
-            case DepthView.SidebySideMBoth:
-                DV.drawMode = DepthView.TopBottom
-                break;
-            case DepthView.TopBottom:
-                DV.drawMode = DepthView.TopBottomMTop
-                break;
-            case DepthView.TopBottomMTop:
-                DV.drawMode = DepthView.TopBottomMBottom
-                break;
-            case DepthView.TopBottomMBottom:
-                DV.drawMode = DepthView.TopBottomMBoth
-                break;
-            case DepthView.TopBottomMBoth:
-                DV.drawMode = DepthView.AnglaphFull
-                break;
+                onClicked: {
+                    switch(DV.drawMode) {
+                    case DepthView.AnglaphFull:
+                        DV.drawMode = DepthView.AnglaphHalf
+                        break;
+                    case DepthView.AnglaphHalf:
+                        DV.drawMode = DepthView.AnglaphGrey
+                        break;
+                    case DepthView.AnglaphGrey:
+                        DV.drawMode = DepthView.SidebySide
+                        break;
+                    case DepthView.SidebySide:
+                        DV.drawMode = DepthView.SidebySideMLeft
+                        break;
+                    case DepthView.SidebySideMLeft:
+                        DV.drawMode = DepthView.SidebySideMRight
+                        break;
+                    case DepthView.SidebySideMRight:
+                        DV.drawMode = DepthView.SidebySideMBoth
+                        break;
+                    case DepthView.SidebySideMBoth:
+                        DV.drawMode = DepthView.TopBottom
+                        break;
+                    case DepthView.TopBottom:
+                        DV.drawMode = DepthView.TopBottomMTop
+                        break;
+                    case DepthView.TopBottomMTop:
+                        DV.drawMode = DepthView.TopBottomMBottom
+                        break;
+                    case DepthView.TopBottomMBottom:
+                        DV.drawMode = DepthView.TopBottomMBoth
+                        break;
+                    case DepthView.TopBottomMBoth:
+                        DV.drawMode = DepthView.AnglaphFull
+                        break;
+                    }
+                }
             }
         }
     }
 
-    MouseArea {
-        anchors.fill: parent
-        hoverEnabled: true
+    Rectangle {
+        id: fakeCursor
+        width: 10
+        height: 10
+        color: "white"
 
-        propagateComposedEvents: true
+        Connections {
+            target: DV
 
-        Rectangle {
-            x: parent.mouseX
-            y: parent.mouseY
-
-            id: fakeCursor
-            width: 10
-            height: 10
-            color: "white"
-
-            /* This puts the cursor a little bit above the screen. */
-            transform: Translate {
-                x: DV.isLeft ? 4 : -4
+            onMouseMoved: {
+                fakeCursor.x = pos.x
+                fakeCursor.y = pos.y
             }
         }
 
-        cursorShape: "BlankCursor"
-
-        onEntered:
-            fakeCursor.visible = true;
-        onExited:
-            fakeCursor.visible = false;
-
-        property int lastMouseX;
-        property int lastMouseY;
-
-        onPositionChanged: {
-            mouse.accepted = false
-
-            if(mouse.buttons & Qt.LeftButton) {
-                image.panX -= lastMouseX - mouse.x
-                image.panY -= lastMouseY - mouse.y
-            }
-
-            lastMouseX = mouse.x
-            lastMouseY = mouse.y
-        }
-
-        onWheel: {
-            image.scale += wheel.angleDelta.y * image.scale * 0.001
-            image.scale = Math.max(0.2, Math.min(image.scale, 4.0))
+        /* This puts the cursor a little bit above the screen. */
+        transform: Translate {
+            x: DV.isLeft ? 4 : -4
         }
     }
 }

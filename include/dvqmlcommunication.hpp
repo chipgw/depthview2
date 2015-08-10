@@ -51,6 +51,8 @@ signals:
     void drawModeChanged(DrawMode mode);
     void anamorphicDualViewChanged(bool anamorphicDualView);
 
+    void mouseMoved(const QPointF& pos);
+
 private:
     bool m_isLeft;
     DrawMode m_drawMode;

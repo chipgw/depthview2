@@ -10,6 +10,7 @@ Rectangle {
 
     property real panX: 0
     property real panY: 0
+    property bool enablePan: true
 
     transform: Translate {
         x: getPanX()
@@ -34,6 +35,29 @@ Rectangle {
         x: DV.isLeft ? -parent.width : 0
         id: img
         source: parent.source
+    }
+
+    MouseArea {
+        hoverEnabled: true
+        anchors.fill: parent
+
+        property int lastMouseX;
+        property int lastMouseY;
+
+        onPositionChanged: {
+            if(mouse.buttons & Qt.LeftButton && parent.enablePan) {
+                image.panX -= lastMouseX - mouse.x
+                image.panY -= lastMouseY - mouse.y
+            }
+
+            lastMouseX = mouse.x
+            lastMouseY = mouse.y
+        }
+
+        onWheel: {
+            image.scale += wheel.angleDelta.y * image.scale * 0.001
+            image.scale = Math.max(0.2, Math.min(image.scale, 4.0))
+        }
     }
 }
 
