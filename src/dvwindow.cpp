@@ -259,7 +259,7 @@ void DVWindow::createFBOs() {
     f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     fboLeft = new QOpenGLFramebufferObject(qmlSize, QOpenGLFramebufferObject::CombinedDepthStencil);
-    f->glBindTexture(GL_TEXTURE_2D, fboRight->texture());
+    f->glBindTexture(GL_TEXTURE_2D, fboLeft->texture());
     f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }
