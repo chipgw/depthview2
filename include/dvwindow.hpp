@@ -30,9 +30,6 @@ protected:
     void mouseDoubleClickEvent(QMouseEvent* e);
     void wheelEvent(QWheelEvent* e);
 
-    /* To map mouse coordinates to the smaller size if non-anamorphic Side-By-Side or Top/Bottom. */
-    void fixMouseCoords(QMouseEvent** e);
-
 private:
     /* QML Stuff. */
     QQuickRenderControl* qmlRenderControl;

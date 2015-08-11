@@ -249,10 +249,19 @@ void DVWindow::createFBOs() {
     if (fboLeft != nullptr)
         delete fboLeft;
 
+    QOpenGLFunctions* f = context()->functions();
+
     /* Create the FBOs with the same size as this window. */
     /* TODO - This may need to be smaller in non-anamorphic sbs or t/b */
     fboRight = new QOpenGLFramebufferObject(qmlSize, QOpenGLFramebufferObject::CombinedDepthStencil);
+    f->glBindTexture(GL_TEXTURE_2D, fboRight->texture());
+    f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
     fboLeft = new QOpenGLFramebufferObject(qmlSize, QOpenGLFramebufferObject::CombinedDepthStencil);
+    f->glBindTexture(GL_TEXTURE_2D, fboRight->texture());
+    f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }
 
 void DVWindow::resizeGL(int, int) {
@@ -260,7 +269,6 @@ void DVWindow::resizeGL(int, int) {
 }
 
 void DVWindow::mouseMoveEvent(QMouseEvent* e) {
-    fixMouseCoords(&e);
     QCoreApplication::sendEvent(qmlWindow, e);
 
     emit qmlCommunication->mouseMoved(e->localPos());
@@ -269,21 +277,18 @@ void DVWindow::mouseMoveEvent(QMouseEvent* e) {
 }
 
 void DVWindow::mousePressEvent(QMouseEvent* e) {
-    fixMouseCoords(&e);
     QCoreApplication::sendEvent(qmlWindow, e);
 
     setCursor(Qt::BlankCursor);
 }
 
 void DVWindow::mouseReleaseEvent(QMouseEvent* e) {
-    fixMouseCoords(&e);
     QCoreApplication::sendEvent(qmlWindow, e);
 
     setCursor(Qt::BlankCursor);
 }
 
 void DVWindow::mouseDoubleClickEvent(QMouseEvent* e) {
-    fixMouseCoords(&e);
     QCoreApplication::sendEvent(qmlWindow, e);
 
     setCursor(Qt::BlankCursor);
@@ -293,20 +298,4 @@ void DVWindow::wheelEvent(QWheelEvent* e) {
     QCoreApplication::sendEvent(qmlWindow, e);
 
     setCursor(Qt::BlankCursor);
-}
-
-void DVWindow::fixMouseCoords(QMouseEvent** e) {
-    /* This is kind of a hacky way to keep the mouse coordinates from leaving qmlRoot
-     * before leaving the window when the interior size isn't equal to the exterior size. */
-    QMouseEvent* oldEvent = *e;
-    auto pos = oldEvent->localPos();
-
-    if(qmlSize.width() != width())
-        pos.setX(pos.rx() * qreal(qmlSize.width()) / qreal(width()));
-
-    if(qmlSize.height() != height())
-        pos.setY(pos.ry() * qreal(qmlSize.height()) / qreal(height()));
-
-    if(pos != oldEvent->localPos())
-        (*e) = new QMouseEvent(oldEvent->type(), pos, oldEvent->button(), oldEvent->buttons(), oldEvent->modifiers());
 }
