@@ -78,6 +78,7 @@ Rectangle {
             }
 
             Button {
+                visible: DV.isSideBySide || DV.isTopBottom
                 text: "Anamorphic: " + (DV.anamorphicDualView ? "On" : "Off")
 
                 onClicked: {

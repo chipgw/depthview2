@@ -12,6 +12,9 @@ class DVQmlCommunication : public QObject {
     Q_PROPERTY(DrawMode drawMode MEMBER m_drawMode READ drawMode WRITE setDrawMode NOTIFY drawModeChanged)
     Q_PROPERTY(bool anamorphicDualView MEMBER m_anamorphicDualView READ anamorphicDualView WRITE setAnamorphicDualView NOTIFY anamorphicDualViewChanged)
 
+    Q_PROPERTY(bool isSideBySide READ isSideBySide NOTIFY drawModeChanged)
+    Q_PROPERTY(bool isTopBottom READ isTopBottom NOTIFY drawModeChanged)
+
 public:
     explicit DVQmlCommunication(QObject *parent = 0);
 
@@ -32,8 +35,8 @@ public:
     /* Where QML reads the value of the current eye. */
     bool isLeft() const;
 
-    Q_INVOKABLE bool isSideBySide() { return m_drawMode == SidebySide || m_drawMode == SidebySideMLeft || m_drawMode == SidebySideMRight || m_drawMode == SidebySideMBoth; }
-    Q_INVOKABLE bool isTopBottom()  { return m_drawMode == TopBottom  || m_drawMode == TopBottomMTop   || m_drawMode == TopBottomMBottom || m_drawMode == TopBottomMBoth; }
+    bool isSideBySide() { return m_drawMode == SidebySide || m_drawMode == SidebySideMLeft || m_drawMode == SidebySideMRight || m_drawMode == SidebySideMBoth; }
+    bool isTopBottom()  { return m_drawMode == TopBottom  || m_drawMode == TopBottomMTop   || m_drawMode == TopBottomMBottom || m_drawMode == TopBottomMBoth; }
 
     /* Set the current eye. */
     void leftImage() { isLeftChanged(m_isLeft = true);  }
