@@ -8,5 +8,6 @@
         <file>qml/StereoImage.qml</file>
         <file>glsl/sidebyside.fsh</file>
         <file>glsl/topbottom.fsh</file>
+        <file>images/cursor.png</file>
     </qresource>
 </RCC>

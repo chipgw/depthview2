@@ -88,11 +88,9 @@ Rectangle {
         }
     }
 
-    Rectangle {
+    Image {
         id: fakeCursor
-        width: 10
-        height: 10
-        color: "white"
+        source: "qrc:/images/cursor.png"
 
         Connections {
             target: DV
