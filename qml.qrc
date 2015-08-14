@@ -1,7 +1,7 @@
 <RCC>
     <qresource prefix="/">
         <file>qml/imageview.qml</file>
-        <file>test.pns</file>
+        <file>images/test.pns</file>
         <file>glsl/standard.vsh</file>
         <file>glsl/standard.fsh</file>
         <file>glsl/anglaph.fsh</file>

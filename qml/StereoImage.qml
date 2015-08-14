@@ -8,7 +8,7 @@ Rectangle {
 
     scale: 1.0
 
-    property string source: "qrc:/test.pns"
+    property string source: "qrc:/images/test.pns"
 
     Image {
         x: DV.isLeft ? -parent.width : 0
