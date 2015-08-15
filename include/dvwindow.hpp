@@ -44,6 +44,7 @@ private:
     QOpenGLShaderProgram shaderAnglaph;
     QOpenGLShaderProgram shaderSideBySide;
     QOpenGLShaderProgram shaderTopBottom;
+    QOpenGLShaderProgram shaderMono;
 
     /* The FBOs that QML renders to. */
     QOpenGLFramebufferObject* fboRight;

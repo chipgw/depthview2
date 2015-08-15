@@ -71,6 +71,12 @@ Rectangle {
                         DV.drawMode = DepthView.TopBottomMBoth
                         break;
                     case DepthView.TopBottomMBoth:
+                        DV.drawMode = DepthView.MonoLeft
+                        break;
+                    case DepthView.MonoLeft:
+                        DV.drawMode = DepthView.MonoRight
+                        break;
+                    case DepthView.MonoRight:
                         DV.drawMode = DepthView.AnglaphFull
                         break;
                     }

@@ -161,6 +161,14 @@ void DVWindow::paintGL() {
         shaderTopBottom.setUniformValue("mirrorL", true);
         shaderTopBottom.setUniformValue("mirrorR", true);
         break;
+    case DVQmlCommunication::MonoLeft:
+        shaderMono.bind();
+        shaderMono.setUniformValue("left", true);
+        break;
+    case DVQmlCommunication::MonoRight:
+        shaderMono.bind();
+        shaderMono.setUniformValue("left", false);
+        break;
     default:
         break;
     }
@@ -216,6 +224,7 @@ void DVWindow::loadShaders() {
     loadShader(shaderAnglaph,       ":/glsl/standard.vsh", ":/glsl/anglaph.fsh");
     loadShader(shaderSideBySide,    ":/glsl/standard.vsh", ":/glsl/sidebyside.fsh");
     loadShader(shaderTopBottom,     ":/glsl/standard.vsh", ":/glsl/topbottom.fsh");
+    loadShader(shaderMono,          ":/glsl/standard.vsh", ":/glsl/standard.fsh");
 
     /* TODO - Load other shaders. */
 }

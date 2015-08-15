@@ -30,6 +30,8 @@ public:
         TopBottomMTop,
         TopBottomMBottom,
         TopBottomMBoth,
+        MonoLeft,
+        MonoRight
     };
 
     /* Where QML reads the value of the current eye. */
