@@ -34,34 +34,35 @@ DVWindow::DVWindow() : QOpenGLWindow(), qmlCommunication(new DVQmlCommunication(
     qmlRegisterUncreatableType<DVQmlCommunication>("DepthView", 2, 0, "DepthView", "Only usable as context property.");
     qmlEngine->rootContext()->setContextProperty("DV", qmlCommunication);
 
+    /* Update QML size whenever draw mode or anamorphic are changed. */
     connect(qmlCommunication, &DVQmlCommunication::drawModeChanged, this, &DVWindow::updateQmlSize);
     connect(qmlCommunication, &DVQmlCommunication::anamorphicDualViewChanged, this, &DVWindow::updateQmlSize);
 
+    /* We render a cursor inside QML so it is shown for both eyes. */
     setCursor(Qt::BlankCursor);
 
+    /* TODO - Remember previous geometry. */
     setGeometry(0,0, 800, 600);
 }
 
 DVWindow::~DVWindow() {
     delete fboRight;
     delete fboLeft;
+
+    /* TODO - I'm pretty sure there is more than needs to be deleted here... */
 }
 
 void DVWindow::initializeGL() {
-    QSurfaceFormat fmt;
-    fmt.setDepthBufferSize(24);
-    fmt.setStencilBufferSize(8);
-    context()->setFormat(fmt);
-    context()->create();
-
-    makeCurrent();
     loadShaders();
 
     QQmlComponent rootComponent(qmlEngine);
 
     rootComponent.loadUrl(QUrl(QStringLiteral("qrc:/qml/imageview.qml")));
+
+    /* Wait for it to load... */
     while(rootComponent.isLoading());
 
+    /* The program can't run if there was an error. */
     if (rootComponent.isError()) {
         qDebug(qPrintable(rootComponent.errorString()));
         abort();
@@ -69,15 +70,19 @@ void DVWindow::initializeGL() {
 
     qmlRoot = qobject_cast<QQuickItem*>(rootComponent.create());
 
+    /* Critical error! abort! abort! */
     if (qmlRoot == nullptr)
         abort();
 
+    /* This is the root item, make it so. */
     qmlRoot->setParentItem(qmlWindow->contentItem());
 
+    /* Init to this window's OpenGL context. */
     qmlRenderControl->initialize(context());
 }
 
 void DVWindow::paintGL() {
+    /* So QML doesn't freak out because of stuff we did last frame. */
     qmlWindow->resetOpenGLState();
 
     /* Render the right eye view. */
@@ -87,8 +92,6 @@ void DVWindow::paintGL() {
     qmlRenderControl->sync();
     qmlRenderControl->render();
 
-    qmlWindow->resetOpenGLState();
-
     /* Render the left eye view. */
     qmlCommunication->leftImage();
     qmlWindow->setRenderTarget(fboLeft);
@@ -96,10 +99,12 @@ void DVWindow::paintGL() {
     qmlRenderControl->sync();
     qmlRenderControl->render();
 
+    /* Now we don't want QML messing us up. */
     qmlWindow->resetOpenGLState();
 
     QOpenGLFunctions* f = context()->functions();
 
+    /* Make sure the viewport is the correct size, QML may have changed it. */
     f->glViewport(0, 0, width(), height());
 
     f->glActiveTexture(GL_TEXTURE0);
@@ -108,6 +113,7 @@ void DVWindow::paintGL() {
     f->glActiveTexture(GL_TEXTURE1);
     f->glBindTexture(GL_TEXTURE_2D, fboRight->texture());
 
+    /* Bind the shader and set uniforms for the current draw mode. */
     switch (qmlCommunication->drawMode()) {
     case DVQmlCommunication::AnglaphFull:
         shaderAnglaph.bind();
@@ -170,6 +176,8 @@ void DVWindow::paintGL() {
         shaderMono.setUniformValue("left", false);
         break;
     default:
+        /* Whoops invalid renderer... */
+        /* TODO - What happens here? */
         break;
     }
 
@@ -187,6 +195,7 @@ void DVWindow::paintGL() {
         0.0f, 1.0f
     };
 
+    /* Enable the vertex and UV arrays, must be done every frame because of QML resetting things. */
     f->glEnableVertexAttribArray(vertex);
     f->glEnableVertexAttribArray(uv);
 
@@ -260,20 +269,21 @@ void DVWindow::createFBOs() {
 
     QOpenGLFunctions* f = context()->functions();
 
-    /* Create the FBOs with the same size as this window. */
-    /* TODO - This may need to be smaller in non-anamorphic sbs or t/b */
+    /* Create the FBOs with the calculated QML size. */
     fboRight = new QOpenGLFramebufferObject(qmlSize, QOpenGLFramebufferObject::CombinedDepthStencil);
+    fboLeft = new QOpenGLFramebufferObject(qmlSize, QOpenGLFramebufferObject::CombinedDepthStencil);
+
+    /* Use Linear filtering for nicer scaling/. */
     f->glBindTexture(GL_TEXTURE_2D, fboRight->texture());
     f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    fboLeft = new QOpenGLFramebufferObject(qmlSize, QOpenGLFramebufferObject::CombinedDepthStencil);
     f->glBindTexture(GL_TEXTURE_2D, fboLeft->texture());
     f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }
 
 void DVWindow::resizeGL(int, int) {
+    /* Delegate to updateQmlSize to resize FBO's and stuff. */
     updateQmlSize();
 }
 
