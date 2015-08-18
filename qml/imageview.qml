@@ -84,6 +84,14 @@ Rectangle {
             }
 
             Button {
+                text: "Open"
+
+                onClicked: {
+                    fileBrowser.visible = true
+                }
+            }
+
+            Button {
                 visible: DV.isSideBySide || DV.isTopBottom
                 text: "Anamorphic: " + (DV.anamorphicDualView ? "On" : "Off")
 
@@ -91,6 +99,17 @@ Rectangle {
                     DV.anamorphicDualView = !DV.anamorphicDualView
                 }
             }
+        }
+    }
+
+    FileBrowser {
+        id: fileBrowser
+        anchors.fill: parent
+        visible: false
+
+        onFileOpened: {
+            visible = false
+            image.source = fileURL
         }
     }
 
