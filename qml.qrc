@@ -10,5 +10,6 @@
         <file>glsl/topbottom.fsh</file>
         <file>images/cursor.png</file>
         <file>qml/FileBrowser.qml</file>
+        <file>images/folder.pns</file>
     </qresource>
 </RCC>

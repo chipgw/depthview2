@@ -50,7 +50,11 @@ Rectangle {
                     id: folderThumb
 
                     Item {
-                        /* TODO - Show an icon or thumbnail of some sort. */
+                        /* Must be wrapped with an Item to center and size properly. */
+                        StereoImage {
+                            anchors.centerIn: parent
+                            source: "qrc:/images/folder.pns"
+                        }
                     }
                 }
 
