@@ -57,7 +57,7 @@ void DVWindow::initializeGL() {
 
     QQmlComponent rootComponent(qmlEngine);
 
-    rootComponent.loadUrl(QUrl(QStringLiteral("qrc:/qml/imageview.qml")));
+    rootComponent.loadUrl(QUrl(QStringLiteral("qrc:/qml/Window.qml")));
 
     /* Wait for it to load... */
     while(rootComponent.isLoading());
