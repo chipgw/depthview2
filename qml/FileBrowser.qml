@@ -32,32 +32,6 @@ Rectangle {
                 border.color: "grey"
                 border.width: 4
 
-                Component {
-                    id: stereoImageThumb
-                    Item {
-                        /* Must be wrapped with an Item to center and size properly. */
-                        StereoImage {
-                            anchors.centerIn: parent
-                            source: itemURL
-                            asynchronous: true;
-                            sourceSize.width: parent.width * 2
-                            sourceSize.height: parent.height
-                        }
-                    }
-                }
-
-                Component {
-                    id: folderThumb
-
-                    Item {
-                        /* Must be wrapped with an Item to center and size properly. */
-                        StereoImage {
-                            anchors.centerIn: parent
-                            source: "qrc:/images/folder.pns"
-                        }
-                    }
-                }
-
                 MouseArea {
                     anchors.margins: 4
                     anchors.fill: parent
@@ -75,11 +49,12 @@ Rectangle {
                         anchors.top: parent.top
                         anchors.bottom: fileNameText.top
 
-                        Loader {
-                            anchors.fill: parent
-                            property url itemURL: fileURL
-                            id: stereoImage
-                            sourceComponent: fileIsDir ? folderThumb : stereoImageThumb
+                        StereoImage {
+                            anchors.centerIn: parent
+                            source: fileIsDir ? "qrc:/images/folder.pns" : fileURL
+                            asynchronous: !fileIsDir;
+                            sourceSize.width: parent.width * 2
+                            sourceSize.height: parent.height
                         }
                     }
 
