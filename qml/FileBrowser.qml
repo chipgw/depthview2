@@ -37,10 +37,21 @@ Rectangle {
                     anchors.fill: parent
 
                     onDoubleClicked: {
+                        fileRect.color = "#888866"
                         if(fileIsDir)
                             root.folder = fileURL
                         else
                             root.fileOpened(fileURL)
+                    }
+
+                    hoverEnabled: true
+
+                    onEntered: {
+                        fileRect.color = "#44444444"
+                    }
+
+                    onExited: {
+                        fileRect.color = "transparent"
                     }
 
                     Item {
