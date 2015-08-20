@@ -128,7 +128,7 @@ Rectangle {
 
         /* This puts the cursor a little bit above the screen. */
         transform: Translate {
-            x: DV.isLeft ? 4 : -4
+            x: DV.isLeft ? 8 : -8
         }
     }
 }
