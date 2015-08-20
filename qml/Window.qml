@@ -5,28 +5,59 @@ import DepthView 2.0
 Rectangle {
     color: "black"
 
-    Item {
-        anchors.centerIn: parent
-        width: image.width
-        height: image.height
+    Flickable {
+        id: imageFlickable
+        anchors.fill: parent
 
-        StereoImage {
-            id: image
+        contentWidth: imageContainer.width
+        contentHeight: imageContainer.height
+
+        /* Only enable panning when the image is zoomed in enough. */
+        interactive: (contentWidth > width || contentHeight > height)
+
+        Item {
+            id: imageContainer
+            width: Math.max(image.width * image.scale, imageFlickable.width)
+            height: Math.max(image.height * image.scale, imageFlickable.height)
+
+            StereoImage {
+                anchors.centerIn: parent
+                id: image
+            }
         }
     }
 
     MouseArea {
         anchors.fill: parent
 
-        drag.target: image
-        drag.minimumX: -Math.max(image.width * image.scale - parent.width, 0) / 2
-        drag.maximumX:  Math.max(image.width * image.scale - parent.width, 0) / 2
-        drag.minimumY: -Math.max(image.height * image.scale - parent.height, 0) / 2
-        drag.maximumY:  Math.max(image.height * image.scale - parent.height, 0) / 2
+        acceptedButtons: Qt.MiddleButton
 
         onWheel: {
-            image.scale += wheel.angleDelta.y * image.scale * 0.001
-            image.scale = Math.max(0.2, Math.min(image.scale, 4.0))
+            /* Don't zoom if covered. */
+            if (!fileBrowser.visible) {
+                /* Find the current relative center of the screen. */
+                var centerX = imageFlickable.visibleArea.xPosition + imageFlickable.visibleArea.widthRatio / 2
+                var centerY = imageFlickable.visibleArea.yPosition + imageFlickable.visibleArea.heightRatio / 2
+
+                /* Find out how many pixels are currently not visible. */
+                var hiddenX = (1 - imageFlickable.visibleArea.widthRatio) * imageFlickable.contentWidth
+                var hiddenY = (1 - imageFlickable.visibleArea.heightRatio) * imageFlickable.contentHeight
+
+                /* Perform the scaling. */
+                image.scale += wheel.angleDelta.y * image.scale * 0.001
+                image.scale = Math.max(0.2, Math.min(image.scale, 4.0))
+
+                /* Find out the difference between how many pixels were hidden and how many are hidden now. */
+                hiddenX -= (1 - imageFlickable.visibleArea.widthRatio) * imageFlickable.contentWidth
+                hiddenY -= (1 - imageFlickable.visibleArea.heightRatio) * imageFlickable.contentHeight
+
+                /* Multiply by the calculated center to get the offsett needed to maintain center. */
+                imageFlickable.contentX -= hiddenX * centerX
+                imageFlickable.contentY -= hiddenY * centerY
+
+                /* Make sure we didn't get out of bounds. Needed when zooming out. */
+                imageFlickable.returnToBounds()
+            }
         }
     }
 
@@ -106,6 +137,7 @@ Rectangle {
         id: fileBrowser
         anchors.fill: parent
         visible: false
+        enabled: visible
 
         onFileOpened: {
             visible = false
