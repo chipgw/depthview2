@@ -10,7 +10,7 @@ Item {
 
     property string source: "qrc:/images/test.pns"
     property bool asynchronous: false
-    property size sourceSize: undefined
+    property size sourceSize
 
     Image {
         x: DV.isLeft ? -parent.width : 0

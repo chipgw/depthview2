@@ -64,8 +64,7 @@ Rectangle {
                             anchors.centerIn: parent
                             source: fileIsDir ? "qrc:/images/folder.pns" : fileURL
                             asynchronous: !fileIsDir;
-                            sourceSize.width: parent.width * 2
-                            sourceSize.height: parent.height
+                            sourceSize: Qt.size(parent.width * 2, parent.height)
                         }
                     }
 
