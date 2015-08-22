@@ -1,5 +1,6 @@
 import QtQuick 2.5
 import QtQuick.Controls 1.4
+import QtQuick.Layouts 1.2
 import DepthView 2.0
 
 Rectangle {
@@ -85,73 +86,141 @@ Rectangle {
         }
     }
 
-    Rectangle {
-        id: menuRect
-        width: parent.width
+    Item {
+        anchors {
+            fill: parent
+            leftMargin: 8
+            rightMargin: 8
+        }
 
-        Flow {
-            Button {
-                text: "Mode: " + DV.drawMode
+        /* Put all interface items a bit above the screen. */
+        transform: Translate {
+            x: DV.isLeft ? 8 : -8
+        }
 
-                onClicked: {
-                    switch(DV.drawMode) {
-                    case DepthView.AnglaphFull:
-                        DV.drawMode = DepthView.AnglaphHalf
-                        break;
-                    case DepthView.AnglaphHalf:
-                        DV.drawMode = DepthView.AnglaphGrey
-                        break;
-                    case DepthView.AnglaphGrey:
-                        DV.drawMode = DepthView.SidebySide
-                        break;
-                    case DepthView.SidebySide:
-                        DV.drawMode = DepthView.SidebySideMLeft
-                        break;
-                    case DepthView.SidebySideMLeft:
-                        DV.drawMode = DepthView.SidebySideMRight
-                        break;
-                    case DepthView.SidebySideMRight:
-                        DV.drawMode = DepthView.SidebySideMBoth
-                        break;
-                    case DepthView.SidebySideMBoth:
-                        DV.drawMode = DepthView.TopBottom
-                        break;
-                    case DepthView.TopBottom:
-                        DV.drawMode = DepthView.TopBottomMTop
-                        break;
-                    case DepthView.TopBottomMTop:
-                        DV.drawMode = DepthView.TopBottomMBottom
-                        break;
-                    case DepthView.TopBottomMBottom:
-                        DV.drawMode = DepthView.TopBottomMBoth
-                        break;
-                    case DepthView.TopBottomMBoth:
-                        DV.drawMode = DepthView.MonoLeft
-                        break;
-                    case DepthView.MonoLeft:
-                        DV.drawMode = DepthView.MonoRight
-                        break;
-                    case DepthView.MonoRight:
-                        DV.drawMode = DepthView.AnglaphFull
-                        break;
+        Rectangle {
+            id: menuRect
+            width: parent.width
+
+            RowLayout {
+                Button {
+                    text: "Pick Mode"
+
+                    onClicked: modeDialog.visible = !modeDialog.visible
+                }
+
+                Button {
+                    text: "Open"
+
+                    onClicked: fileBrowser.visible = true
+                }
+
+                Label {
+                    text: "Grey Factor:"
+
+                    visible: DV.drawMode == DepthView.Anglaph
+                }
+
+                Slider {
+                    value: DV.greyFac
+                    visible: DV.drawMode == DepthView.Anglaph
+
+                    onValueChanged: DV.greyFac = value
+                }
+
+                CheckBox {
+                    visible: DV.drawMode == DepthView.SidebySide || DV.drawMode == DepthView.TopBottom
+                    text: "Anamorphic"
+
+                    checked: DV.anamorphicDualView
+
+                    onCheckedChanged: DV.anamorphicDualView = checked
+                }
+
+                CheckBox {
+                    visible: DV.drawMode == DepthView.SidebySide || DV.drawMode == DepthView.TopBottom
+                    text: "Mirror Left"
+
+                    checked: DV.mirrorLeft
+
+                    onCheckedChanged: DV.mirrorLeft = checked
+                }
+
+                CheckBox {
+                    visible: DV.drawMode == DepthView.SidebySide || DV.drawMode == DepthView.TopBottom
+                    text: "Mirror Right"
+
+                    checked: DV.mirrorRight
+
+                    onCheckedChanged: DV.mirrorRight = checked
+                }
+            }
+        }
+
+        GroupBox {
+            id: modeDialog
+            title: "Draw Mode"
+            anchors.centerIn: parent
+
+            /* Hide by default and don't enable when hidden. */
+            visible: false
+            enabled: visible
+
+            ExclusiveGroup { id: drawModeRadioGroup }
+
+            ColumnLayout {
+                RadioButton {
+                    text: "Anglaph"
+                    exclusiveGroup: drawModeRadioGroup
+
+                    /* TODO - Don't make assumptions about the default value. */
+                    checked: true
+
+                    onCheckedChanged: {
+                        if (checked)
+                            DV.drawMode = DepthView.Anglaph
                     }
                 }
-            }
+                RadioButton {
+                    text: "Side-by-Side"
+                    exclusiveGroup: drawModeRadioGroup
 
-            Button {
-                text: "Open"
-
-                onClicked: {
-                    fileBrowser.visible = true
+                    onCheckedChanged: {
+                        if (checked)
+                            DV.drawMode = DepthView.SidebySide
+                    }
                 }
-            }
+                RadioButton {
+                    text: "Top/Bottom"
+                    exclusiveGroup: drawModeRadioGroup
 
-            Button {
-                visible: DV.isSideBySide || DV.isTopBottom
-                text: "Anamorphic: " + (DV.anamorphicDualView ? "On" : "Off")
+                    onCheckedChanged: {
+                        if (checked)
+                            DV.drawMode = DepthView.TopBottom
+                    }
+                }
+                RadioButton {
+                    text: "Mono Left"
+                    exclusiveGroup: drawModeRadioGroup
 
-                onClicked: {
-                    DV.anamorphicDualView = !DV.anamorphicDualView
+                    onCheckedChanged: {
+                        if (checked)
+                            DV.drawMode = DepthView.MonoLeft
+                    }
+                }
+                RadioButton {
+                    text: "Mono Right"
+                    exclusiveGroup: drawModeRadioGroup
+
+                    onCheckedChanged: {
+                        if (checked)
+                            DV.drawMode = DepthView.MonoRight
+                    }
+                }
+                Button {
+                    text: "Close"
+
+                    onClicked: modeDialog.visible = false
                 }
             }
         }
@@ -184,7 +253,7 @@ Rectangle {
 
         /* This puts the cursor a little bit above the screen. */
         transform: Translate {
-            x: DV.isLeft ? 8 : -8
+            x: DV.isLeft ? 10 : -10
         }
     }
 }

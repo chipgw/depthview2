@@ -115,57 +115,19 @@ void DVWindow::paintGL() {
 
     /* Bind the shader and set uniforms for the current draw mode. */
     switch (qmlCommunication->drawMode()) {
-    case DVQmlCommunication::AnglaphFull:
+    case DVQmlCommunication::Anglaph:
         shaderAnglaph.bind();
-        shaderAnglaph.setUniformValue("greyFac", 0.0f);
-        break;
-    case DVQmlCommunication::AnglaphHalf:
-        shaderAnglaph.bind();
-        shaderAnglaph.setUniformValue("greyFac", 0.5f);
-        break;
-    case DVQmlCommunication::AnglaphGrey:
-        shaderAnglaph.bind();
-        shaderAnglaph.setUniformValue("greyFac", 1.0f);
+        shaderAnglaph.setUniformValue("greyFac", float(qmlCommunication->greyFac()));
         break;
     case DVQmlCommunication::SidebySide:
         shaderSideBySide.bind();
-        shaderSideBySide.setUniformValue("mirrorL", false);
-        shaderSideBySide.setUniformValue("mirrorR", false);
-        break;
-    case DVQmlCommunication::SidebySideMLeft:
-        shaderSideBySide.bind();
-        shaderSideBySide.setUniformValue("mirrorL", true);
-        shaderSideBySide.setUniformValue("mirrorR", false);
-        break;
-    case DVQmlCommunication::SidebySideMRight:
-        shaderSideBySide.bind();
-        shaderSideBySide.setUniformValue("mirrorL", false);
-        shaderSideBySide.setUniformValue("mirrorR", true);
-        break;
-    case DVQmlCommunication::SidebySideMBoth:
-        shaderSideBySide.bind();
-        shaderSideBySide.setUniformValue("mirrorL", true);
-        shaderSideBySide.setUniformValue("mirrorR", true);
+        shaderSideBySide.setUniformValue("mirrorL", qmlCommunication->mirrorLeft());
+        shaderSideBySide.setUniformValue("mirrorR", qmlCommunication->mirrorRight());
         break;
     case DVQmlCommunication::TopBottom:
         shaderTopBottom.bind();
-        shaderTopBottom.setUniformValue("mirrorL", false);
-        shaderTopBottom.setUniformValue("mirrorR", false);
-        break;
-    case DVQmlCommunication::TopBottomMTop:
-        shaderTopBottom.bind();
-        shaderTopBottom.setUniformValue("mirrorL", true);
-        shaderTopBottom.setUniformValue("mirrorR", false);
-        break;
-    case DVQmlCommunication::TopBottomMBottom:
-        shaderTopBottom.bind();
-        shaderTopBottom.setUniformValue("mirrorL", false);
-        shaderTopBottom.setUniformValue("mirrorR", true);
-        break;
-    case DVQmlCommunication::TopBottomMBoth:
-        shaderTopBottom.bind();
-        shaderTopBottom.setUniformValue("mirrorL", true);
-        shaderTopBottom.setUniformValue("mirrorR", true);
+        shaderTopBottom.setUniformValue("mirrorL", qmlCommunication->mirrorLeft());
+        shaderTopBottom.setUniformValue("mirrorR", qmlCommunication->mirrorRight());
         break;
     case DVQmlCommunication::MonoLeft:
         shaderMono.bind();
@@ -212,11 +174,11 @@ void DVWindow::updateQmlSize() {
     qmlSize = size();
 
     /* If Side-by-Side and not anamorphic we only render QML at half of the window size (horizontally). */
-    if(qmlCommunication->isSideBySide() && !qmlCommunication->anamorphicDualView())
+    if(qmlCommunication->drawMode() == DVQmlCommunication::SidebySide && !qmlCommunication->anamorphicDualView())
         qmlSize.setWidth(qmlSize.width() / 2);
 
     /* If Top/Bottom and not anamorphic we only render QML at half of the window size (vertically). */
-    if(qmlCommunication->isTopBottom() && !qmlCommunication->anamorphicDualView())
+    if(qmlCommunication->drawMode() == DVQmlCommunication::TopBottom && !qmlCommunication->anamorphicDualView())
         qmlSize.setHeight(qmlSize.height() / 2);
 
     /* Don't recreate fbo's unless they are null or size is wrong. */
