@@ -5,36 +5,45 @@ import Qt.labs.folderlistmodel 2.1
 Rectangle {
     id: root
     color: "black"
+
     property url folder: ""
+
+    property real cellWidth: 320
+    property real cellHeight: 240
 
     signal fileOpened(url fileURL)
 
     FolderListModel {
         id: folderModel
         nameFilters: ["*.pns", "*.jps"]
+
+        /* This might be a good idea to make into a setting... */
         showDirsFirst: true
+
+        /* I wish I could just to ".." and not need "." with it... */
         showDotAndDotDot: true
         folder: root.folder
     }
 
     Component {
         id: fileComponent
+
+        /* Item to have the rectangle padded inside. */
         Item {
-            width: 320
-            height: 240
+            /* So that it is the same as the GridView. */
+            width: root.cellWidth
+            height: root.cellHeight
+
+            /* Border/highlight rectangle. */
             Rectangle {
-                anchors.fill: parent
-                anchors.margins: 8
                 id: fileRect
-                clip: true
+                anchors { fill: parent; margins: 8 }
                 radius: 4
                 color: "transparent"
-                border.color: "grey"
-                border.width: 4
+                border { color: "grey"; width: 4 }
 
                 MouseArea {
-                    anchors.margins: 4
-                    anchors.fill: parent
+                    anchors { fill: parent; margins: 4 }
 
                     onDoubleClicked: {
                         fileRect.color = "#888866"
@@ -46,35 +55,42 @@ Rectangle {
 
                     hoverEnabled: true
 
-                    onEntered: {
-                        fileRect.color = "#44444444"
-                    }
+                    /* Highlight on mouseover. */
+                    onEntered: fileRect.color = "#44444444"
+                    onExited: fileRect.color = "transparent"
 
-                    onExited: {
-                        fileRect.color = "transparent"
-                    }
-
+                    /* Item to center the thumbnail inside. */
                     Item {
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        anchors.top: parent.top
-                        anchors.bottom: fileNameText.top
+                        /* Fill the parent except for on the bottom where the text is. */
+                        anchors {
+                            left: parent.left
+                            right: parent.right
+                            top: parent.top
+                            bottom: fileNameText.top
+                        }
 
+                        /* 3D thumbnails! */
                         StereoImage {
                             anchors.centerIn: parent
+                            /* If it is a directory use the thumbnail in qrc. Otherwise the file should be an image itself. */
                             source: fileIsDir ? "qrc:/images/folder.pns" : fileURL
+
+                            /* Images on the filesystem should be loaded asynchronously. */
                             asynchronous: !fileIsDir;
+
+                            /* The image should onlt be stored at the needed size. */
                             sourceSize: Qt.size(parent.width * 2, parent.height)
                         }
                     }
 
                     Text {
-                        color: "white"
                         id: fileNameText
                         anchors.bottom: parent.bottom
                         width: parent.width
+
+                        color: "white"
                         text: fileName
-                        verticalAlignment: Text.AlignBottom
+
                         horizontalAlignment: Text.AlignHCenter
                         wrapMode: Text.Wrap
                     }
@@ -87,8 +103,10 @@ Rectangle {
         anchors.fill: parent
         model: folderModel
         delegate: fileComponent
-        cellWidth: 320
-        cellHeight: 240
+
+        /* So that it is the same as the delegate. */
+        cellWidth: root.cellWidth
+        cellHeight: root.cellHeight
     }
 }
 
