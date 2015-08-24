@@ -89,8 +89,10 @@ Rectangle {
     Item {
         anchors {
             fill: parent
-            leftMargin: 8
-            rightMargin: 8
+            leftMargin: 12
+            rightMargin: 12
+            topMargin: 2
+            bottomMargin: 2
         }
 
         /* Put all interface items a bit above the screen. */
@@ -98,11 +100,16 @@ Rectangle {
             x: DV.isLeft ? 8 : -8
         }
 
-        Rectangle {
+        ToolBar {
             id: menuRect
-            width: parent.width
 
             RowLayout {
+                anchors {
+                    margins: 4
+                    top: parent.top
+                    left: parent.left
+                }
+
                 Button {
                     text: "Pick Mode"
 
@@ -118,18 +125,18 @@ Rectangle {
                 Label {
                     text: "Grey Factor:"
 
-                    visible: DV.drawMode == DepthView.Anglaph
+                    visible: DV.drawMode === DepthView.Anglaph
                 }
 
                 Slider {
                     value: DV.greyFac
-                    visible: DV.drawMode == DepthView.Anglaph
+                    visible: DV.drawMode === DepthView.Anglaph
 
                     onValueChanged: DV.greyFac = value
                 }
 
                 CheckBox {
-                    visible: DV.drawMode == DepthView.SidebySide || DV.drawMode == DepthView.TopBottom
+                    visible: DV.drawMode === DepthView.SidebySide || DV.drawMode === DepthView.TopBottom
                     text: "Anamorphic"
 
                     checked: DV.anamorphicDualView
@@ -138,7 +145,7 @@ Rectangle {
                 }
 
                 CheckBox {
-                    visible: DV.drawMode == DepthView.SidebySide || DV.drawMode == DepthView.TopBottom
+                    visible: DV.drawMode === DepthView.SidebySide || DV.drawMode === DepthView.TopBottom
                     text: "Mirror Left"
 
                     checked: DV.mirrorLeft
@@ -246,7 +253,8 @@ Rectangle {
             target: DV
 
             onMouseMoved: {
-                fakeCursor.x = pos.x
+                /* The x coordinate needs adjusting so that the point ends up in the right place. */
+                fakeCursor.x = pos.x - 8
                 fakeCursor.y = pos.y
             }
         }
