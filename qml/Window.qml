@@ -176,52 +176,22 @@ Rectangle {
             ExclusiveGroup { id: drawModeRadioGroup }
 
             ColumnLayout {
-                RadioButton {
-                    text: "Anglaph"
-                    exclusiveGroup: drawModeRadioGroup
-
-                    /* TODO - Don't make assumptions about the default value. */
-                    checked: true
-
-                    onCheckedChanged: {
-                        if (checked)
-                            DV.drawMode = DepthView.Anglaph
+                Repeater {
+                    id: modeList
+                    model: ListModel {
+                        ListElement { text: "Anglaph"; mode: DepthView.Anglaph }
+                        ListElement { text: "Side-by-Side"; mode: DepthView.SidebySide }
+                        ListElement { text: "Top/Bottom"; mode: DepthView.TopBottom }
+                        ListElement { text: "Mono Left"; mode: DepthView.MonoLeft }
+                        ListElement { text: "Mono Right"; mode: DepthView.MonoRight }
                     }
-                }
-                RadioButton {
-                    text: "Side-by-Side"
-                    exclusiveGroup: drawModeRadioGroup
+                    RadioButton {
+                        text: model.text
+                        exclusiveGroup: drawModeRadioGroup
+                        checked: DV.drawMode === model.mode
 
-                    onCheckedChanged: {
-                        if (checked)
-                            DV.drawMode = DepthView.SidebySide
-                    }
-                }
-                RadioButton {
-                    text: "Top/Bottom"
-                    exclusiveGroup: drawModeRadioGroup
-
-                    onCheckedChanged: {
-                        if (checked)
-                            DV.drawMode = DepthView.TopBottom
-                    }
-                }
-                RadioButton {
-                    text: "Mono Left"
-                    exclusiveGroup: drawModeRadioGroup
-
-                    onCheckedChanged: {
-                        if (checked)
-                            DV.drawMode = DepthView.MonoLeft
-                    }
-                }
-                RadioButton {
-                    text: "Mono Right"
-                    exclusiveGroup: drawModeRadioGroup
-
-                    onCheckedChanged: {
-                        if (checked)
-                            DV.drawMode = DepthView.MonoRight
+                        onCheckedChanged:
+                            if (checked) DV.drawMode = model.mode
                     }
                 }
                 Button {
