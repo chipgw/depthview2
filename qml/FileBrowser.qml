@@ -6,24 +6,12 @@ Rectangle {
     id: root
     color: "black"
 
-    property url folder: ""
-
     property real cellWidth: 320
     property real cellHeight: 240
 
     signal fileOpened(url fileURL)
 
-    FolderListModel {
-        id: folderModel
-        nameFilters: ["*.pns", "*.jps"]
-
-        /* This might be a good idea to make into a setting... */
-        showDirsFirst: true
-
-        /* I wish I could just to ".." and not need "." with it... */
-        showDotAndDotDot: true
-        folder: root.folder
-    }
+    property FolderListModel model
 
     Component {
         id: fileComponent
@@ -101,7 +89,7 @@ Rectangle {
 
     GridView {
         anchors.fill: parent
-        model: folderModel
+        model: root.model
         delegate: fileComponent
 
         /* So that it is the same as the delegate. */

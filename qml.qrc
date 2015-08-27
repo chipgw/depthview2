@@ -11,5 +11,6 @@
         <file>images/cursor.png</file>
         <file>qml/FileBrowser.qml</file>
         <file>images/folder.pns</file>
+        <file>qml/ImageViewer.qml</file>
     </qresource>
 </RCC>

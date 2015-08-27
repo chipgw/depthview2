@@ -8,7 +8,7 @@ Item {
 
     scale: 1.0
 
-    property string source: "qrc:/images/test.pns"
+    property url source: "qrc:/images/test.pns"
     property bool asynchronous: false
     property size sourceSize
 
