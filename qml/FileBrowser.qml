@@ -36,7 +36,7 @@ Rectangle {
                     onDoubleClicked: {
                         fileRect.color = "#888866"
                         if(fileIsDir)
-                            root.folder = fileURL
+                            root.model.folder = fileURL
                         else
                             root.fileOpened(fileURL)
                     }
