@@ -2,6 +2,8 @@
 
 #include <QObject>
 
+class QWindow;
+
 class DVQmlCommunication : public QObject {
     Q_OBJECT
     Q_ENUMS(DrawMode)
@@ -17,8 +19,10 @@ class DVQmlCommunication : public QObject {
 
     Q_PROPERTY(qreal greyFac READ greyFac WRITE setGreyFac NOTIFY greyFacChanged)
 
+    Q_PROPERTY(bool fullscreen READ fullscreen WRITE setFullscreen NOTIFY fullscreenChanged)
+
 public:
-    explicit DVQmlCommunication(QObject *parent = 0);
+    explicit DVQmlCommunication(QWindow* parent);
 
     enum DrawMode {
         Anglaph,
@@ -51,6 +55,9 @@ public:
     qreal greyFac();
     void setGreyFac(qreal fac);
 
+    bool fullscreen();
+    void setFullscreen(bool fullscreen);
+
 signals:
     void isLeftChanged(bool isLeft);
     void drawModeChanged(DrawMode mode);
@@ -61,8 +68,13 @@ signals:
 
     void greyFacChanged(qreal fac);
 
+    void fullscreenChanged(bool fullscreen);
+
     /* Used for setting the cursor position. */
     void mouseMoved(const QPointF& pos);
+
+public slots:
+    void ownerWindowStateChanged(Qt::WindowState windowState);
 
 private:
     bool m_mirrorLeft;
@@ -73,4 +85,6 @@ private:
     bool m_isLeft;
     DrawMode m_drawMode;
     bool m_anamorphicDualView;
+
+    QWindow* owner;
 };

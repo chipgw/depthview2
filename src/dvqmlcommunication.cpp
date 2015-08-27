@@ -1,7 +1,9 @@
 #include "include/dvqmlcommunication.hpp"
+#include <QWindow>
 
-DVQmlCommunication::DVQmlCommunication(QObject *parent) : QObject(parent), m_mirrorLeft(false), m_mirrorRight(false), m_greyFac(0.0), m_drawMode(Anglaph), m_anamorphicDualView(false) {
-    /* STUB */
+DVQmlCommunication::DVQmlCommunication(QWindow* parent) : QObject(parent), m_mirrorLeft(false),
+    m_mirrorRight(false), m_greyFac(0.0), m_drawMode(Anglaph), m_anamorphicDualView(false), owner(parent) {
+    connect(owner, &QWindow::windowStateChanged, this, &DVQmlCommunication::ownerWindowStateChanged);
 }
 
 bool DVQmlCommunication::isLeft() const {
@@ -54,6 +56,22 @@ void DVQmlCommunication::setMirrorRight(bool mirror) {
         m_mirrorRight = mirror;
         emit mirrorRightChanged(mirror);
     }
+}
+
+bool DVQmlCommunication::fullscreen() {
+    return owner->windowState() == Qt::WindowFullScreen;
+}
+
+void DVQmlCommunication::setFullscreen(bool fullscreen) {
+    /* Only set if changed. */
+    if (fullscreen != (owner->windowState() == Qt::WindowFullScreen))
+        owner->setWindowState(fullscreen ? Qt::WindowFullScreen : Qt::WindowMaximized);
+
+    /* Signal will be emitted because of the state change. */
+}
+
+void DVQmlCommunication::ownerWindowStateChanged(Qt::WindowState windowState) {
+    emit fullscreenChanged(windowState == Qt::WindowFullScreen);
 }
 
 qreal DVQmlCommunication::greyFac() {

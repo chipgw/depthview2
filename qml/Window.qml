@@ -98,6 +98,22 @@ Rectangle {
 
                     onCheckedChanged: DV.mirrorRight = checked
                 }
+
+                CheckBox {
+                    id: fullscreenCheckBox
+                    text: "Fullscreen"
+
+                    checked: DV.fullscreen
+
+                    onCheckedChanged: DV.fullscreen = checked
+
+                    /* Maintain the correct state if it changes by some other means. */
+                    Connections {
+                        target: DV
+
+                        onFullscreenChanged: fullscreenCheckBox.checked = fullscreen
+                    }
+                }
             }
         }
 
