@@ -128,7 +128,10 @@ Rectangle {
                         checked: DV.drawMode === model.mode
 
                         onCheckedChanged:
-                            if (checked) DV.drawMode = model.mode
+                            if (checked) {
+                                DV.drawMode = model.mode
+                                modeDialog.visible = false
+                            }
                     }
                 }
                 Button {
