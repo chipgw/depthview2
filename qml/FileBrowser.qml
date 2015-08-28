@@ -9,7 +9,7 @@ Rectangle {
     property real cellWidth: 320
     property real cellHeight: 240
 
-    signal fileOpened(url fileURL)
+    signal fileOpened(url fileURL, int index)
 
     property FolderListModel model
 
@@ -38,7 +38,7 @@ Rectangle {
                         if(fileIsDir)
                             root.model.folder = fileURL
                         else
-                            root.fileOpened(fileURL)
+                            root.fileOpened(fileURL, index)
                     }
 
                     hoverEnabled: true
