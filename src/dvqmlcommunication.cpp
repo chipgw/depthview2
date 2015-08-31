@@ -34,7 +34,7 @@ void DVQmlCommunication::setAnamorphicDualView(bool anamorphic) {
     }
 }
 
-bool DVQmlCommunication::mirrorLeft() {
+bool DVQmlCommunication::mirrorLeft() const {
     return m_mirrorLeft;
 }
 
@@ -46,7 +46,7 @@ void DVQmlCommunication::setMirrorLeft(bool mirror) {
     }
 }
 
-bool DVQmlCommunication::mirrorRight() {
+bool DVQmlCommunication::mirrorRight() const {
     return m_mirrorRight;
 }
 
@@ -58,7 +58,7 @@ void DVQmlCommunication::setMirrorRight(bool mirror) {
     }
 }
 
-bool DVQmlCommunication::fullscreen() {
+bool DVQmlCommunication::fullscreen() const {
     return owner->windowState() == Qt::WindowFullScreen;
 }
 

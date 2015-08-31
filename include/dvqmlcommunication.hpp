@@ -46,16 +46,16 @@ public:
     bool anamorphicDualView() const;
     void setAnamorphicDualView(bool anamorphic);
 
-    bool mirrorLeft();
+    bool mirrorLeft() const;
     void setMirrorLeft(bool mirror);
 
-    bool mirrorRight();
+    bool mirrorRight() const;
     void setMirrorRight(bool mirror);
 
-    qreal greyFac();
+    qreal greyFac() const;
     void setGreyFac(qreal fac);
 
-    bool fullscreen();
+    bool fullscreen() const;
     void setFullscreen(bool fullscreen);
 
 signals:
