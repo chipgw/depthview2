@@ -74,7 +74,7 @@ void DVQmlCommunication::ownerWindowStateChanged(Qt::WindowState windowState) {
     emit fullscreenChanged(windowState == Qt::WindowFullScreen);
 }
 
-qreal DVQmlCommunication::greyFac() {
+qreal DVQmlCommunication::greyFac() const {
     return m_greyFac;
 }
 
