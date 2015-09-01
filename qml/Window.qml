@@ -22,34 +22,7 @@ Rectangle {
         id: image
         anchors.fill: parent
 
-        /* The index of the current file in the FolderListModel. */
-        property int currentIndex
-
-        function prevFile() {
-            if (folderModel.isFolder(--currentIndex) || currentIndex < 0) {
-                currentIndex = folderModel.count - 1
-
-                if (folderModel.isFolder(currentIndex))
-                    /* If it's STILL a folder there are no images. */
-                    return
-            }
-
-            console.log(currentIndex)
-            source = folderModel.get(currentIndex, "fileURL")
-        }
-        function nextFile() {
-            if (++currentIndex >= folderModel.count)
-                currentIndex = 0
-
-            while (folderModel.isFolder(currentIndex)) {
-                if (++currentIndex >= folderModel.count)
-                    /* No files in the folder! */
-                    return
-            }
-
-            console.log(currentIndex)
-            source = folderModel.get(currentIndex, "fileURL")
-        }
+        model: folderModel
     }
 
     Item {
@@ -120,7 +93,7 @@ Rectangle {
                 }
 
                 CheckBox {
-                    visible: DV.drawMode == DepthView.SidebySide || DV.drawMode == DepthView.TopBottom
+                    visible: DV.drawMode === DepthView.SidebySide || DV.drawMode === DepthView.TopBottom
                     text: "Mirror Right"
 
                     checked: DV.mirrorRight
@@ -223,7 +196,6 @@ Rectangle {
         onFileOpened: {
             visible = false
             image.currentIndex = index
-            image.source = fileURL
         }
     }
 

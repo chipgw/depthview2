@@ -1,8 +1,42 @@
-import QtQuick 2.0
+import QtQuick 2.5
+import Qt.labs.folderlistmodel 2.1
 
 Item {
     id: root
-    property url source: "qrc:/images/test.pns"
+
+    property FolderListModel model
+
+    /* The index of the current file in the FolderListModel. */
+    property int currentIndex
+
+    function prevFile() {
+        var index = currentIndex
+        if (model.isFolder(--index) || index < 0) {
+            index = model.count - 1
+
+            if (model.isFolder(index))
+                /* If it's STILL a folder there are no images. */
+                return
+        }
+
+        currentIndex = index
+    }
+    function nextFile() {
+        var index = currentIndex
+        if (++index >= folderModel.count)
+            index = 0
+
+        while (model.isFolder(index)) {
+            if (++index >= folderModel.count)
+                /* No files in the folder! */
+                return
+        }
+        currentIndex = index
+    }
+
+    onCurrentIndexChanged: {
+        image.source = model.get(currentIndex, "fileURL")
+    }
 
     Flickable {
         id: imageFlickable
@@ -66,7 +100,6 @@ Item {
             StereoImage {
                 anchors.centerIn: parent
                 id: image
-                source: root.source
             }
         }
     }
