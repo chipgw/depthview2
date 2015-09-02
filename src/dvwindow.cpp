@@ -10,19 +10,12 @@
 #include <QOpenGLContext>
 #include <QOpenGLFunctions>
 
+/* Vertex attrib locations. */
 const GLuint vertex = 0;
 const GLuint uv     = 1;
 
-class RenderControl : public QQuickRenderControl {
-private:
-    QWindow* window;
-public:
-    RenderControl(QWindow* win) : QQuickRenderControl(win), window(win) {}
-    QWindow* renderWindow(QPoint*) { return window; }
-};
-
 DVWindow::DVWindow() : QOpenGLWindow(), qmlCommunication(new DVQmlCommunication(this)), fboRight(nullptr), fboLeft(nullptr) {
-    qmlRenderControl = new RenderControl(this);
+    qmlRenderControl = new  QQuickRenderControl(this);
     qmlWindow = new QQuickWindow(qmlRenderControl);
 
     qmlEngine = new QQmlEngine(this);
@@ -49,7 +42,7 @@ DVWindow::~DVWindow() {
     delete fboRight;
     delete fboLeft;
 
-    /* TODO - I'm pretty sure there is more than needs to be deleted here... */
+    /* TODO - I'm pretty sure there is more that needs to be deleted here... */
 }
 
 void DVWindow::initializeGL() {
@@ -249,32 +242,39 @@ void DVWindow::resizeGL(int, int) {
     updateQmlSize();
 }
 
+/* These events need only be passed on to the qmlWindow. */
 void DVWindow::mouseMoveEvent(QMouseEvent* e) {
     QCoreApplication::sendEvent(qmlWindow, e);
 
+    /* We also emit a special signal for this one so that the fake cursor
+     * can be set to the right position without having a MouseArea that absorbs events. */
     emit qmlCommunication->mouseMoved(e->localPos());
 
     setCursor(Qt::BlankCursor);
 }
 
+/* These events need only be passed on to the qmlWindow. */
 void DVWindow::mousePressEvent(QMouseEvent* e) {
     QCoreApplication::sendEvent(qmlWindow, e);
 
     setCursor(Qt::BlankCursor);
 }
 
+/* These events need only be passed on to the qmlWindow. */
 void DVWindow::mouseReleaseEvent(QMouseEvent* e) {
     QCoreApplication::sendEvent(qmlWindow, e);
 
     setCursor(Qt::BlankCursor);
 }
 
+/* These events need only be passed on to the qmlWindow. */
 void DVWindow::mouseDoubleClickEvent(QMouseEvent* e) {
     QCoreApplication::sendEvent(qmlWindow, e);
 
     setCursor(Qt::BlankCursor);
 }
 
+/* These events need only be passed on to the qmlWindow. */
 void DVWindow::wheelEvent(QWheelEvent* e) {
     QCoreApplication::sendEvent(qmlWindow, e);
 

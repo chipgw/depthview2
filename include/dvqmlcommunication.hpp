@@ -6,7 +6,10 @@ class QWindow;
 
 class DVQmlCommunication : public QObject {
     Q_OBJECT
+
+    /* So that DrawMode is usable in QML. */
     Q_ENUMS(DrawMode)
+
     /* Can only be read. */
     Q_PROPERTY(bool isLeft READ isLeft NOTIFY isLeftChanged)
 
