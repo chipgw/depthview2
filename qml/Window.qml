@@ -42,6 +42,8 @@ Rectangle {
         ToolBar {
             id: topMenu
 
+            visible: topMenuMouseOver.containsMouse && mouseTimer.running
+
             RowLayout {
                 anchors {
                     margins: 4
@@ -118,9 +120,21 @@ Rectangle {
                 }
             }
         }
+        MouseArea {
+            id: topMenuMouseOver
+            anchors {
+                fill: topMenu
+                margins: -16
+            }
+            hoverEnabled: true
+            acceptedButtons: Qt.NoButton
+        }
+
         ToolBar {
             id: bottomMenu
             anchors.bottom: parent.bottom
+
+            visible: bottomMenuMouseOver.containsMouse && mouseTimer.running
 
             RowLayout {
                 anchors {
@@ -141,6 +155,15 @@ Rectangle {
                     onClicked: image.nextFile()
                 }
             }
+        }
+        MouseArea {
+            id: bottomMenuMouseOver
+            anchors {
+                fill: bottomMenu
+                margins: -16
+            }
+            hoverEnabled: true
+            acceptedButtons: Qt.NoButton
         }
 
         GroupBox {
@@ -203,6 +226,14 @@ Rectangle {
         id: fakeCursor
         source: "qrc:/images/cursor.png"
 
+        /* Visible when the timer is running or UI is visible. */
+        visible: mouseTimer.running || fileBrowser.visible
+
+        Timer {
+            id: mouseTimer
+            interval: 4000
+        }
+
         Connections {
             target: DV
 
@@ -210,6 +241,8 @@ Rectangle {
                 /* The x coordinate needs adjusting so that the point ends up in the right place. */
                 fakeCursor.x = pos.x - 8
                 fakeCursor.y = pos.y
+
+                mouseTimer.restart()
             }
         }
 
@@ -219,4 +252,3 @@ Rectangle {
         }
     }
 }
-
