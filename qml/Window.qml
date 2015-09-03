@@ -147,12 +147,22 @@ Rectangle {
                     text: "<"
 
                     onClicked: image.prevFile()
+
+                    Shortcut {
+                        key: "Left"
+                        onTriggered: image.prevFile()
+                    }
                 }
                 Button {
                     Layout.alignment: Qt.AlignLeft
                     text: ">"
 
                     onClicked: image.nextFile()
+
+                    Shortcut {
+                        key: "Right"
+                        onTriggered: image.nextFile()
+                    }
                 }
             }
         }

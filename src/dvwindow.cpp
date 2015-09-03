@@ -1,4 +1,5 @@
 #include "dvwindow.hpp"
+#include "dvshortcut.hpp"
 #include "dvqmlcommunication.hpp"
 #include <QQuickRenderControl>
 #include <QQuickWindow>
@@ -23,6 +24,7 @@ DVWindow::DVWindow() : QOpenGLWindow(), qmlCommunication(new DVQmlCommunication(
     if (qmlEngine->incubationController() == nullptr)
         qmlEngine->setIncubationController(qmlWindow->incubationController());
 
+    qmlRegisterType<DVShortcut>("DepthView", 2, 0, "Shortcut");
     /* Needs to be registered for enum access. "DepthView" is used for enum values and "DV" is used for accessing members. */
     qmlRegisterUncreatableType<DVQmlCommunication>("DepthView", 2, 0, "DepthView", "Only usable as context property.");
     qmlEngine->rootContext()->setContextProperty("DV", qmlCommunication);

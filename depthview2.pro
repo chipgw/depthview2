@@ -6,7 +6,8 @@ CONFIG += C++11
 
 SOURCES += src/main.cpp \
     src/dvwindow.cpp \
-    src/dvqmlcommunication.cpp
+    src/dvqmlcommunication.cpp \
+    src/dvshortcut.cpp
 
 RESOURCES += qml.qrc
 
@@ -18,6 +19,7 @@ include(deployment.pri)
 
 HEADERS += \
     include/dvwindow.hpp \
-    include/dvqmlcommunication.hpp
+    include/dvqmlcommunication.hpp \
+    include/dvshortcut.hpp
 
 INCLUDEPATH += include
