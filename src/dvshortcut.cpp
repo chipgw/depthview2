@@ -1,26 +1,46 @@
 #include "dvshortcut.hpp"
 #include <QCoreApplication>
 #include <QKeyEvent>
+#include <QQuickItem>
 
 DVShortcut::DVShortcut(QObject* parent) : QObject(parent) { /* STUB */ }
 
-void DVShortcut::setKey(const QVariant& key) {
-    /* Convert the variant to a KeySequence. */
-    QKeySequence newKey = key.value<QKeySequence>();
+void DVShortcut::setKey(const QVariantList& values) {
+    QList<QKeySequence> newKeys;
+
+    for (const QVariant& key : values) {
+        /* Convert the Variant to a KeySequence. */
+        if (key.type() == QVariant::Int)
+            newKeys += QKeySequence::keyBindings(static_cast<QKeySequence::StandardKey>(key.toInt()));
+        else
+            newKeys += QKeySequence::fromString(key.toString());
+    }
+
+    /* Remove any empty keys. */
+    newKeys.removeAll(QKeySequence());
 
     /* Don't emit the changed signal if it's the same sequence. */
-    if(m_key != newKey) {
+    if(keys != newKeys) {
         /* If the new key is empty remove any event filter that may have been installed. */
-        if(newKey.isEmpty())
+        if(newKeys.isEmpty())
             QCoreApplication::instance()->removeEventFilter(this);
         /* Otherwise if the old key was empty install the event filter. */
-        else if (m_key.isEmpty())
+        else if (keys.isEmpty())
             QCoreApplication::instance()->installEventFilter(this);
 
         /* Set sequence and emit the signal for QML. */
-        m_key = newKey;
+        keys = newKeys;
         emit keyChanged();
     }
+}
+
+QVariantList DVShortcut::key() const {
+    QVariantList keyStrings;
+
+    for (const QKeySequence& key : keys)
+        keyStrings += key.toString();
+
+    return keyStrings;
 }
 
 bool DVShortcut::eventFilter(QObject* obj, QEvent* e) {
@@ -28,8 +48,18 @@ bool DVShortcut::eventFilter(QObject* obj, QEvent* e) {
         QKeyEvent* keyEvent = static_cast<QKeyEvent*>(e);
 
         /* Is this the right key combo? */
-        if(QKeySequence(keyEvent->modifiers() + keyEvent->key()) == m_key) {
-            emit triggered();
+        if(keys.contains(QKeySequence(keyEvent->modifiers() + keyEvent->key()))) {
+            /* If nothing is bound to triggered() try doing something with the parent. */
+            if (receivers(SIGNAL(triggered())))
+                emit triggered();
+            else {
+                QString parentClassName(parent()->metaObject()->className());
+                /* If the parent is a Button, click it. If the parent is a CheckBox, toggle it. */
+                if(!(parentClassName.contains("Button_QMLTYPE_") && QMetaObject::invokeMethod(parent(), "clicked")) &&
+                   !(parentClassName.contains("CheckBox_QMLTYPE_") && parent()->setProperty("checked", !parent()->property("checked").toBool())))
+                    /* TODO - There might be more parent types that could be automagically activated... */
+                    qDebug("Nothing connected to shortcut!");
+            }
 
             /* Nobody else gets to see this event. Nobody. */
             return true;

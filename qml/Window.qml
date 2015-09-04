@@ -61,6 +61,10 @@ Rectangle {
                     text: "Open"
 
                     onClicked: fileBrowser.visible = true
+
+                    Shortcut {
+                        key: [StandardKey.Open]
+                    }
                 }
 
                 Label {
@@ -117,6 +121,10 @@ Rectangle {
 
                         onFullscreenChanged: fullscreenCheckBox.checked = fullscreen
                     }
+
+                    Shortcut {
+                        key: [StandardKey.FullScreen, "Ctrl+F"]
+                    }
                 }
             }
         }
@@ -149,8 +157,7 @@ Rectangle {
                     onClicked: image.prevFile()
 
                     Shortcut {
-                        key: "Left"
-                        onTriggered: image.prevFile()
+                        key: ["Left"]
                     }
                 }
                 Button {
@@ -160,8 +167,7 @@ Rectangle {
                     onClicked: image.nextFile()
 
                     Shortcut {
-                        key: "Right"
-                        onTriggered: image.nextFile()
+                        key: ["Right", "Space"]
                     }
                 }
             }

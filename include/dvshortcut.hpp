@@ -6,7 +6,7 @@
 
 class DVShortcut : public QObject {
     Q_OBJECT
-    Q_PROPERTY(QVariant key READ key WRITE setKey NOTIFY keyChanged)
+    Q_PROPERTY(QVariantList key READ key WRITE setKey NOTIFY keyChanged)
 
 public:
     explicit DVShortcut(QObject* parent = 0);
@@ -14,8 +14,8 @@ public:
     /* This is where we catch the shortcut keypress event. */
     bool eventFilter(QObject* obj, QEvent* e);
 
-    void setKey(const QVariant& key);
-    QVariant key() const { return m_key; }
+    void setKey(const QVariantList& values);
+    QVariantList key() const;
 
 signals:
     void keyChanged();
@@ -24,5 +24,5 @@ signals:
     void triggered();
 
 private:
-    QKeySequence m_key;
+    QList<QKeySequence> keys;
 };
