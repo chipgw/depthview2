@@ -10,33 +10,34 @@ Item {
     property int currentIndex
 
     function prevFile() {
+        /* Use a local so that it doesn't try to load anything until the end. */
         var index = currentIndex
-        if (model.isFolder(--index) || index < 0) {
-            index = model.count - 1
 
-            if (model.isFolder(index))
-                /* If it's STILL a folder there are no images. */
-                return
-        }
+        /* Decrease by one. If it is a folder, go to the end of the list. If it's STILL a folder there are no images. */
+        if ((model.isFolder(--index) || index < 0) && model.isFolder(index = model.count - 1))
+            return
 
         currentIndex = index
     }
     function nextFile() {
+        /* Use a local so that it doesn't try to load anything until the end. */
         var index = currentIndex
+
+        /* Advance by one. If we're at the end of the list go back to the start. */
         if (++index >= folderModel.count)
             index = 0
 
-        while (model.isFolder(index)) {
+        /* Skip over all folders. */
+        while (model.isFolder(index))
             if (++index >= folderModel.count)
                 /* No files in the folder! */
                 return
-        }
+
         currentIndex = index
     }
 
-    onCurrentIndexChanged: {
-        image.source = model.get(currentIndex, "fileURL")
-    }
+    /* Whenever the index, we changes load the new image. */
+    onCurrentIndexChanged: image.source = model.get(currentIndex, "fileURL")
 
     Flickable {
         id: imageFlickable
