@@ -50,48 +50,58 @@ Item {
         interactive: (contentWidth > width || contentHeight > height)
 
         /* The location that the center of the screen is focused on. */
-        property point oldCenter: Qt.point(0.5, 0.5)
+        property point currentCenter: Qt.point(0.5, 0.5)
 
         /* Used to track differences in the visible screen area. */
-        property size oldSize
-        property size oldContentSize
+        property size oldVisibleArea
 
         visibleArea.onHeightRatioChanged: {
-            /* Only run if  height or contentHeight has changed and niether is zero. */
-            if ((oldSize.height != height || oldContentSize.height != contentHeight) && height != 0 && contentHeight != 0) {
-                /* Find out the difference between how many pixels were hidden and how many are hidden now. */
-                var hidden = (oldContentSize.height - oldSize.height) - (contentHeight - height)
+            /* Only run if visible area has actually changed and height is valid. */
+            if (oldVisibleArea.height != visibleArea.heightRatio && height > 0) {
+                /* Find the maximum possible contentY. */
+                var hidden = contentHeight - height
 
-                /* Multiply by the calculated center to get the offset needed to maintain center. */
-                contentY -= hidden * oldCenter.y
+                /* Scale the stored center to match the new visible area. */
+                var center = currentCenter.y * (oldVisibleArea.height / visibleArea.heightRatio)
 
-                /* Make sure we didn't get out of bounds. Needed when zooming out. */
-                returnToBounds()
+                /* Put center from the range [-hidden/2, hidden/2] to [0, hidden] and make sure it doesn't exceed that range. */
+                contentY = Math.max(0, Math.min(hidden * 0.5 + center, hidden))
+
+                /* When contentY is zero the center isn't updated automatically. */
+                if (contentY == 0)
+                    onContentYChanged()
 
                 /* Store the values for next time. */
-                oldCenter.y = visibleArea.yPosition + visibleArea.heightRatio / 2
-                oldContentSize.height = contentHeight
-                oldSize.height = height
+                oldVisibleArea.height = visibleArea.heightRatio
             }
         }
+
+        /* Current center is the offset in pixels from the image center. */
+        onContentYChanged: currentCenter.y = contentY - (contentHeight - height) * 0.5
+
         visibleArea.onWidthRatioChanged: {
-            /* Only run if either width or contentWidth has changed and niether is zero. */
-            if ((oldSize.width != width || oldContentSize.width != contentWidth) && width != 0 && contentWidth != 0) {
-                /* Find out the difference between how many pixels were hidden and how many are hidden now. */
-                var hidden = (oldContentSize.width - oldSize.width) - (contentWidth - width)
+            /* Only run if visible area has actually changed and width is valid. */
+            if (oldVisibleArea.width != visibleArea.widthRatio && width > 0) {
+                /* Find the maximum possible contentX. */
+                var hidden = contentWidth - width
 
-                /* Multiply by the calculated center to get the offset needed to maintain center. */
-                contentX -= hidden * oldCenter.x
+                /* Scale the stored center to match the new visible area. */
+                var center = currentCenter.x * (oldVisibleArea.width / visibleArea.widthRatio)
 
-                /* Make sure we didn't get out of bounds. Needed when zooming out. */
-                returnToBounds()
+                /* Put center from the range [-hidden/2, hidden/2] to [0, hidden] and make sure it doesn't exceed that range. */
+                contentX = Math.max(0, Math.min(hidden * 0.5 + center, hidden))
+
+                /* When contentX is zero the center isn't updated automatically. */
+                if (contentX == 0)
+                    onContentXChanged()
 
                 /* Store the values for next time. */
-                oldCenter.x = visibleArea.xPosition + visibleArea.widthRatio / 2
-                oldContentSize.width = contentWidth
-                oldSize.width = width
+                oldVisibleArea.width = visibleArea.widthRatio
             }
         }
+
+        /* Current center is the offset in pixels from the image center. */
+        onContentXChanged: currentCenter.x = contentX - (contentWidth - width) * 0.5
 
         Item {
             id: imageContainer
