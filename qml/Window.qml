@@ -41,8 +41,27 @@ Rectangle {
 
         ToolBar {
             id: topMenu
+            anchors.top: parent.top
 
-            visible: topMenuMouseOver.containsMouse && mouseTimer.running
+            state: topMenuMouseOver.containsMouse && mouseTimer.running ? "" : "HIDDEN"
+
+            states: [
+                State {
+                    name: "HIDDEN"
+                    PropertyChanges { target: topMenu; anchors.topMargin: -topMenu.height }
+                }
+            ]
+
+            transitions: [
+                Transition {
+                    to: "*"
+                    NumberAnimation {
+                        target: topMenu
+                        properties: "anchors.topMargin"
+                        duration: 200
+                    }
+                }
+            ]
 
             RowLayout {
                 anchors {
@@ -132,7 +151,7 @@ Rectangle {
             id: topMenuMouseOver
             anchors {
                 fill: topMenu
-                margins: -16
+                margins: -64
             }
             hoverEnabled: true
             acceptedButtons: Qt.NoButton
@@ -142,7 +161,25 @@ Rectangle {
             id: bottomMenu
             anchors.bottom: parent.bottom
 
-            visible: bottomMenuMouseOver.containsMouse && mouseTimer.running
+            state: bottomMenuMouseOver.containsMouse && mouseTimer.running ? "" : "HIDDEN"
+
+            states: [
+                State {
+                    name: "HIDDEN"
+                    PropertyChanges { target: bottomMenu; anchors.bottomMargin: -bottomMenu.height }
+                }
+            ]
+
+            transitions: [
+                Transition {
+                    to: "*"
+                    NumberAnimation {
+                        target: bottomMenu
+                        properties: "anchors.bottomMargin"
+                        duration: 200
+                    }
+                }
+            ]
 
             RowLayout {
                 anchors {
@@ -176,7 +213,7 @@ Rectangle {
             id: bottomMenuMouseOver
             anchors {
                 fill: bottomMenu
-                margins: -16
+                margins: -64
             }
             hoverEnabled: true
             acceptedButtons: Qt.NoButton
