@@ -1,3 +1,5 @@
+precision highp float;
+
 uniform sampler2D textureL;
 uniform sampler2D textureR;
 varying highp vec2 texCoord;

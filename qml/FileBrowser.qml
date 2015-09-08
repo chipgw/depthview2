@@ -33,7 +33,7 @@ Rectangle {
                 MouseArea {
                     anchors { fill: parent; margins: 4 }
 
-                    onDoubleClicked: {
+                    onClicked: {
                         fileRect.color = "#888866"
                         if(fileIsDir)
                             root.model.folder = fileURL
