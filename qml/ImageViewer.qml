@@ -5,6 +5,7 @@ Item {
     id: root
 
     property FolderListModel model
+    property real zoom: -1
 
     /* The index of the current file in the FolderListModel. */
     property int currentIndex
@@ -111,6 +112,9 @@ Item {
             StereoImage {
                 anchors.centerIn: parent
                 id: image
+
+                /* If zoom is negative we scale to fit, otherwise just use the value of zoom. */
+                scale: (zoom < 0) ? Math.min(root.width / image.width, root.height / image.height) : zoom
             }
         }
     }
@@ -123,8 +127,12 @@ Item {
         onWheel: {
             /* Don't zoom if covered. */
             if (!fileBrowser.visible) {
-                image.scale += wheel.angleDelta.y * image.scale * 0.001
-                image.scale = Math.max(0.2, Math.min(image.scale, 4.0))
+                /* If zoom-to-fit is active retrieve the current scale before zooming in or out. */
+                if (zoom < 0)
+                    zoom = image.scale
+
+                zoom += wheel.angleDelta.y * image.scale * 0.001
+                zoom = Math.max(0.2, Math.min(image.scale, 4.0))
             }
         }
     }

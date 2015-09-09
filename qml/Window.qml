@@ -184,11 +184,10 @@ Rectangle {
             RowLayout {
                 anchors {
                     margins: 4
-                    fill: parent
+                    centerIn: parent
                 }
 
                 Button {
-                    Layout.alignment: Qt.AlignRight
                     text: "<"
 
                     onClicked: image.prevFile()
@@ -198,7 +197,6 @@ Rectangle {
                     }
                 }
                 Button {
-                    Layout.alignment: Qt.AlignLeft
                     text: ">"
 
                     onClicked: image.nextFile()
@@ -206,6 +204,25 @@ Rectangle {
                     Shortcut {
                         key: ["Right", "Space"]
                     }
+                }
+            }
+            RowLayout {
+                anchors {
+                    margins: 4
+                    right: parent.right
+                    top: parent.top
+                }
+
+                Button {
+                    text: "Fit"
+
+                    onClicked: image.zoom = -1
+                }
+
+                Button {
+                    text: "1:1"
+
+                    onClicked: image.zoom = 1
                 }
             }
         }
