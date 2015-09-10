@@ -23,6 +23,8 @@ Rectangle {
         anchors.fill: parent
 
         model: folderModel
+
+        onZoomChanged: zoomButtons.updateZoom()
     }
 
     Item {
@@ -207,22 +209,36 @@ Rectangle {
                 }
             }
             RowLayout {
+                id: zoomButtons
+
                 anchors {
                     margins: 4
                     right: parent.right
                     top: parent.top
                 }
 
-                Button {
-                    text: "Fit"
-
-                    onClicked: image.zoom = -1
+                function updateZoom() {
+                    zoomFitButton.checked = image.zoom == -1
+                    zoom100Button.checked = image.zoom == 1
                 }
 
                 Button {
+                    id: zoomFitButton
+                    text: "Fit"
+
+                    checkable: true
+                    checked: image.zoom == -1
+
+                    onClicked: { image.zoom = -1; zoomButtons.updateZoom() }
+                }
+                Button {
+                    id: zoom100Button
                     text: "1:1"
 
-                    onClicked: image.zoom = 1
+                    checkable: true
+                    checked: image.zoom == 1
+
+                    onClicked: { image.zoom = 1; zoomButtons.updateZoom() }
                 }
             }
         }
