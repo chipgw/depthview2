@@ -5,6 +5,7 @@ import DepthView 2.0
 import Qt.labs.folderlistmodel 2.1
 
 Rectangle {
+    id: root
     color: "black"
 
     FolderListModel {
@@ -42,7 +43,7 @@ Rectangle {
             id: topMenu
             anchors.top: parent.top
 
-            state: topMenuMouseOver.containsMouse && mouseTimer.running ? "" : "HIDDEN"
+            state: fakeCursor.y < 128 &&  mouseTimer.running ? "" : "HIDDEN"
 
             states: [
                 State {
@@ -146,21 +147,12 @@ Rectangle {
                 }
             }
         }
-        MouseArea {
-            id: topMenuMouseOver
-            anchors {
-                fill: topMenu
-                margins: -64
-            }
-            hoverEnabled: true
-            acceptedButtons: Qt.NoButton
-        }
 
         ToolBar {
             id: bottomMenu
             anchors.bottom: parent.bottom
 
-            state: bottomMenuMouseOver.containsMouse && mouseTimer.running ? "" : "HIDDEN"
+            state: (root.height - fakeCursor.y) < 128 && mouseTimer.running ? "" : "HIDDEN"
 
             states: [
                 State {
@@ -238,15 +230,6 @@ Rectangle {
                     onClicked: { image.zoom = 1; zoomButtons.updateZoom() }
                 }
             }
-        }
-        MouseArea {
-            id: bottomMenuMouseOver
-            anchors {
-                fill: bottomMenu
-                margins: -64
-            }
-            hoverEnabled: true
-            acceptedButtons: Qt.NoButton
         }
 
         GroupBox {
