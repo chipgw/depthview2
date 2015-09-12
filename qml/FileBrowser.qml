@@ -1,5 +1,6 @@
 import QtQuick 2.5
 import QtQuick.Controls 1.4
+import QtQuick.Layouts 1.2
 import Qt.labs.folderlistmodel 2.1
 
 Rectangle {
@@ -12,6 +13,10 @@ Rectangle {
     signal fileOpened(url fileURL, int index)
 
     property FolderListModel model
+
+    property url startingFolder
+
+    onVisibleChanged: if (visible) startingFolder = model.folder
 
     Component {
         id: fileComponent
@@ -88,13 +93,62 @@ Rectangle {
     }
 
     GridView {
-        anchors.fill: parent
+        anchors {
+            top: controls.bottom
+            left:  parent.left
+            right:  parent.right
+            bottom:  parent.bottom
+        }
+
         model: root.model
         delegate: fileComponent
 
         /* So that it is the same as the delegate. */
         cellWidth: root.cellWidth
         cellHeight: root.cellHeight
+    }
+
+    ToolBar {
+        id: controls
+        anchors {
+            margins: 4
+            top: parent.top
+            left: parent.left
+            right: parent.right
+        }
+
+        RowLayout {
+            anchors.fill: parent
+
+            Button {
+                text: "Up"
+
+                onClicked: model.folder = model.parentFolder
+            }
+
+            TextField {
+                id: pathText
+
+                Layout.fillWidth: true
+
+                /* TODO - Make this editable. */
+                readOnly: true
+
+                /* TODO - This is blank at first, because folder is blank.
+                 * Hopefully I can find a way to get the actual absolute path... */
+                text: model.folder
+            }
+
+            Button {
+                text: "Cancel"
+
+                onClicked: {
+                    /* Reset to the folder that was active when the browser was first shown. */
+                    model.folder = startingFolder
+                    root.visible = false
+                }
+            }
+        }
     }
 }
 
