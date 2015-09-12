@@ -302,6 +302,7 @@ Rectangle {
         onFileOpened: {
             visible = false
             image.currentIndex = index
+            image.updateImage()
         }
     }
 
