@@ -2,6 +2,7 @@ import QtQuick 2.5
 import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.2
 import Qt.labs.folderlistmodel 2.1
+import DepthView 2.0
 
 Rectangle {
     id: root
@@ -111,10 +112,15 @@ Rectangle {
     ToolBar {
         id: controls
         anchors {
-            margins: 4
+            margins: 12
             top: parent.top
             left: parent.left
             right: parent.right
+        }
+
+        /* Put all interface items a bit above the screen. */
+        transform: Translate {
+            x: DV.isLeft ? 8 : -8
         }
 
         RowLayout {
@@ -146,6 +152,10 @@ Rectangle {
                     /* Reset to the folder that was active when the browser was first shown. */
                     model.folder = startingFolder
                     root.visible = false
+                }
+
+                Shortcut {
+                    key: ["Esc"]
                 }
             }
         }
