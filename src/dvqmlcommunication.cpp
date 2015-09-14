@@ -88,3 +88,23 @@ void DVQmlCommunication::setGreyFac(qreal fac) {
         emit greyFacChanged(fac);
     }
 }
+
+QString DVQmlCommunication::pluginMode() {
+    return m_pluginMode;
+}
+
+void DVQmlCommunication::setPluginMode(QString mode) {
+    /* Only set if valid. */
+    if (mode != m_pluginMode && pluginModes.contains(mode)) {
+        m_pluginMode = mode;
+        emit pluginModeChanged(mode);
+    }
+}
+
+void DVQmlCommunication::addPluginModes(const QStringList &modes) {
+    pluginModes.append(modes);
+}
+
+QStringList DVQmlCommunication::getPluginModes() {
+    return pluginModes;
+}

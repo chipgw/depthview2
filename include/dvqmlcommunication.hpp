@@ -24,6 +24,8 @@ class DVQmlCommunication : public QObject {
 
     Q_PROPERTY(bool fullscreen READ fullscreen WRITE setFullscreen NOTIFY fullscreenChanged)
 
+    Q_PROPERTY(QString pluginMode READ pluginMode WRITE setPluginMode NOTIFY pluginModeChanged)
+
 public:
     explicit DVQmlCommunication(QWindow* parent);
 
@@ -32,7 +34,8 @@ public:
         SidebySide,
         TopBottom,
         MonoLeft,
-        MonoRight
+        MonoRight,
+        Plugin
     };
 
     /* Where QML reads the value of the current eye. */
@@ -61,6 +64,12 @@ public:
     bool fullscreen() const;
     void setFullscreen(bool fullscreen);
 
+    QString pluginMode();
+    void setPluginMode(QString mode);
+
+    void addPluginModes(const QStringList& modes);
+    Q_INVOKABLE QStringList getPluginModes();
+
 signals:
     void isLeftChanged(bool isLeft);
     void drawModeChanged(DrawMode mode);
@@ -72,6 +81,8 @@ signals:
     void greyFacChanged(qreal fac);
 
     void fullscreenChanged(bool fullscreen);
+
+    void pluginModeChanged(QString mode);
 
     /* Used for setting the cursor position. */
     void mouseMoved(const QPointF& pos);
@@ -90,4 +101,7 @@ private:
     bool m_anamorphicDualView;
 
     QWindow* owner;
+
+    QString m_pluginMode;
+    QStringList pluginModes;
 };

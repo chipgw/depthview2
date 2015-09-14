@@ -265,6 +265,22 @@ Rectangle {
                             }
                     }
                 }
+                Repeater {
+                    id: pluginModeList
+                    model: DV.getPluginModes()
+
+                    RadioButton {
+                        text: modelData
+                        exclusiveGroup: drawModeRadioGroup
+
+                        onCheckedChanged:
+                            if (checked) {
+                                DV.drawMode = DepthView.Plugin
+                                DV.pluginMode = modelData
+                                modeDialog.visible = false
+                            }
+                    }
+                }
                 Button {
                     text: "Close"
 

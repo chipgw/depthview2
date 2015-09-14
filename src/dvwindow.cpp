@@ -1,6 +1,7 @@
 #include "dvwindow.hpp"
 #include "dvshortcut.hpp"
 #include "dvqmlcommunication.hpp"
+#include "dvrenderplugin.hpp"
 #include <QQuickRenderControl>
 #include <QQuickWindow>
 #include <QQuickItem>
@@ -10,6 +11,8 @@
 #include <QOpenGLFramebufferObject>
 #include <QOpenGLContext>
 #include <QOpenGLFunctions>
+#include <QPluginLoader>
+#include <QDir>
 
 /* Vertex attrib locations. */
 const GLuint vertex = 0;
@@ -41,6 +44,8 @@ DVWindow::DVWindow() : QOpenGLWindow(), qmlCommunication(new DVQmlCommunication(
 }
 
 DVWindow::~DVWindow() {
+    unloadPlugins();
+
     delete fboRight;
     delete fboLeft;
 
@@ -49,6 +54,8 @@ DVWindow::~DVWindow() {
 
 void DVWindow::initializeGL() {
     loadShaders();
+
+    loadPlugins();
 
     QQmlComponent rootComponent(qmlEngine);
 
@@ -132,6 +139,21 @@ void DVWindow::paintGL() {
         shaderMono.bind();
         shaderMono.setUniformValue("left", false);
         break;
+    case DVQmlCommunication::Plugin:
+        for (DVRenderPlugin* plugin : renderPlugins) {
+            /* Find the first plugin that contains the mode we want. */
+            if (plugin->drawModeNames().contains(qmlCommunication->pluginMode())) {
+                /* Let it do it's thing. */
+                plugin->render(qmlCommunication->pluginMode(), f);
+
+                /* Don't check any other plugins. */
+                break;
+            }
+        }
+
+        /* Return from here to avoid the default fullscreen quad.
+         * We still want to queue up the next frame as we do below. */
+        return update();
     default:
         /* Whoops invalid renderer... */
         /* TODO - What happens here? */
@@ -281,4 +303,50 @@ void DVWindow::wheelEvent(QWheelEvent* e) {
     QCoreApplication::sendEvent(qmlWindow, e);
 
     setCursor(Qt::BlankCursor);
+}
+
+void DVWindow::loadPlugins() {
+    for (QObject *obj : QPluginLoader::staticInstances()) {
+        DVRenderPlugin* plugin;
+        if ((plugin = qobject_cast<DVRenderPlugin*>(obj)) != nullptr)
+            renderPlugins.append(plugin);
+    }
+
+    QDir pluginsDir(qApp->applicationDirPath());
+
+#if defined(Q_OS_WIN)
+    if (pluginsDir.dirName().toLower() == "debug" || pluginsDir.dirName().toLower() == "release")
+        pluginsDir.cdUp();
+#elif defined(Q_OS_MAC)
+    if (pluginsDir.dirName() == "MacOS") {
+        pluginsDir.cdUp();
+        pluginsDir.cdUp();
+        pluginsDir.cdUp();
+    }
+#endif
+    pluginsDir.cd("plugins");
+
+    for (const QString& filename : pluginsDir.entryList(QDir::Files)) {
+        QPluginLoader loader(pluginsDir.absoluteFilePath(filename));
+        QObject *obj = loader.instance();
+        DVRenderPlugin* plugin;
+
+        if (obj != nullptr && (plugin = qobject_cast<DVRenderPlugin*>(obj)) != nullptr) {
+            renderPlugins.append(plugin);
+            qDebug("Found plugin: \"%s\"", qPrintable(filename));
+        } else
+            qDebug("Not a plugin: \"%s\"", qPrintable(filename));
+    }
+
+    for (DVRenderPlugin* plugin : renderPlugins) {
+        if (plugin->init())
+            qmlCommunication->addPluginModes(plugin->drawModeNames());
+    }
+}
+
+void DVWindow::unloadPlugins() {
+    for (DVRenderPlugin* plugin : renderPlugins)
+        plugin->deinit();
+
+    renderPlugins.clear();
 }
