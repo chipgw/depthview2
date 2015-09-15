@@ -10,7 +10,9 @@ Rectangle {
 
     FolderListModel {
         id: folderModel
-        nameFilters: ["*.pns", "*.jps"]
+        nameFilters: ["*.pns", "*.jps",
+            /* TODO - What other video types can we do? */
+            "*.avi", "*.mp4", "*.m4v", "*.mkv"]
 
         /* This might be a good idea to make into a setting... */
         showDirsFirst: true
@@ -150,7 +152,11 @@ Rectangle {
 
         ToolBar {
             id: bottomMenu
-            anchors.bottom: parent.bottom
+            anchors {
+                bottom: parent.bottom
+                left: parent.left
+                right: parent.right
+            }
 
             state: (root.height - fakeCursor.y) < 128 && mouseTimer.running ? "" : "HIDDEN"
 
@@ -172,62 +178,103 @@ Rectangle {
                 }
             ]
 
-            RowLayout {
-                anchors {
-                    margins: 4
-                    centerIn: parent
-                }
+            Item {
+                width: parent.width
+                height: childrenRect.height
 
-                Button {
-                    text: "<"
+                Slider {
+                    id: playbackSlider
+                    visible: image.isVideo
+                    enabled: image.isVideo
 
-                    onClicked: image.prevFile()
+                    anchors {
+                        left: parent.left
+                        right: parent.right
+                    }
+                    maximumValue: image.videoDuration
 
-                    Shortcut {
-                        key: ["Left"]
+                    onValueChanged: image.seek(value)
+
+                    Binding {
+                        target: playbackSlider
+                        property: "value"
+                        value: image.videoPosition
                     }
                 }
-                Button {
-                    text: ">"
 
-                    onClicked: image.nextFile()
+                RowLayout {
+                    height: childrenRect.height
+                    id: navigationButtons
+                    anchors {
+                        margins: 4
+                        horizontalCenter: parent.horizontalCenter
+                        top: playbackSlider.bottom
+                    }
 
-                    Shortcut {
-                        key: ["Right", "Space"]
+                    Button {
+                        text: "<"
+
+                        onClicked: image.prevFile()
+
+                        Shortcut {
+                            key: ["Left"]
+                        }
+                    }
+
+                    Button {
+                        enabled: image.isVideo
+
+                        text: "Play/Pause"
+
+                        onClicked: image.playPause()
+
+                        Shortcut {
+                            key: ["Space"]
+                        }
+                    }
+
+                    Button {
+                        text: ">"
+
+                        onClicked: image.nextFile()
+
+                        Shortcut {
+                            key: ["Right"]
+                        }
                     }
                 }
-            }
-            RowLayout {
-                id: zoomButtons
+                RowLayout {
+                    id: zoomButtons
 
-                anchors {
-                    margins: 4
-                    right: parent.right
-                    top: parent.top
-                }
+                    anchors {
+                        margins: 4
+                        right: parent.right
+                        top: playbackSlider.bottom
+                    }
 
-                function updateZoom() {
-                    zoomFitButton.checked = image.zoom == -1
-                    zoom100Button.checked = image.zoom == 1
-                }
+                    function updateZoom() {
+                        zoomFitButton.checked = image.zoom == -1
+                        zoom100Button.checked = image.zoom == 1
+                    }
 
-                Button {
-                    id: zoomFitButton
-                    text: "Fit"
+                    Button {
+                        id: zoomFitButton
+                        text: "Fit"
 
-                    checkable: true
-                    checked: image.zoom == -1
+                        checkable: true
+                        checked: image.zoom == -1
 
-                    onClicked: { image.zoom = -1; zoomButtons.updateZoom() }
-                }
-                Button {
-                    id: zoom100Button
-                    text: "1:1"
+                        onClicked: { image.zoom = -1; zoomButtons.updateZoom() }
+                    }
+                    Button {
+                        id: zoom100Button
+                        text: "1:1"
 
-                    checkable: true
-                    checked: image.zoom == 1
+                        checkable: true
+                        checked: image.zoom == 1
 
-                    onClicked: { image.zoom = 1; zoomButtons.updateZoom() }
+                        onClicked: { image.zoom = 1; zoomButtons.updateZoom() }
+                    }
                 }
             }
         }

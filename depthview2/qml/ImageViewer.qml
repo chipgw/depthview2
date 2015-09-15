@@ -1,5 +1,7 @@
 import QtQuick 2.5
 import Qt.labs.folderlistmodel 2.1
+import QtMultimedia 5.4
+import DepthView 2.0
 
 Item {
     id: root
@@ -33,7 +35,27 @@ Item {
     }
 
     function updateImage() {
-        image.source = model.get(currentIndex, "fileURL")
+        source = model.get(currentIndex, "fileURL")
+    }
+
+    function playPause() {
+        if (isVideo) {
+            if (media.playbackState == MediaPlayer.PlayingState)
+                media.pause()
+            else
+                media.play()
+        }
+    }
+
+    property url source: "qrc:/images/test.pns"
+
+    property alias isVideo: media.hasVideo
+    property alias videoPosition: media.position
+    property alias videoDuration: media.duration
+
+    function seek(offset) {
+        if (isVideo)
+            media.seek(offset)
     }
 
     Flickable {
@@ -109,9 +131,43 @@ Item {
                 anchors.centerIn: parent
                 id: image
 
+                source: isVideo ? "" : root.source
+
                 /* If zoom is negative we scale to fit, otherwise just use the value of zoom. */
                 scale: (zoom < 0) ? Math.min(root.width / image.width, root.height / image.height) : zoom
             }
+        }
+    }
+
+    Item {
+        visible: isVideo
+
+        anchors.centerIn: parent
+        clip: true
+
+        width: vid.width / 2
+        height: vid.height
+
+        scale: (zoom < 0) ? Math.min(root.width / width, root.height / height) : zoom
+
+        MediaPlayer {
+            id: media
+            source: root.source
+        }
+
+        VideoOutput {
+            id: vid
+            source: media
+
+            /* TODO - The video isn't always squashed, sometimes this might not be needed. */
+            width: sourceRect.width * 2
+
+            /* Always stretch. We set the VideoOutput to the size we want. */
+            fillMode: VideoOutput.Stretch
+
+            /* Same thing as the StereoImage does. Show half for each eye. */
+            /* TODO - There are other modes which videos can be saved as. I should support them... */
+            x: DV.isLeft ? 0 : -width / 2
         }
     }
 

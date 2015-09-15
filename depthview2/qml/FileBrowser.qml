@@ -64,6 +64,7 @@ Rectangle {
                         }
 
                         /* 3D thumbnails! */
+                        /* TODO - Video thumbnails. */
                         StereoImage {
                             anchors.centerIn: parent
                             /* If it is a directory use the thumbnail in qrc. Otherwise the file should be an image itself. */
