@@ -49,7 +49,7 @@ Item {
 
     property url source: "qrc:/images/test.pns"
 
-    property alias isVideo: media.hasVideo
+    readonly property bool isVideo: media.hasVideo && media.hasAudio
     property alias videoPosition: media.position
     property alias videoDuration: media.duration
 
