@@ -2,7 +2,7 @@
 #include <QOpenGLFunctions>
 #include <QOpenGLShaderProgram>
 
-bool TestPlugin::init() {
+bool TestPlugin::init(QOpenGLFunctions* f) {
     Q_INIT_RESOURCE(testplugin);
 
     shader = new QOpenGLShaderProgram;
@@ -33,7 +33,7 @@ bool TestPlugin::deinit() {
     return true;
 }
 
-bool TestPlugin::render(const QString &drawModeName, QOpenGLFunctions *f) {
+bool TestPlugin::render(const QString& drawModeName, QOpenGLFunctions* f) {
     /* This is just the default fullscreen quad from the built-in modes. */
     shader->bind();
 

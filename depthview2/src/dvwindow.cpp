@@ -306,47 +306,55 @@ void DVWindow::wheelEvent(QWheelEvent* e) {
 }
 
 void DVWindow::loadPlugins() {
+    /* Load any statically linked plugins. (Currently there aren't any) */
     for (QObject *obj : QPluginLoader::staticInstances()) {
         DVRenderPlugin* plugin;
         if ((plugin = qobject_cast<DVRenderPlugin*>(obj)) != nullptr)
             renderPlugins.append(plugin);
     }
 
+    /* Start with the path the application is in. */
     QDir pluginsDir(qApp->applicationDirPath());
 
 #if defined(Q_OS_WIN)
+    /* If we're in a "debug" or "release" folder go up a level, because that's where plugins are copied by the build system. */
     if (pluginsDir.dirName().toLower() == "debug" || pluginsDir.dirName().toLower() == "release")
         pluginsDir.cdUp();
 #elif defined(Q_OS_MAC)
+    /* I haven't actually tried this on Mac. This is just what the Qt plugin example said to do... */
     if (pluginsDir.dirName() == "MacOS") {
         pluginsDir.cdUp();
         pluginsDir.cdUp();
         pluginsDir.cdUp();
     }
 #endif
+
+    /* Go into thhe "plugins" folder from there. */
     pluginsDir.cd("plugins");
 
+    /* Try to load all files in the directory. */
     for (const QString& filename : pluginsDir.entryList(QDir::Files)) {
         QPluginLoader loader(pluginsDir.absoluteFilePath(filename));
         QObject *obj = loader.instance();
         DVRenderPlugin* plugin;
 
+        /* If it can't be cast to a DVRenderPlugin* it isn't a valid plugin. */
         if (obj != nullptr && (plugin = qobject_cast<DVRenderPlugin*>(obj)) != nullptr) {
             renderPlugins.append(plugin);
             qDebug("Found plugin: \"%s\"", qPrintable(filename));
-        } else
-            qDebug("Not a plugin: \"%s\"", qPrintable(filename));
+        }
     }
 
-    for (DVRenderPlugin* plugin : renderPlugins) {
-        if (plugin->init())
-            qmlCommunication->addPluginModes(plugin->drawModeNames());
-    }
+    /* Init any/all loaded plugins. */
+    for (DVRenderPlugin* plugin : renderPlugins)
+        if (plugin->init(context()->functions())) qmlCommunication->addPluginModes(plugin->drawModeNames());
 }
 
 void DVWindow::unloadPlugins() {
+    /* Deinit any/all loaded plugins. */
     for (DVRenderPlugin* plugin : renderPlugins)
         plugin->deinit();
 
+    /* Clear the list. Not that it should be used anymore... */
     renderPlugins.clear();
 }

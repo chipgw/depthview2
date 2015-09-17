@@ -11,10 +11,10 @@ class TestPlugin : public QObject, public DVRenderPlugin {
     Q_INTERFACES(DVRenderPlugin)
 
 public:
-    bool init();
+    bool init(QOpenGLFunctions* f);
     bool deinit();
 
-    bool render(const QString &drawModeName, QOpenGLFunctions *f);
+    bool render(const QString& drawModeName, QOpenGLFunctions* f);
 
     QStringList drawModeNames();
 

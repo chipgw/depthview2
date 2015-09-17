@@ -14,7 +14,6 @@ SOURCES += testplugin.cpp
 HEADERS += testplugin.hpp
 
 # This is relative to build directory.
-# It might not be valid on compilers that have subfolders for release and debug builds.
 DESTDIR       = ../../depthview2/plugins
 
 # Relative to project directory, needed for "dvrenderplugin.hpp".
