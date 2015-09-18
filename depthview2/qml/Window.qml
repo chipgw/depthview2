@@ -182,23 +182,52 @@ Rectangle {
                 width: parent.width
                 height: childrenRect.height
 
-                Slider {
-                    id: playbackSlider
-                    visible: image.isVideo
-                    enabled: image.isVideo
+                RowLayout {
+                    id: playbackControls
+
+                    function timeString(ms) {
+                        /* Turn a time value in milliseconds into a string in the format:  "h:mm:ss". */
+                        return Math.floor(ms / 3600000) + ":" + ("0" + Math.floor(ms / 60000) % 60).slice(-2) + ":" + ("0" + Math.floor(ms / 1000) % 60).slice(-2)
+                    }
 
                     anchors {
                         left: parent.left
                         right: parent.right
                     }
-                    maximumValue: image.videoDuration
 
-                    onValueChanged: image.seek(value)
+                    /* Only show if currently on a video. */
+                    visible: image.isVideo
+                    enabled: image.isVideo
 
-                    Binding {
-                        target: playbackSlider
-                        property: "value"
-                        value: image.videoPosition
+                    Label {
+                        /* Show the time elapsed. */
+                        text: playbackControls.timeString(image.videoPosition)
+
+                        /* When the video is loading the duration is -1, which just looks odd. */
+                        visible:  image.videoDuration > 0
+                    }
+                    Slider {
+                        id: playbackSlider
+
+                        Layout.fillWidth: true
+
+                        maximumValue: image.videoDuration
+
+                        onValueChanged: image.seek(value)
+
+                        Binding {
+                            /* Always stay bound to the current video position. */
+                            target: playbackSlider
+                            property: "value"
+                            value: image.videoPosition
+                        }
+                    }
+                    Label {
+                        /* The time remaining. */
+                        text: "-" + playbackControls.timeString(image.videoDuration - image.videoPosition)
+
+                        /* When the video is loading the duration is -1, which just looks odd. */
+                        visible:  image.videoDuration > 0
                     }
                 }
 
@@ -208,7 +237,7 @@ Rectangle {
                     anchors {
                         margins: 4
                         horizontalCenter: parent.horizontalCenter
-                        top: playbackSlider.bottom
+                        top: playbackControls.bottom
                     }
 
                     Button {
@@ -250,7 +279,7 @@ Rectangle {
                     anchors {
                         margins: 4
                         right: parent.right
-                        top: playbackSlider.bottom
+                        top: playbackControls.bottom
                     }
 
                     function updateZoom() {
