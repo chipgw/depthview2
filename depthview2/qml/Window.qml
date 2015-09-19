@@ -213,13 +213,19 @@ Rectangle {
 
                         maximumValue: image.videoDuration
 
-                        onValueChanged: image.seek(value)
+                        /* Use this property to keep track of when value changes via binding. */
+                        property int videoPos
 
-                        Binding {
-                            /* Always stay bound to the current video position. */
-                            target: playbackSlider
-                            property: "value"
-                            value: image.videoPosition
+                        /* If the value isn't the same as the tracked position then it changed by user input. */
+                        onValueChanged: if (value != videoPos) image.seek(value)
+
+                        Connections {
+                            target: image
+
+                            onVideoPositionChanged: {
+                                playbackSlider.videoPos = image.videoPosition
+                                playbackSlider.value = playbackSlider.videoPos
+                            }
                         }
                     }
                     Label {
