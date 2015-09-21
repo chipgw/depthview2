@@ -174,6 +174,8 @@ Item {
     MouseArea {
         anchors.fill: parent
 
+        enabled: !isVideo
+
         acceptedButtons: Qt.MiddleButton
 
         onWheel: {
