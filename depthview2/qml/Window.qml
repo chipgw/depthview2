@@ -315,6 +315,20 @@ Rectangle {
             }
         }
 
+        /* Show a simple rectangle behind mode dialog to ensure the text is always readable. */
+        Rectangle {
+            /* Get the background color from the system. */
+            SystemPalette { id: palette; }
+            color: palette.base
+
+            anchors {
+                fill: modeDialog
+                margins: -4
+            }
+
+            visible: modeDialog.visible
+        }
+
         GroupBox {
             id: modeDialog
             title: "Draw Mode"
