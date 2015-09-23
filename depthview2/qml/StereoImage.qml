@@ -13,7 +13,7 @@ Item {
     property size sourceSize
 
     Image {
-        x: DV.isLeft ? -parent.width : 0
+        x: DepthView.isLeft ? -parent.width : 0
         id: img
         source: parent.source
         asynchronous: parent.asynchronous

@@ -4,17 +4,36 @@
 
 class QWindow;
 
-class DVQmlCommunication : public QObject {
-    Q_OBJECT
+class DVDrawMode {
+    Q_GADGET
 
     /* So that DrawMode is usable in QML. */
-    Q_ENUMS(DrawMode)
+    Q_ENUMS(Type)
+
+    /* No instances of this class. */
+    DVDrawMode() = delete;
+    ~DVDrawMode() = delete;
+
+public:
+    enum Type {
+        Anglaph,
+        SidebySide,
+        TopBottom,
+        MonoLeft,
+        MonoRight,
+        Plugin
+    };
+};
+
+
+class DVQmlCommunication : public QObject {
+    Q_OBJECT
 
     /* Can only be read. */
     Q_PROPERTY(bool isLeft READ isLeft NOTIFY isLeftChanged)
 
     /* Can be read, written, and notifies when changed. */
-    Q_PROPERTY(DrawMode drawMode MEMBER m_drawMode READ drawMode WRITE setDrawMode NOTIFY drawModeChanged)
+    Q_PROPERTY(DVDrawMode::Type drawMode MEMBER m_drawMode READ drawMode WRITE setDrawMode NOTIFY drawModeChanged)
     Q_PROPERTY(bool anamorphicDualView MEMBER m_anamorphicDualView READ anamorphicDualView WRITE setAnamorphicDualView NOTIFY anamorphicDualViewChanged)
 
     Q_PROPERTY(bool mirrorLeft READ mirrorLeft WRITE setMirrorLeft NOTIFY mirrorLeftChanged)
@@ -29,15 +48,6 @@ class DVQmlCommunication : public QObject {
 public:
     explicit DVQmlCommunication(QWindow* parent);
 
-    enum DrawMode {
-        Anglaph,
-        SidebySide,
-        TopBottom,
-        MonoLeft,
-        MonoRight,
-        Plugin
-    };
-
     /* Where QML reads the value of the current eye. */
     bool isLeft() const;
 
@@ -46,8 +56,8 @@ public:
     void rightImage() { isLeftChanged(m_isLeft = false); }
 
     /* The current draw mode. */
-    DrawMode drawMode() const;
-    void setDrawMode(DrawMode mode);
+    DVDrawMode::Type drawMode() const;
+    void setDrawMode(DVDrawMode::Type mode);
 
     bool anamorphicDualView() const;
     void setAnamorphicDualView(bool anamorphic);
@@ -72,7 +82,7 @@ public:
 
 signals:
     void isLeftChanged(bool isLeft);
-    void drawModeChanged(DrawMode mode);
+    void drawModeChanged(DVDrawMode::Type mode);
     void anamorphicDualViewChanged(bool anamorphicDualView);
 
     void mirrorLeftChanged(bool mirror);
@@ -97,7 +107,7 @@ private:
     qreal m_greyFac;
 
     bool m_isLeft;
-    DrawMode m_drawMode;
+    DVDrawMode::Type m_drawMode;
     bool m_anamorphicDualView;
 
     QWindow* owner;

@@ -38,7 +38,7 @@ Rectangle {
 
         /* Put all interface items a bit above the screen. */
         transform: Translate {
-            x: DV.isLeft ? 8 : -8
+            x: DepthView.isLeft ? 8 : -8
         }
 
         ToolBar {
@@ -91,54 +91,54 @@ Rectangle {
                 Label {
                     text: "Grey Factor:"
 
-                    visible: DV.drawMode === DepthView.Anglaph
+                    visible: DepthView.drawMode === DrawMode.Anglaph
                 }
 
                 Slider {
-                    value: DV.greyFac
-                    visible: DV.drawMode === DepthView.Anglaph
+                    value: DepthView.greyFac
+                    visible: DepthView.drawMode === DrawMode.Anglaph
 
-                    onValueChanged: DV.greyFac = value
+                    onValueChanged: DepthView.greyFac = value
                 }
 
                 CheckBox {
-                    visible: DV.drawMode === DepthView.SidebySide || DV.drawMode === DepthView.TopBottom
+                    visible: DepthView.drawMode === DrawMode.SidebySide || DepthView.drawMode === DrawMode.TopBottom
                     text: "Anamorphic"
 
-                    checked: DV.anamorphicDualView
+                    checked: DepthView.anamorphicDualView
 
-                    onCheckedChanged: DV.anamorphicDualView = checked
+                    onCheckedChanged: DepthView.anamorphicDualView = checked
                 }
 
                 CheckBox {
-                    visible: DV.drawMode === DepthView.SidebySide || DV.drawMode === DepthView.TopBottom
+                    visible: DepthView.drawMode === DrawMode.SidebySide || DepthView.drawMode === DrawMode.TopBottom
                     text: "Mirror Left"
 
-                    checked: DV.mirrorLeft
+                    checked: DepthView.mirrorLeft
 
-                    onCheckedChanged: DV.mirrorLeft = checked
+                    onCheckedChanged: DepthView.mirrorLeft = checked
                 }
 
                 CheckBox {
-                    visible: DV.drawMode === DepthView.SidebySide || DV.drawMode === DepthView.TopBottom
+                    visible: DepthView.drawMode === DrawMode.SidebySide || DepthView.drawMode === DrawMode.TopBottom
                     text: "Mirror Right"
 
-                    checked: DV.mirrorRight
+                    checked: DepthView.mirrorRight
 
-                    onCheckedChanged: DV.mirrorRight = checked
+                    onCheckedChanged: DepthView.mirrorRight = checked
                 }
 
                 CheckBox {
                     id: fullscreenCheckBox
                     text: "Fullscreen"
 
-                    checked: DV.fullscreen
+                    checked: DepthView.fullscreen
 
-                    onCheckedChanged: DV.fullscreen = checked
+                    onCheckedChanged: DepthView.fullscreen = checked
 
                     /* Maintain the correct state if it changes by some other means. */
                     Connections {
-                        target: DV
+                        target: DepthView
 
                         onFullscreenChanged: fullscreenCheckBox.checked = fullscreen
                     }
@@ -344,27 +344,27 @@ Rectangle {
                 Repeater {
                     id: modeList
                     model: ListModel {
-                        ListElement { text: "Anglaph"; mode: DepthView.Anglaph }
-                        ListElement { text: "Side-by-Side"; mode: DepthView.SidebySide }
-                        ListElement { text: "Top/Bottom"; mode: DepthView.TopBottom }
-                        ListElement { text: "Mono Left"; mode: DepthView.MonoLeft }
-                        ListElement { text: "Mono Right"; mode: DepthView.MonoRight }
+                        ListElement { text: "Anglaph"; mode: DrawMode.Anglaph }
+                        ListElement { text: "Side-by-Side"; mode: DrawMode.SidebySide }
+                        ListElement { text: "Top/Bottom"; mode: DrawMode.TopBottom }
+                        ListElement { text: "Mono Left"; mode: DrawMode.MonoLeft }
+                        ListElement { text: "Mono Right"; mode: DrawMode.MonoRight }
                     }
                     RadioButton {
                         text: model.text
                         exclusiveGroup: drawModeRadioGroup
-                        checked: DV.drawMode === model.mode
+                        checked: DepthView.drawMode === model.mode
 
                         onCheckedChanged:
                             if (checked) {
-                                DV.drawMode = model.mode
+                                DepthView.drawMode = model.mode
                                 modeDialog.visible = false
                             }
                     }
                 }
                 Repeater {
                     id: pluginModeList
-                    model: DV.getPluginModes()
+                    model: DepthView.getPluginModes()
 
                     RadioButton {
                         text: modelData
@@ -372,8 +372,8 @@ Rectangle {
 
                         onCheckedChanged:
                             if (checked) {
-                                DV.drawMode = DepthView.Plugin
-                                DV.pluginMode = modelData
+                                DepthView.drawMode = DrawMode.Plugin
+                                DepthView.pluginMode = modelData
                                 modeDialog.visible = false
                             }
                     }
@@ -415,7 +415,7 @@ Rectangle {
         }
 
         Connections {
-            target: DV
+            target: DepthView
 
             onMouseMoved: {
                 /* The x coordinate needs adjusting so that the point ends up in the right place. */
@@ -428,7 +428,7 @@ Rectangle {
 
         /* This puts the cursor a little bit above the screen. */
         transform: Translate {
-            x: DV.isLeft ? 10 : -10
+            x: DepthView.isLeft ? 10 : -10
         }
     }
 }

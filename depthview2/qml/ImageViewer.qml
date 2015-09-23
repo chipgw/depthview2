@@ -167,7 +167,7 @@ Item {
 
             /* Same thing as the StereoImage does. Show half for each eye. */
             /* TODO - There are other modes which videos can be saved as. I should support them... */
-            x: DV.isLeft ? 0 : -width / 2
+            x: DepthView.isLeft ? 0 : -width / 2
         }
     }
 

@@ -121,7 +121,7 @@ Rectangle {
 
         /* Put all interface items a bit above the screen. */
         transform: Translate {
-            x: DV.isLeft ? 8 : -8
+            x: DepthView.isLeft ? 8 : -8
         }
 
         RowLayout {

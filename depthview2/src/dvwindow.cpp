@@ -28,9 +28,10 @@ DVWindow::DVWindow() : QOpenGLWindow(), qmlCommunication(new DVQmlCommunication(
         qmlEngine->setIncubationController(qmlWindow->incubationController());
 
     qmlRegisterType<DVShortcut>("DepthView", 2, 0, "Shortcut");
-    /* Needs to be registered for enum access. "DepthView" is used for enum values and "DV" is used for accessing members. */
-    qmlRegisterUncreatableType<DVQmlCommunication>("DepthView", 2, 0, "DepthView", "Only usable as context property.");
-    qmlEngine->rootContext()->setContextProperty("DV", qmlCommunication);
+
+    qmlEngine->rootContext()->setContextProperty("DepthView", qmlCommunication);
+
+    qmlRegisterUncreatableType<DVDrawMode>("DepthView", 2, 0, "DrawMode", "Only for enum.");
 
     /* Update QML size whenever draw mode or anamorphic are changed. */
     connect(qmlCommunication, &DVQmlCommunication::drawModeChanged, this, &DVWindow::updateQmlSize);
@@ -117,29 +118,29 @@ void DVWindow::paintGL() {
 
     /* Bind the shader and set uniforms for the current draw mode. */
     switch (qmlCommunication->drawMode()) {
-    case DVQmlCommunication::Anglaph:
+    case DVDrawMode::Anglaph:
         shaderAnglaph.bind();
         shaderAnglaph.setUniformValue("greyFac", float(qmlCommunication->greyFac()));
         break;
-    case DVQmlCommunication::SidebySide:
+    case DVDrawMode::SidebySide:
         shaderSideBySide.bind();
         shaderSideBySide.setUniformValue("mirrorL", qmlCommunication->mirrorLeft());
         shaderSideBySide.setUniformValue("mirrorR", qmlCommunication->mirrorRight());
         break;
-    case DVQmlCommunication::TopBottom:
+    case DVDrawMode::TopBottom:
         shaderTopBottom.bind();
         shaderTopBottom.setUniformValue("mirrorL", qmlCommunication->mirrorLeft());
         shaderTopBottom.setUniformValue("mirrorR", qmlCommunication->mirrorRight());
         break;
-    case DVQmlCommunication::MonoLeft:
+    case DVDrawMode::MonoLeft:
         shaderMono.bind();
         shaderMono.setUniformValue("left", true);
         break;
-    case DVQmlCommunication::MonoRight:
+    case DVDrawMode::MonoRight:
         shaderMono.bind();
         shaderMono.setUniformValue("left", false);
         break;
-    case DVQmlCommunication::Plugin:
+    case DVDrawMode::Plugin:
         for (DVRenderPlugin* plugin : renderPlugins) {
             /* Find the first plugin that contains the mode we want. */
             if (plugin->drawModeNames().contains(qmlCommunication->pluginMode())) {
@@ -191,11 +192,11 @@ void DVWindow::updateQmlSize() {
     qmlSize = size();
 
     /* If Side-by-Side and not anamorphic we only render QML at half of the window size (horizontally). */
-    if(qmlCommunication->drawMode() == DVQmlCommunication::SidebySide && !qmlCommunication->anamorphicDualView())
+    if(qmlCommunication->drawMode() == DVDrawMode::SidebySide && !qmlCommunication->anamorphicDualView())
         qmlSize.setWidth(qmlSize.width() / 2);
 
     /* If Top/Bottom and not anamorphic we only render QML at half of the window size (vertically). */
-    if(qmlCommunication->drawMode() == DVQmlCommunication::TopBottom && !qmlCommunication->anamorphicDualView())
+    if(qmlCommunication->drawMode() == DVDrawMode::TopBottom && !qmlCommunication->anamorphicDualView())
         qmlSize.setHeight(qmlSize.height() / 2);
 
     /* Don't recreate fbo's unless they are null or size is wrong. */
