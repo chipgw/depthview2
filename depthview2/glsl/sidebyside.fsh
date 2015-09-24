@@ -1,4 +1,12 @@
+/* GLES requires the precision to be set but some desktop cards don't like it. */
+#ifdef GL_ES
+/* If highp is supported use it. */
+#ifdef GL_FRAGMENT_PRECISION_HIGH
 precision highp float;
+#else
+precision mediump float;
+#endif
+#endif
 
 uniform sampler2D textureL;
 uniform sampler2D textureR;
