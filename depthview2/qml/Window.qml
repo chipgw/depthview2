@@ -45,7 +45,7 @@ Rectangle {
             id: topMenu
             anchors.top: parent.top
 
-            state: fakeCursor.y < 128 &&  mouseTimer.running ? "" : "HIDDEN"
+            state: (fakeCursor.y < 128 &&  mouseTimer.running) || modeDialog.visible ? "" : "HIDDEN"
 
             states: [
                 State {
@@ -76,6 +76,72 @@ Rectangle {
                     text: "Pick Mode"
 
                     onClicked: modeDialog.visible = !modeDialog.visible
+
+
+                    /* Show a simple rectangle behind mode dialog to ensure the text is always readable. */
+                    Rectangle {
+                        /* Get the background color from the system. */
+                        SystemPalette { id: palette; }
+                        color: palette.base
+
+                        id: modeDialog
+                        anchors {
+                            top: parent.bottom
+                            left: parent.left
+                        }
+
+                        width: childrenRect.width + 8
+                        height: childrenRect.height + 16
+
+                        /* Hide by default and don't enable when hidden. */
+                        visible: false
+                        enabled: visible
+
+                        ExclusiveGroup { id: drawModeRadioGroup }
+
+                        ColumnLayout {
+                            x: 4
+                            y: 8
+
+                            Repeater {
+                                id: modeList
+                                model: ListModel {
+                                    ListElement { text: "Anglaph"; mode: DrawMode.Anglaph }
+                                    ListElement { text: "Side-by-Side"; mode: DrawMode.SidebySide }
+                                    ListElement { text: "Top/Bottom"; mode: DrawMode.TopBottom }
+                                    ListElement { text: "Mono Left"; mode: DrawMode.MonoLeft }
+                                    ListElement { text: "Mono Right"; mode: DrawMode.MonoRight }
+                                }
+                                RadioButton {
+                                    text: model.text
+                                    exclusiveGroup: drawModeRadioGroup
+                                    checked: DepthView.drawMode === model.mode
+
+                                    onCheckedChanged:
+                                        if (checked) {
+                                            DepthView.drawMode = model.mode
+                                            modeDialog.visible = false
+                                        }
+                                }
+                            }
+                            Repeater {
+                                id: pluginModeList
+                                model: DepthView.getPluginModes()
+
+                                RadioButton {
+                                    text: modelData
+                                    exclusiveGroup: drawModeRadioGroup
+
+                                    onCheckedChanged:
+                                        if (checked) {
+                                            DepthView.drawMode = DrawMode.Plugin
+                                            DepthView.pluginMode = modelData
+                                            modeDialog.visible = false
+                                        }
+                                }
+                            }
+                        }
+                    }
                 }
 
                 Button {
@@ -311,77 +377,6 @@ Rectangle {
 
                         onClicked: { image.zoom = 1; zoomButtons.updateZoom() }
                     }
-                }
-            }
-        }
-
-        /* Show a simple rectangle behind mode dialog to ensure the text is always readable. */
-        Rectangle {
-            /* Get the background color from the system. */
-            SystemPalette { id: palette; }
-            color: palette.base
-
-            anchors {
-                fill: modeDialog
-                margins: -4
-            }
-
-            visible: modeDialog.visible
-        }
-
-        GroupBox {
-            id: modeDialog
-            title: "Draw Mode"
-            anchors.centerIn: parent
-
-            /* Hide by default and don't enable when hidden. */
-            visible: false
-            enabled: visible
-
-            ExclusiveGroup { id: drawModeRadioGroup }
-
-            ColumnLayout {
-                Repeater {
-                    id: modeList
-                    model: ListModel {
-                        ListElement { text: "Anglaph"; mode: DrawMode.Anglaph }
-                        ListElement { text: "Side-by-Side"; mode: DrawMode.SidebySide }
-                        ListElement { text: "Top/Bottom"; mode: DrawMode.TopBottom }
-                        ListElement { text: "Mono Left"; mode: DrawMode.MonoLeft }
-                        ListElement { text: "Mono Right"; mode: DrawMode.MonoRight }
-                    }
-                    RadioButton {
-                        text: model.text
-                        exclusiveGroup: drawModeRadioGroup
-                        checked: DepthView.drawMode === model.mode
-
-                        onCheckedChanged:
-                            if (checked) {
-                                DepthView.drawMode = model.mode
-                                modeDialog.visible = false
-                            }
-                    }
-                }
-                Repeater {
-                    id: pluginModeList
-                    model: DepthView.getPluginModes()
-
-                    RadioButton {
-                        text: modelData
-                        exclusiveGroup: drawModeRadioGroup
-
-                        onCheckedChanged:
-                            if (checked) {
-                                DepthView.drawMode = DrawMode.Plugin
-                                DepthView.pluginMode = modelData
-                                modeDialog.visible = false
-                            }
-                    }
-                }
-                Button {
-                    text: "Close"
-
-                    onClicked: modeDialog.visible = false
                 }
             }
         }
