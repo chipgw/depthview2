@@ -46,7 +46,7 @@ private:
     DVQmlCommunication* qmlCommunication;
 
     /* Shaders for built-in draw modes. */
-    QOpenGLShaderProgram shaderAnglaph;
+    QOpenGLShaderProgram shaderAnaglyph;
     QOpenGLShaderProgram shaderSideBySide;
     QOpenGLShaderProgram shaderTopBottom;
     QOpenGLShaderProgram shaderMono;

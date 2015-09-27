@@ -16,7 +16,7 @@ class DVDrawMode {
 
 public:
     enum Type {
-        Anglaph,
+        Anaglyph,
         SidebySide,
         TopBottom,
         MonoLeft,

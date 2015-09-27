@@ -4,7 +4,7 @@
         <file>images/test.pns</file>
         <file>glsl/standard.vsh</file>
         <file>glsl/standard.fsh</file>
-        <file>glsl/anglaph.fsh</file>
+        <file>glsl/anaglyph.fsh</file>
         <file>qml/StereoImage.qml</file>
         <file>glsl/sidebyside.fsh</file>
         <file>glsl/topbottom.fsh</file>

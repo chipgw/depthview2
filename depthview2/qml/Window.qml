@@ -106,7 +106,7 @@ Rectangle {
                             Repeater {
                                 id: modeList
                                 model: ListModel {
-                                    ListElement { text: "Anglaph"; mode: DrawMode.Anglaph }
+                                    ListElement { text: "Anaglyph"; mode: DrawMode.Anaglyph }
                                     ListElement { text: "Side-by-Side"; mode: DrawMode.SidebySide }
                                     ListElement { text: "Top/Bottom"; mode: DrawMode.TopBottom }
                                     ListElement { text: "Mono Left"; mode: DrawMode.MonoLeft }

@@ -118,9 +118,9 @@ void DVWindow::paintGL() {
 
     /* Bind the shader and set uniforms for the current draw mode. */
     switch (qmlCommunication->drawMode()) {
-    case DVDrawMode::Anglaph:
-        shaderAnglaph.bind();
-        shaderAnglaph.setUniformValue("greyFac", float(qmlCommunication->greyFac()));
+    case DVDrawMode::Anaglyph:
+        shaderAnaglyph.bind();
+        shaderAnaglyph.setUniformValue("greyFac", float(qmlCommunication->greyFac()));
         break;
     case DVDrawMode::SidebySide:
         shaderSideBySide.bind();
@@ -210,7 +210,7 @@ void DVWindow::updateQmlSize() {
 
 void DVWindow::loadShaders() {
     /* Most draw modes use the standard vertex shader for a simple fullscreen quad. */
-    loadShader(shaderAnglaph,       ":/glsl/standard.vsh", ":/glsl/anglaph.fsh");
+    loadShader(shaderAnaglyph,      ":/glsl/standard.vsh", ":/glsl/anaglyph.fsh");
     loadShader(shaderSideBySide,    ":/glsl/standard.vsh", ":/glsl/sidebyside.fsh");
     loadShader(shaderTopBottom,     ":/glsl/standard.vsh", ":/glsl/topbottom.fsh");
     loadShader(shaderMono,          ":/glsl/standard.vsh", ":/glsl/standard.fsh");

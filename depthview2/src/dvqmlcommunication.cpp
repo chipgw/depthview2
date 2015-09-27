@@ -2,7 +2,7 @@
 #include <QWindow>
 
 DVQmlCommunication::DVQmlCommunication(QWindow* parent) : QObject(parent), m_mirrorLeft(false),
-    m_mirrorRight(false), m_greyFac(0.0), m_drawMode(DVDrawMode::Anglaph), m_anamorphicDualView(false), owner(parent) {
+    m_mirrorRight(false), m_greyFac(0.0), m_drawMode(DVDrawMode::Anaglyph), m_anamorphicDualView(false), owner(parent) {
     connect(owner, &QWindow::windowStateChanged, this, &DVQmlCommunication::ownerWindowStateChanged);
 }
 
