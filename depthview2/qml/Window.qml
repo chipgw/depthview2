@@ -157,12 +157,12 @@ Rectangle {
                 Label {
                     text: "Grey Factor:"
 
-                    visible: DepthView.drawMode === DrawMode.Anglaph
+                    visible: DepthView.drawMode === DrawMode.Anaglyph
                 }
 
                 Slider {
                     value: DepthView.greyFac
-                    visible: DepthView.drawMode === DrawMode.Anglaph
+                    visible: DepthView.drawMode === DrawMode.Anaglyph
 
                     onValueChanged: DepthView.greyFac = value
                 }
