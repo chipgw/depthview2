@@ -224,7 +224,7 @@ Rectangle {
                 right: parent.right
             }
 
-            state: (root.height - fakeCursor.y) < 128 && mouseTimer.running ? "" : "HIDDEN"
+            state: ((root.height - fakeCursor.y) < 128 && mouseTimer.running) || sourceModePopup.visible ? "" : "HIDDEN"
 
             states: [
                 State {
@@ -304,7 +304,70 @@ Rectangle {
                 }
 
                 RowLayout {
-                    height: childrenRect.height
+                    id: sourceModeControls
+                    anchors {
+                        margins: 4
+                        left: parent.left
+                        top: playbackControls.bottom
+                    }
+
+                    Button {
+                        text: "Source Mode"
+
+                        onClicked: sourceModePopup.visible = !sourceModePopup.visible
+
+                        visible: image.isVideo
+
+                        /* Show a simple rectangle behind mode dialog to ensure the text is always readable. */
+                        Rectangle {
+                            color: palette.base
+
+                            id: sourceModePopup
+                            anchors {
+                                bottom: parent.top
+                                left: parent.left
+                            }
+
+                            width: childrenRect.width + 8
+                            height: childrenRect.height + 16
+
+                            /* Hide by default and don't enable when hidden. */
+                            visible: false
+                            enabled: visible
+
+                            ExclusiveGroup { id: sourceModeRadioGroup }
+
+                            ColumnLayout {
+                                x: 4
+                                y: 8
+
+                                Repeater {
+                                    id: sourceModeList
+                                    model: ListModel {
+                                        ListElement { text: "Side-by-Side"; mode: SourceMode.SidebySide }
+                                        ListElement { text: "Side-by-Side Anamorphic"; mode: SourceMode.SidebySideAnamorphic }
+                                        ListElement { text: "Top/Bottom"; mode: SourceMode.TopBottom }
+                                        ListElement { text: "Top/Bottom Anamorphic"; mode: SourceMode.TopBottomAnamorphic }
+                                        ListElement { text: "Mono"; mode: SourceMode.Mono }
+                                    }
+                                    RadioButton {
+                                        text: model.text
+                                        exclusiveGroup: sourceModeRadioGroup
+                                        checked: image.videoMode === model.mode
+
+                                        onCheckedChanged:
+                                            if (checked) {
+                                                image.videoMode = model.mode
+                                                sourceModePopup.visible = false
+                                            }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                RowLayout {
                     id: navigationButtons
                     anchors {
                         margins: 4

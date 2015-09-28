@@ -4,27 +4,36 @@
 
 class QWindow;
 
-class DVDrawMode {
-    Q_GADGET
+/* Macro to easily define QML friendly enums.
+ * First argument is enum name, followed by enum values. */
+#define DV_ENUM(Name, ...) \
+class Name { \
+    Q_GADGET \
+    /* No instances of this class. */ \
+    Name() = delete; \
+    ~Name() = delete; \
+public: \
+    enum Type { \
+        __VA_ARGS__ \
+    }; \
+    /* So that the enum is usable in QML. */ \
+    Q_ENUM(Type) \
+};
 
-    /* So that DrawMode is usable in QML. */
-    Q_ENUMS(Type)
-
-    /* No instances of this class. */
-    DVDrawMode() = delete;
-    ~DVDrawMode() = delete;
-
-public:
-    enum Type {
+DV_ENUM(DVDrawMode,
         Anaglyph,
         SidebySide,
         TopBottom,
         MonoLeft,
         MonoRight,
-        Plugin
-    };
-};
+        Plugin)
 
+DV_ENUM(DVSourceMode,
+        SidebySide,
+        SidebySideAnamorphic,
+        TopBottom,
+        TopBottomAnamorphic,
+        Mono)
 
 class DVQmlCommunication : public QObject {
     Q_OBJECT

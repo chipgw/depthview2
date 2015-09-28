@@ -53,6 +53,8 @@ Item {
     property alias videoPosition: media.position
     property alias videoDuration: media.duration
 
+    property int videoMode: SourceMode.Mono
+
     function seek(offset) {
         if (isVideo)
             media.seek(offset)
@@ -145,8 +147,8 @@ Item {
         anchors.centerIn: parent
         clip: true
 
-        width: vid.width / 2
-        height: vid.height
+        width: (videoMode == SourceMode.SidebySide || videoMode == SourceMode.SidebySideAnamorphic) ? vid.width / 2 : vid.width
+        height: (videoMode == SourceMode.TopBottom || videoMode == SourceMode.TopBottomAnamorphic) ? vid.height / 2 : vid.height
 
         scale: (zoom < 0) ? Math.min(root.width / width, root.height / height) : zoom
 
@@ -159,15 +161,15 @@ Item {
             id: vid
             source: media
 
-            /* TODO - The video isn't always squashed, sometimes this might not be needed. */
-            width: sourceRect.width * 2
+            width: (videoMode == SourceMode.SidebySideAnamorphic) ? sourceRect.width * 2 : sourceRect.width
+            height: (videoMode == SourceMode.TopBottomAnamorphic) ? sourceRect.height * 2 : sourceRect.height
 
             /* Always stretch. We set the VideoOutput to the size we want. */
             fillMode: VideoOutput.Stretch
 
             /* Same thing as the StereoImage does. Show half for each eye. */
-            /* TODO - There are other modes which videos can be saved as. I should support them... */
-            x: DepthView.isLeft ? 0 : -width / 2
+            x: (!DepthView.isLeft && (videoMode == SourceMode.SidebySide || videoMode == SourceMode.SidebySideAnamorphic)) ? -width / 2 : 0
+            y: (!DepthView.isLeft && (videoMode == SourceMode.TopBottom || videoMode == SourceMode.TopBottomAnamorphic)) ? -height / 2 :0
         }
     }
 

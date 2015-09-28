@@ -18,6 +18,8 @@
 const GLuint vertex = 0;
 const GLuint uv     = 1;
 
+#define DV_URI_VERSION "DepthView", 2, 0
+
 DVWindow::DVWindow() : QOpenGLWindow(), qmlCommunication(new DVQmlCommunication(this)), fboRight(nullptr), fboLeft(nullptr) {
     qmlRenderControl = new  QQuickRenderControl(this);
     qmlWindow = new QQuickWindow(qmlRenderControl);
@@ -27,11 +29,12 @@ DVWindow::DVWindow() : QOpenGLWindow(), qmlCommunication(new DVQmlCommunication(
     if (qmlEngine->incubationController() == nullptr)
         qmlEngine->setIncubationController(qmlWindow->incubationController());
 
-    qmlRegisterType<DVShortcut>("DepthView", 2, 0, "Shortcut");
+    qmlRegisterType<DVShortcut>(DV_URI_VERSION, "Shortcut");
 
     qmlEngine->rootContext()->setContextProperty("DepthView", qmlCommunication);
 
-    qmlRegisterUncreatableType<DVDrawMode>("DepthView", 2, 0, "DrawMode", "Only for enum.");
+    qmlRegisterUncreatableType<DVDrawMode>(DV_URI_VERSION, "DrawMode", "Only for enum values.");
+    qmlRegisterUncreatableType<DVSourceMode>(DV_URI_VERSION, "SourceMode", "Only for enum values.");
 
     /* Update QML size whenever draw mode or anamorphic are changed. */
     connect(qmlCommunication, &DVQmlCommunication::drawModeChanged, this, &DVWindow::updateQmlSize);
