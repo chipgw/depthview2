@@ -18,7 +18,7 @@ public: \
     }; \
     /* So that the enum is usable in QML. */ \
     Q_ENUM(Type) \
-};
+} /* Put the ';' after declarations cuz the Qt Creator parser likes it better for some reason... */
 
 DV_ENUM(DVDrawMode,
         Anaglyph,
@@ -26,14 +26,14 @@ DV_ENUM(DVDrawMode,
         TopBottom,
         MonoLeft,
         MonoRight,
-        Plugin)
+        Plugin);
 
 DV_ENUM(DVSourceMode,
         SidebySide,
         SidebySideAnamorphic,
         TopBottom,
         TopBottomAnamorphic,
-        Mono)
+        Mono);
 
 class DVQmlCommunication : public QObject {
     Q_OBJECT
@@ -105,6 +105,10 @@ signals:
 
     /* Used for setting the cursor position. */
     void mouseMoved(const QPointF& pos);
+
+    /* Used to read show/hide ui based on touchscreen input. */
+    /* TODO - Mabe some args would be useful? */
+    void touchEvent();
 
 public slots:
     void ownerWindowStateChanged(Qt::WindowState windowState);

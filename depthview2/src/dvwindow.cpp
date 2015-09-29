@@ -309,6 +309,13 @@ void DVWindow::wheelEvent(QWheelEvent* e) {
     setCursor(Qt::BlankCursor);
 }
 
+/* These events need only be passed on to the qmlWindow. */
+void DVWindow::touchEvent(QTouchEvent* e) {
+    QCoreApplication::sendEvent(qmlWindow, e);
+
+    emit qmlCommunication->touchEvent();
+}
+
 void DVWindow::loadPlugins() {
     /* Load any statically linked plugins. (Currently there aren't any) */
     for (QObject *obj : QPluginLoader::staticInstances()) {

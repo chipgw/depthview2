@@ -45,7 +45,7 @@ Rectangle {
             id: topMenu
             anchors.top: parent.top
 
-            state: (fakeCursor.y < 128 &&  mouseTimer.running) || modeDialog.visible ? "" : "HIDDEN"
+            state: (fakeCursor.y < 128 &&  mouseTimer.running) || modeDialog.visible || touchTimer.running ? "" : "HIDDEN"
 
             states: [
                 State {
@@ -224,7 +224,7 @@ Rectangle {
                 right: parent.right
             }
 
-            state: ((root.height - fakeCursor.y) < 128 && mouseTimer.running) || sourceModePopup.visible ? "" : "HIDDEN"
+            state: ((root.height - fakeCursor.y) < 128 && mouseTimer.running) || sourceModePopup.visible || touchTimer.running ? "" : "HIDDEN"
 
             states: [
                 State {
@@ -472,6 +472,12 @@ Rectangle {
             interval: 4000
         }
 
+        /* Use a separate timer for touchscreen events so that it doesn't show the cursor. */
+        Timer {
+            id: touchTimer
+            interval: 2000
+        }
+
         Connections {
             target: DepthView
 
@@ -481,6 +487,10 @@ Rectangle {
                 fakeCursor.y = pos.y
 
                 mouseTimer.restart()
+            }
+
+            onTouchEvent: {
+                touchTimer.restart()
             }
         }
 

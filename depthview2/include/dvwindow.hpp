@@ -33,6 +33,7 @@ protected:
     void mouseReleaseEvent(QMouseEvent* e);
     void mouseDoubleClickEvent(QMouseEvent* e);
     void wheelEvent(QWheelEvent* e);
+    void touchEvent(QTouchEvent* e);
 
 private:
     /* QML Stuff. */

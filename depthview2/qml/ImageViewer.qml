@@ -188,8 +188,30 @@ Item {
                     zoom = image.scale
 
                 zoom += wheel.angleDelta.y * image.scale * 0.001
-                zoom = Math.max(0.2, Math.min(image.scale, 4.0))
+                zoom = Math.max(0.2, Math.min(zoom, 4.0))
             }
+        }
+    }
+    PinchArea {
+        anchors.fill: parent
+
+        enabled: !isVideo
+
+        property real startZoom
+
+        onPinchStarted: {
+            /* If zoom-to-fit is active retrieve the current scale before zooming in or out. */
+            if (zoom < 0)
+                zoom = image.scale
+
+            startZoom = zoom
+        }
+
+        onPinchUpdated: {
+            zoom = startZoom * pinch.scale
+            zoom = Math.max(0.2, Math.min(zoom, 4.0))
+
+            /* TODO - Use the pinch center. */
         }
     }
 }
