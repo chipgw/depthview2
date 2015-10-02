@@ -45,7 +45,7 @@ Rectangle {
             id: topMenu
             anchors.top: parent.top
 
-            state: (fakeCursor.y < 128 &&  mouseTimer.running) || modeDialog.visible || touchTimer.running ? "" : "HIDDEN"
+            state: (fakeCursor.y < 128 &&  mouseTimer.running) || modeSelector.popupVisible || touchTimer.running ? "" : "HIDDEN"
 
             states: [
                 State {
@@ -72,74 +72,48 @@ Rectangle {
                     left: parent.left
                 }
 
-                Button {
+                ExclusiveGroup { id: drawModeRadioGroup }
+
+                RadioMenu {
+                    id: modeSelector
+
                     text: "Pick Mode"
 
-                    onClicked: modeDialog.visible = !modeDialog.visible
-
-
-                    /* Show a simple rectangle behind mode dialog to ensure the text is always readable. */
-                    Rectangle {
-                        /* Get the background color from the system. */
-                        SystemPalette { id: palette; }
-                        color: palette.base
-
-                        id: modeDialog
-                        anchors {
-                            top: parent.bottom
-                            left: parent.left
+                    Repeater {
+                        id: modeList
+                        model: ListModel {
+                            ListElement { text: "Anaglyph"; mode: DrawMode.Anaglyph }
+                            ListElement { text: "Side-by-Side"; mode: DrawMode.SidebySide }
+                            ListElement { text: "Top/Bottom"; mode: DrawMode.TopBottom }
+                            ListElement { text: "Mono Left"; mode: DrawMode.MonoLeft }
+                            ListElement { text: "Mono Right"; mode: DrawMode.MonoRight }
                         }
+                        RadioButton {
+                            text: model.text
+                            exclusiveGroup: drawModeRadioGroup
+                            checked: DepthView.drawMode === model.mode
 
-                        width: childrenRect.width + 8
-                        height: childrenRect.height + 16
-
-                        /* Hide by default and don't enable when hidden. */
-                        visible: false
-                        enabled: visible
-
-                        ExclusiveGroup { id: drawModeRadioGroup }
-
-                        ColumnLayout {
-                            x: 4
-                            y: 8
-
-                            Repeater {
-                                id: modeList
-                                model: ListModel {
-                                    ListElement { text: "Anaglyph"; mode: DrawMode.Anaglyph }
-                                    ListElement { text: "Side-by-Side"; mode: DrawMode.SidebySide }
-                                    ListElement { text: "Top/Bottom"; mode: DrawMode.TopBottom }
-                                    ListElement { text: "Mono Left"; mode: DrawMode.MonoLeft }
-                                    ListElement { text: "Mono Right"; mode: DrawMode.MonoRight }
+                            onCheckedChanged:
+                                if (checked) {
+                                    DepthView.drawMode = model.mode
+                                    modeSelector.popupVisible = false
                                 }
-                                RadioButton {
-                                    text: model.text
-                                    exclusiveGroup: drawModeRadioGroup
-                                    checked: DepthView.drawMode === model.mode
+                        }
+                    }
+                    Repeater {
+                        id: pluginModeList
+                        model: DepthView.getPluginModes()
 
-                                    onCheckedChanged:
-                                        if (checked) {
-                                            DepthView.drawMode = model.mode
-                                            modeDialog.visible = false
-                                        }
+                        RadioButton {
+                            text: modelData
+                            exclusiveGroup: drawModeRadioGroup
+
+                            onCheckedChanged:
+                                if (checked) {
+                                    DepthView.drawMode = DrawMode.Plugin
+                                    DepthView.pluginMode = modelData
+                                    modeSelector.popupVisible = false
                                 }
-                            }
-                            Repeater {
-                                id: pluginModeList
-                                model: DepthView.getPluginModes()
-
-                                RadioButton {
-                                    text: modelData
-                                    exclusiveGroup: drawModeRadioGroup
-
-                                    onCheckedChanged:
-                                        if (checked) {
-                                            DepthView.drawMode = DrawMode.Plugin
-                                            DepthView.pluginMode = modelData
-                                            modeDialog.visible = false
-                                        }
-                                }
-                            }
                         }
                     }
                 }
@@ -224,7 +198,7 @@ Rectangle {
                 right: parent.right
             }
 
-            state: ((root.height - fakeCursor.y) < 128 && mouseTimer.running) || sourceModePopup.visible || touchTimer.running ? "" : "HIDDEN"
+            state: ((root.height - fakeCursor.y) < 128 && mouseTimer.running) || sourceMode.popupVisible || touchTimer.running ? "" : "HIDDEN"
 
             states: [
                 State {
@@ -311,57 +285,36 @@ Rectangle {
                         top: playbackControls.bottom
                     }
 
-                    Button {
-                        text: "Source Mode"
+                    ExclusiveGroup { id: sourceModeRadioGroup }
 
-                        onClicked: sourceModePopup.visible = !sourceModePopup.visible
+                    RadioMenu {
+                        id: sourceMode
+
+                        text: "Source Mode"
 
                         visible: image.isVideo
 
-                        /* Show a simple rectangle behind mode dialog to ensure the text is always readable. */
-                        Rectangle {
-                            color: palette.base
+                        onTop: true
 
-                            id: sourceModePopup
-                            anchors {
-                                bottom: parent.top
-                                left: parent.left
+                        Repeater {
+                            id: sourceModeList
+                            model: ListModel {
+                                ListElement { text: "Side-by-Side"; mode: SourceMode.SidebySide }
+                                ListElement { text: "Side-by-Side Anamorphic"; mode: SourceMode.SidebySideAnamorphic }
+                                ListElement { text: "Top/Bottom"; mode: SourceMode.TopBottom }
+                                ListElement { text: "Top/Bottom Anamorphic"; mode: SourceMode.TopBottomAnamorphic }
+                                ListElement { text: "Mono"; mode: SourceMode.Mono }
                             }
+                            RadioButton {
+                                text: model.text
+                                exclusiveGroup: sourceModeRadioGroup
+                                checked: image.videoMode === model.mode
 
-                            width: childrenRect.width + 8
-                            height: childrenRect.height + 16
-
-                            /* Hide by default and don't enable when hidden. */
-                            visible: false
-                            enabled: visible
-
-                            ExclusiveGroup { id: sourceModeRadioGroup }
-
-                            ColumnLayout {
-                                x: 4
-                                y: 8
-
-                                Repeater {
-                                    id: sourceModeList
-                                    model: ListModel {
-                                        ListElement { text: "Side-by-Side"; mode: SourceMode.SidebySide }
-                                        ListElement { text: "Side-by-Side Anamorphic"; mode: SourceMode.SidebySideAnamorphic }
-                                        ListElement { text: "Top/Bottom"; mode: SourceMode.TopBottom }
-                                        ListElement { text: "Top/Bottom Anamorphic"; mode: SourceMode.TopBottomAnamorphic }
-                                        ListElement { text: "Mono"; mode: SourceMode.Mono }
+                                onCheckedChanged:
+                                    if (checked) {
+                                        image.videoMode = model.mode
+                                        sourceMode.popupVisible = false
                                     }
-                                    RadioButton {
-                                        text: model.text
-                                        exclusiveGroup: sourceModeRadioGroup
-                                        checked: image.videoMode === model.mode
-
-                                        onCheckedChanged:
-                                            if (checked) {
-                                                image.videoMode = model.mode
-                                                sourceModePopup.visible = false
-                                            }
-                                    }
-                                }
                             }
                         }
                     }
