@@ -41,5 +41,22 @@ Button {
             id: childrenTarget
         }
     }
+
+    Item {
+        id: hoverArea
+        anchors {
+            fill: popup
+            margins: -64
+        }
+
+        Connections {
+            target: DepthView
+
+            onMouseMoved: {
+                if (!hoverArea.contains(hoverArea.mapFromItem(null, pos.x, pos.y)))
+                    popup.visible = false
+            }
+        }
+    }
 }
 
