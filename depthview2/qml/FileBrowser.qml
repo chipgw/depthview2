@@ -94,20 +94,43 @@ Rectangle {
         }
     }
 
-    GridView {
+    SplitView {
         anchors {
             top: controls.bottom
             left:  parent.left
             right:  parent.right
             bottom:  parent.bottom
         }
+        orientation: Qt.Horizontal
 
-        model: root.model
-        delegate: fileComponent
+        Rectangle {
+            id: drivePanel
 
-        /* So that it is the same as the delegate. */
-        cellWidth: root.cellWidth
-        cellHeight: root.cellHeight
+            width: childrenRect.width
+
+            ColumnLayout {
+                Repeater {
+                    model: DepthView.getStorageDevicePaths()
+
+                    Button {
+                        width: drivePanel.width
+                        text: modelData
+
+                        onClicked: root.model.folder =  "file:///" + text
+                    }
+                }
+            }
+        }
+        GridView {
+            Layout.fillWidth: true
+
+            model: root.model
+            delegate: fileComponent
+
+            /* So that it is the same as the delegate. */
+            cellWidth: root.cellWidth
+            cellHeight: root.cellHeight
+        }
     }
 
     ToolBar {

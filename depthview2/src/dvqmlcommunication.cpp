@@ -1,5 +1,6 @@
 #include "include/dvqmlcommunication.hpp"
 #include <QWindow>
+#include <QStorageInfo>
 
 DVQmlCommunication::DVQmlCommunication(QWindow* parent) : QObject(parent), m_mirrorLeft(false),
     m_mirrorRight(false), m_greyFac(0.0), m_drawMode(DVDrawMode::Anaglyph), m_anamorphicDualView(false), owner(parent) {
@@ -107,4 +108,14 @@ void DVQmlCommunication::addPluginModes(const QStringList &modes) {
 
 QStringList DVQmlCommunication::getPluginModes() {
     return pluginModes;
+}
+
+QStringList DVQmlCommunication::getStorageDevicePaths() {
+    /* TODO - Perhaps this should return the drive display name too somehow? */
+    QStringList paths;
+
+    for (QStorageInfo info : QStorageInfo::mountedVolumes())
+        paths.append(info.rootPath());
+
+    return paths;
 }

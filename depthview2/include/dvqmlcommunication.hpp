@@ -89,6 +89,8 @@ public:
     void addPluginModes(const QStringList& modes);
     Q_INVOKABLE QStringList getPluginModes();
 
+    Q_INVOKABLE QStringList getStorageDevicePaths();
+
 signals:
     void isLeftChanged(bool isLeft);
     void drawModeChanged(DVDrawMode::Type mode);
