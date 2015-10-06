@@ -28,12 +28,7 @@ protected:
     void resizeGL(int, int);
 
     /* We need to relay these events to qmlWindow. */
-    void mouseMoveEvent(QMouseEvent* e);
-    void mousePressEvent(QMouseEvent* e);
-    void mouseReleaseEvent(QMouseEvent* e);
-    void mouseDoubleClickEvent(QMouseEvent* e);
-    void wheelEvent(QWheelEvent* e);
-    void touchEvent(QTouchEvent* e);
+    bool event(QEvent *event);
 
 private:
     /* QML Stuff. */

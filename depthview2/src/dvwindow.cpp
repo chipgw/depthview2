@@ -271,49 +271,37 @@ void DVWindow::resizeGL(int, int) {
 }
 
 /* These events need only be passed on to the qmlWindow. */
-void DVWindow::mouseMoveEvent(QMouseEvent* e) {
-    QCoreApplication::sendEvent(qmlWindow, e);
+bool DVWindow::event(QEvent* e) {
+    switch (e->type()) {
+    case QEvent::MouseMove: {
+        /* We also emit a special signal for this one so that the fake cursor
+         * can be set to the right position without having a MouseArea that absorbs events. */
+        QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(e);
+        emit qmlCommunication->mouseMoved(mouseEvent->localPos());
+    }
+    case QEvent::MouseButtonPress:
+    case QEvent::MouseButtonRelease:
+    case QEvent::MouseButtonDblClick:
+    case QEvent::Wheel:
+        QCoreApplication::sendEvent(qmlWindow, e);
 
-    /* We also emit a special signal for this one so that the fake cursor
-     * can be set to the right position without having a MouseArea that absorbs events. */
-    emit qmlCommunication->mouseMoved(e->localPos());
+        setCursor(Qt::BlankCursor);
+        return true;
+    case QEvent::TouchBegin:
+    case QEvent::TouchEnd:
+    case QEvent::TouchUpdate:
+    case QEvent::TouchCancel:
+        /* TODO - Remap touch location into the modified screen coordinates,
+         * in particular for Side by Side & Top/Bottom modes. */
+        QCoreApplication::sendEvent(qmlWindow, e);
 
-    setCursor(Qt::BlankCursor);
-}
+        emit qmlCommunication->touchEvent();
+        return true;
+    default:
+        break;
+    }
 
-/* These events need only be passed on to the qmlWindow. */
-void DVWindow::mousePressEvent(QMouseEvent* e) {
-    QCoreApplication::sendEvent(qmlWindow, e);
-
-    setCursor(Qt::BlankCursor);
-}
-
-/* These events need only be passed on to the qmlWindow. */
-void DVWindow::mouseReleaseEvent(QMouseEvent* e) {
-    QCoreApplication::sendEvent(qmlWindow, e);
-
-    setCursor(Qt::BlankCursor);
-}
-
-/* These events need only be passed on to the qmlWindow. */
-void DVWindow::mouseDoubleClickEvent(QMouseEvent* e) {
-    QCoreApplication::sendEvent(qmlWindow, e);
-
-    setCursor(Qt::BlankCursor);
-}
-
-/* These events need only be passed on to the qmlWindow. */
-void DVWindow::wheelEvent(QWheelEvent* e) {
-    QCoreApplication::sendEvent(qmlWindow, e);
-
-    setCursor(Qt::BlankCursor);
-}
-
-/* These events need only be passed on to the qmlWindow. */
-void DVWindow::touchEvent(QTouchEvent* e) {
-    QCoreApplication::sendEvent(qmlWindow, e);
-
-    emit qmlCommunication->touchEvent();
+    return QOpenGLWindow::event(e);
 }
 
 void DVWindow::loadPlugins() {
