@@ -116,7 +116,8 @@ Rectangle {
                         width: drivePanel.width
                         text: modelData
 
-                        onClicked: root.model.folder =  "file:///" + text
+                        /* If the there should only be three '/'s after "file:" in the path. */
+                        onClicked: root.model.folder = (text.charAt(0) == '/' ? "file://" : "file:///") + text
                     }
                 }
             }
