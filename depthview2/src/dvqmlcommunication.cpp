@@ -111,11 +111,10 @@ QStringList DVQmlCommunication::getPluginModes() {
 }
 
 QStringList DVQmlCommunication::getStorageDevicePaths() {
-    /* TODO - Perhaps this should return the drive display name too somehow? */
     QStringList paths;
 
     for (QStorageInfo info : QStorageInfo::mountedVolumes())
-        paths.append(info.rootPath());
+        paths.append(info.rootPath() + ';' + info.displayName());
 
     return paths;
 }

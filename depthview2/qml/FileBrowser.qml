@@ -114,10 +114,12 @@ Rectangle {
 
                     Button {
                         width: drivePanel.width
-                        text: modelData
+                        text: data[1]
+
+                        property variant data: modelData.split(';')
 
                         /* If the there should only be three '/'s after "file:" in the path. */
-                        onClicked: root.model.folder = (text.charAt(0) == '/' ? "file://" : "file:///") + text
+                        onClicked: root.model.folder = (data[0].charAt(0) == '/' ? "file://" : "file:///") + data[0]
                     }
                 }
             }
