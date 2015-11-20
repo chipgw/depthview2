@@ -45,6 +45,7 @@ private:
     QOpenGLShaderProgram shaderAnaglyph;
     QOpenGLShaderProgram shaderSideBySide;
     QOpenGLShaderProgram shaderTopBottom;
+    QOpenGLShaderProgram shaderInterlaced;
     QOpenGLShaderProgram shaderMono;
 
     /* The FBOs that QML renders to. */

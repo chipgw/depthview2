@@ -135,6 +135,27 @@ void DVWindow::paintGL() {
         shaderTopBottom.setUniformValue("mirrorL", qmlCommunication->mirrorLeft());
         shaderTopBottom.setUniformValue("mirrorR", qmlCommunication->mirrorRight());
         break;
+    case DVDrawMode::InterlacedH:
+        shaderInterlaced.bind();
+        shaderInterlaced.setUniformValue("windowCorner", position());
+        shaderInterlaced.setUniformValue("windowSize", size());
+        shaderInterlaced.setUniformValue("horizontal", true);
+        shaderInterlaced.setUniformValue("vertical", false);
+        break;
+    case DVDrawMode::InterlacedV:
+        shaderInterlaced.bind();
+        shaderInterlaced.setUniformValue("windowCorner", position());
+        shaderInterlaced.setUniformValue("windowSize", size());
+        shaderInterlaced.setUniformValue("horizontal", false);
+        shaderInterlaced.setUniformValue("vertical", true);
+        break;
+    case DVDrawMode::Checkerboard:
+        shaderInterlaced.bind();
+        shaderInterlaced.setUniformValue("windowCorner", position());
+        shaderInterlaced.setUniformValue("windowSize", size());
+        shaderInterlaced.setUniformValue("horizontal", true);
+        shaderInterlaced.setUniformValue("vertical", true);
+        break;
     case DVDrawMode::MonoLeft:
         shaderMono.bind();
         shaderMono.setUniformValue("left", true);
@@ -216,6 +237,7 @@ void DVWindow::loadShaders() {
     loadShader(shaderAnaglyph,      ":/glsl/standard.vsh", ":/glsl/anaglyph.fsh");
     loadShader(shaderSideBySide,    ":/glsl/standard.vsh", ":/glsl/sidebyside.fsh");
     loadShader(shaderTopBottom,     ":/glsl/standard.vsh", ":/glsl/topbottom.fsh");
+    loadShader(shaderInterlaced,    ":/glsl/standard.vsh", ":/glsl/interlaced.fsh");
     loadShader(shaderMono,          ":/glsl/standard.vsh", ":/glsl/standard.fsh");
 
     /* TODO - Load other shaders. */

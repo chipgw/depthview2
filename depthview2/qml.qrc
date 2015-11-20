@@ -13,5 +13,6 @@
         <file>images/folder.pns</file>
         <file>qml/ImageViewer.qml</file>
         <file>qml/RadioMenu.qml</file>
+        <file>glsl/interlaced.fsh</file>
     </qresource>
 </RCC>

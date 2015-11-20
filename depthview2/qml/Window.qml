@@ -85,6 +85,9 @@ Rectangle {
                             ListElement { text: "Anaglyph"; mode: DrawMode.Anaglyph }
                             ListElement { text: "Side-by-Side"; mode: DrawMode.SidebySide }
                             ListElement { text: "Top/Bottom"; mode: DrawMode.TopBottom }
+                            ListElement { text: "Interlaced Horizontal"; mode: DrawMode.InterlacedH }
+                            ListElement { text: "Interlaced Vertical"; mode: DrawMode.InterlacedV }
+                            ListElement { text: "Checkerboard"; mode: DrawMode.Checkerboard }
                             ListElement { text: "Mono Left"; mode: DrawMode.MonoLeft }
                             ListElement { text: "Mono Right"; mode: DrawMode.MonoRight }
                         }
