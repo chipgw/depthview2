@@ -1,4 +1,6 @@
-#version 130 // This shader needs bitwise integer operators, which will probably be a problem on GLES 2...
+#ifdef GL_ES
+#extension GL_EXT_gpu_shader4 : enable
+#endif
 
 uniform sampler2D textureL;
 uniform sampler2D textureR;

@@ -246,7 +246,15 @@ void DVWindow::loadShaders() {
 void DVWindow::loadShader(QOpenGLShaderProgram& shader, const char* vshader, const char* fshader) {
     /* Load the shaders from the qrc. */
     shader.addShaderFromSourceFile(QOpenGLShader::Vertex, vshader);
-    shader.addShaderFromSourceFile(QOpenGLShader::Fragment, fshader);
+
+    QFile res(fshader);
+    res.open(QIODevice::ReadOnly | QIODevice::Text);
+    QString fshaderSrc = res.readAll();
+
+    if (!context()->isOpenGLES())
+        fshaderSrc.prepend("#version 130\n");
+
+    shader.addShaderFromSourceCode(QOpenGLShader::Fragment, fshaderSrc);
 
     /* Bind the attribute handles. */
     shader.bindAttributeLocation("vertex", vertex);
