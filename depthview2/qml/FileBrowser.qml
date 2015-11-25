@@ -107,6 +107,13 @@ Rectangle {
             id: drivePanel
             model: DepthView.getStorageDevicePaths()
 
+            Timer  {
+                interval: 10000
+                running: root.visible
+                repeat: true
+                onTriggered: drivePanel.model = DepthView.getStorageDevicePaths();
+            }
+
             width: 128
 
             delegate: Button {
