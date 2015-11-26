@@ -38,7 +38,7 @@ Rectangle {
 
         /* Put all interface items a bit above the screen. */
         transform: Translate {
-            x: DepthView.isLeft ? 8 : -8
+            x: DepthView.isLeft ? 4 : -4
         }
 
         ToolBar {
@@ -438,8 +438,7 @@ Rectangle {
             target: DepthView
 
             onMouseMoved: {
-                /* The x coordinate needs adjusting so that the point ends up in the right place. */
-                fakeCursor.x = pos.x - 8
+                fakeCursor.x = pos.x
                 fakeCursor.y = pos.y
 
                 mouseTimer.restart()
@@ -452,7 +451,7 @@ Rectangle {
 
         /* This puts the cursor a little bit above the screen. */
         transform: Translate {
-            x: DepthView.isLeft ? 10 : -10
+            x: DepthView.isLeft ? 4 : -4
         }
     }
 }
