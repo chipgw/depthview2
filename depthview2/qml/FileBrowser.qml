@@ -103,29 +103,41 @@ Rectangle {
         }
         orientation: Qt.Horizontal
 
-        ListView {
+        Column {
             id: drivePanel
-            model: DepthView.getStorageDevicePaths()
-
-            Timer  {
-                interval: 10000
-                running: root.visible
-                repeat: true
-                onTriggered: drivePanel.model = DepthView.getStorageDevicePaths();
-            }
-
             width: 128
 
-            delegate: Button {
-                width: drivePanel.width
-                text: data[1]
+            clip: true
 
-                property variant data: modelData.split(';')
+            Label {
+                text: "Drives:"
+            }
 
-                /* If the there should only be three '/'s after "file:" in the path. */
-                onClicked: root.model.folder = (data[0].charAt(0) == '/' ? "file://" : "file:///") + data[0]
+            Repeater {
+                model: DepthView.getStorageDevicePaths()
+
+                Timer  {
+                    interval: 10000
+                    running: root.visible
+                    repeat: true
+                    onTriggered: drivePanel.model = DepthView.getStorageDevicePaths();
+                }
+
+                delegate: Button {
+                    anchors {
+                        left: drivePanel.left
+                        right: drivePanel.right
+                    }
+                    text: data[1]
+
+                    property variant data: modelData.split(';')
+
+                    /* If the there should only be three '/'s after "file:" in the path. */
+                    onClicked: root.model.folder = (data[0].charAt(0) == '/' ? "file://" : "file:///") + data[0]
+                }
             }
         }
+
         GridView {
             Layout.fillWidth: true
 
