@@ -109,7 +109,8 @@ Rectangle {
 
             clip: true
 
-            Label {
+            Text {
+                color: "white"
                 text: "Drives:"
             }
 
