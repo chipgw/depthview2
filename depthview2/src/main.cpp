@@ -5,6 +5,10 @@
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
 
+    app.setOrganizationName("chipgw");
+    app.setApplicationName("DepthView2");
+    app.setApplicationVersion("1.0"); /* TODO - The version should be set somewhere else. */
+
     /* QML needs a stencil buffer. */
     QSurfaceFormat fmt;
     fmt.setDepthBufferSize(24);

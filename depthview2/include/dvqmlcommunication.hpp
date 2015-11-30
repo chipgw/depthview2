@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QObject>
+#include <QSettings>
 
 class QWindow;
 
@@ -57,7 +58,13 @@ class DVQmlCommunication : public QObject {
 
     Q_PROPERTY(QString pluginMode READ pluginMode WRITE setPluginMode NOTIFY pluginModeChanged)
 
+    /* There is no WRITE function because you add or remove via addBookmark() and deleteBookmark(). */
+    Q_PROPERTY(QStringList bookmarks READ bookmarks NOTIFY bookmarksChanged)
+
 public:
+    /* Settings can be set from DVWindow. */
+    QSettings settings;
+
     explicit DVQmlCommunication(QWindow* parent);
 
     /* Where QML reads the value of the current eye. */
@@ -92,6 +99,11 @@ public:
     void addPluginModes(const QStringList& modes);
     Q_INVOKABLE QStringList getPluginModes();
 
+    Q_INVOKABLE void addBookmark(QString bookmark);
+    Q_INVOKABLE void deleteBookmark(QString bookmark);
+
+    QStringList bookmarks();
+
     Q_INVOKABLE QStringList getStorageDevicePaths();
 
 signals:
@@ -108,10 +120,12 @@ signals:
 
     void pluginModeChanged(QString mode);
 
+    void bookmarksChanged(QStringList bookmarks);
+
     /* Used for setting the cursor position. */
     void mouseMoved(const QPointF& pos);
 
-    /* Used to read show/hide ui based on touchscreen input. */
+    /* Used to show/hide ui based on touchscreen input. */
     /* TODO - Mabe some args would be useful? */
     void touchEvent();
 
@@ -132,4 +146,6 @@ private:
 
     QString m_pluginMode;
     QStringList pluginModes;
+
+    QStringList m_bookmarks;
 };

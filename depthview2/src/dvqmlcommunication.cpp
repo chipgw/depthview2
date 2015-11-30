@@ -1,10 +1,15 @@
 #include "include/dvqmlcommunication.hpp"
 #include <QWindow>
 #include <QStorageInfo>
+#include <QApplication>
 
 DVQmlCommunication::DVQmlCommunication(QWindow* parent) : QObject(parent), m_mirrorLeft(false),
-    m_mirrorRight(false), m_greyFac(0.0), m_drawMode(DVDrawMode::Anaglyph), m_anamorphicDualView(false), owner(parent) {
+    m_mirrorRight(false), m_greyFac(0.0), m_drawMode(DVDrawMode::Anaglyph), m_anamorphicDualView(false), owner(parent),
+    settings(QSettings::IniFormat, QSettings::UserScope, QApplication::organizationName(), QApplication::applicationName()) {
     connect(owner, &QWindow::windowStateChanged, this, &DVQmlCommunication::ownerWindowStateChanged);
+
+    if (settings.contains("Bookmarks"))
+        m_bookmarks = settings.value("Bookmarks").toStringList();
 }
 
 bool DVQmlCommunication::isLeft() const {
@@ -108,6 +113,26 @@ void DVQmlCommunication::addPluginModes(const QStringList &modes) {
 
 QStringList DVQmlCommunication::getPluginModes() {
     return pluginModes;
+}
+
+void DVQmlCommunication::addBookmark(QString bookmark) {
+    /* TODO - Maybe we should make sure it exists? */
+    if (!m_bookmarks.contains(bookmark)) {
+        m_bookmarks.append(bookmark);
+        bookmarksChanged(m_bookmarks);
+        settings.setValue("Bookmarks", m_bookmarks);
+    }
+}
+
+void DVQmlCommunication::deleteBookmark(QString bookmark) {
+    if (m_bookmarks.removeAll(bookmark) != 0) {
+        bookmarksChanged(m_bookmarks);
+        settings.setValue("Bookmarks", m_bookmarks);
+    }
+}
+
+QStringList DVQmlCommunication::bookmarks() {
+    return m_bookmarks;
 }
 
 QStringList DVQmlCommunication::getStorageDevicePaths() {

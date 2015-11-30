@@ -115,14 +115,8 @@ Rectangle {
             }
 
             Repeater {
+                /* TODO - Updating list is broken. */
                 model: DepthView.getStorageDevicePaths()
-
-                Timer  {
-                    interval: 10000
-                    running: root.visible
-                    repeat: true
-                    onTriggered: drivePanel.model = DepthView.getStorageDevicePaths();
-                }
 
                 delegate: Button {
                     anchors {
@@ -133,9 +127,39 @@ Rectangle {
 
                     property variant data: modelData.split(';')
 
-                    /* If the there should only be three '/'s after "file:" in the path. */
+                    /* There should only be three '/'s after "file:" in the path. */
                     onClicked: root.model.folder = (data[0].charAt(0) == '/' ? "file://" : "file:///") + data[0]
                 }
+            }
+
+            Text {
+                color: "white"
+                text: "Bookmarks:"
+            }
+
+            Repeater {
+                model: DepthView.bookmarks
+
+                delegate: Button {
+                    /* TODO - Make it possible to delete bookmarks. */
+                    anchors {
+                        left: drivePanel.left
+                        right: drivePanel.right
+                    }
+                    text: modelData.substr(modelData.lastIndexOf("/") + 1)
+
+                    onClicked: root.model.folder = modelData
+                }
+            }
+
+            Button {
+                anchors {
+                    left: drivePanel.left
+                    right: drivePanel.right
+                }
+                text: "Add Bookmark"
+
+                onClicked: DepthView.addBookmark(root.model.folder)
             }
         }
 
