@@ -10,6 +10,9 @@ DVQmlCommunication::DVQmlCommunication(QWindow* parent) : QObject(parent), m_mir
 
     if (settings.contains("Bookmarks"))
         m_bookmarks = settings.value("Bookmarks").toStringList();
+
+    if (settings.contains("DrawMode"))
+        m_drawMode = DVDrawMode::fromString(settings.value("DrawMode").toByteArray());
 }
 
 bool DVQmlCommunication::isLeft() const {
@@ -24,6 +27,7 @@ void DVQmlCommunication::setDrawMode(DVDrawMode::Type mode) {
     /* Only emit if changed. */
     if(m_drawMode != mode) {
         m_drawMode = mode;
+        settings.setValue("DrawMode", DVDrawMode::toString(mode));
         emit drawModeChanged(mode);
     }
 }

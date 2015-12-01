@@ -2,6 +2,7 @@
 
 #include <QObject>
 #include <QSettings>
+#include <QMetaEnum>
 
 class QWindow;
 
@@ -19,6 +20,12 @@ public: \
     }; \
     /* So that the enum is usable in QML. */ \
     Q_ENUM(Type) \
+    \
+    static QMetaEnum metaEnum() { return QMetaEnum::fromType<Type>(); } \
+    \
+    static Type fromString(const char* str) { return Type(metaEnum().keyToValue(str)); } \
+    \
+    static const char* toString(Type val) { return metaEnum().valueToKey(val); } \
 } /* Put the ';' after declarations cuz the Qt Creator parser likes it better for some reason... */
 
 DV_ENUM(DVDrawMode,
