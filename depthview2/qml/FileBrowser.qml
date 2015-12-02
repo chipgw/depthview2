@@ -119,10 +119,7 @@ Rectangle {
                 model: DepthView.getStorageDevicePaths()
 
                 delegate: Button {
-                    anchors {
-                        left: drivePanel.left
-                        right: drivePanel.right
-                    }
+                    width: drivePanel.width
                     text: data[1]
 
                     property variant data: modelData.split(';')
@@ -140,15 +137,32 @@ Rectangle {
             Repeater {
                 model: DepthView.bookmarks
 
-                delegate: Button {
-                    /* TODO - Make it possible to delete bookmarks. */
-                    anchors {
-                        left: drivePanel.left
-                        right: drivePanel.right
-                    }
-                    text: modelData.substr(modelData.lastIndexOf("/") + 1)
+                delegate: Item {
+                    height: childrenRect.height
+                    width: drivePanel.width
 
-                    onClicked: root.model.folder = modelData
+                    Button {
+                        /* Fit to the parent item minus space for the "X" button on the right. */
+                        anchors {
+                            left: parent.left
+                            right: deleteButton.left
+                        }
+                        text: modelData.substr(modelData.lastIndexOf("/") + 1)
+
+                        onClicked: root.model.folder = modelData
+                    }
+                    Button {
+                        id: deleteButton
+
+                        /* Take up 16 pixels on the right of the parent item. */
+                        anchors.right: parent.right
+                        width: 16
+
+                        text: "X"
+
+                        /* TODO - Maybe this should confirm? IDK... */
+                        onClicked: DepthView.deleteBookmark(modelData)
+                    }
                 }
             }
 
