@@ -3,9 +3,9 @@
 #include <QStorageInfo>
 #include <QApplication>
 
-DVQmlCommunication::DVQmlCommunication(QWindow* parent) : QObject(parent), m_mirrorLeft(false),
-    m_mirrorRight(false), m_greyFac(0.0), m_drawMode(DVDrawMode::Anaglyph), m_anamorphicDualView(false), owner(parent),
-    settings(QSettings::IniFormat, QSettings::UserScope, QApplication::organizationName(), QApplication::applicationName()) {
+DVQmlCommunication::DVQmlCommunication(QWindow* parent) : QObject(parent),
+    settings(QSettings::IniFormat, QSettings::UserScope, QApplication::organizationName(), QApplication::applicationName()),
+    m_mirrorLeft(false), m_mirrorRight(false), m_greyFac(0.0), m_drawMode(DVDrawMode::Anaglyph), m_anamorphicDualView(false), owner(parent) {
     connect(owner, &QWindow::windowStateChanged, this, &DVQmlCommunication::ownerWindowStateChanged);
 
     if (settings.contains("Bookmarks"))

@@ -19,6 +19,7 @@ include(deployment.pri)
 
 HEADERS += \
     include/dvwindow.hpp \
+    include/dvenums.hpp \
     include/dvqmlcommunication.hpp \
     include/dvshortcut.hpp \
     include/dvrenderplugin.hpp
