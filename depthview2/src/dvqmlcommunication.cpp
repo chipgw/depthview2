@@ -99,7 +99,7 @@ void DVQmlCommunication::setGreyFac(qreal fac) {
     }
 }
 
-QString DVQmlCommunication::pluginMode() {
+QString DVQmlCommunication::pluginMode() const {
     return m_pluginMode;
 }
 
@@ -115,7 +115,7 @@ void DVQmlCommunication::addPluginModes(const QStringList &modes) {
     pluginModes.append(modes);
 }
 
-QStringList DVQmlCommunication::getPluginModes() {
+QStringList DVQmlCommunication::getPluginModes() const {
     return pluginModes;
 }
 
@@ -135,11 +135,11 @@ void DVQmlCommunication::deleteBookmark(QString bookmark) {
     }
 }
 
-QStringList DVQmlCommunication::bookmarks() {
+QStringList DVQmlCommunication::bookmarks() const {
     return m_bookmarks;
 }
 
-QStringList DVQmlCommunication::getStorageDevicePaths() {
+QStringList DVQmlCommunication::getStorageDevicePaths() const {
     QStringList paths;
 
     for (QStorageInfo info : QStorageInfo::mountedVolumes())

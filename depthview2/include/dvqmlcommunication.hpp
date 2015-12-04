@@ -59,18 +59,18 @@ public:
     bool fullscreen() const;
     void setFullscreen(bool fullscreen);
 
-    QString pluginMode();
+    QString pluginMode() const;
     void setPluginMode(QString mode);
 
     void addPluginModes(const QStringList& modes);
-    Q_INVOKABLE QStringList getPluginModes();
+    Q_INVOKABLE QStringList getPluginModes() const;
 
     Q_INVOKABLE void addBookmark(QString bookmark);
     Q_INVOKABLE void deleteBookmark(QString bookmark);
 
-    QStringList bookmarks();
+    QStringList bookmarks() const;
 
-    Q_INVOKABLE QStringList getStorageDevicePaths();
+    Q_INVOKABLE QStringList getStorageDevicePaths() const;
 
 signals:
     void isLeftChanged(bool isLeft);
