@@ -145,5 +145,7 @@ QStringList DVQmlCommunication::getStorageDevicePaths() const {
     for (QStorageInfo info : QStorageInfo::mountedVolumes())
         paths.append(info.rootPath() + ';' + info.displayName());
 
+    paths.removeDuplicates();
+
     return paths;
 }

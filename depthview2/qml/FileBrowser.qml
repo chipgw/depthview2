@@ -103,77 +103,94 @@ Rectangle {
         }
         orientation: Qt.Horizontal
 
-        Column {
+        Flickable {
             id: drivePanel
-            width: 128
+            height: parent.height
 
-            clip: true
+            contentHeight: drivePanelColumn.height
 
-            Text {
-                color: "white"
-                text: "Drives:"
-            }
+            Column {
+                id: drivePanelColumn
 
-            Repeater {
-                /* TODO - Updating list is broken. */
-                model: DepthView.getStorageDevicePaths()
+                width: parent.width
+                height: childrenRect.height
 
-                delegate: Button {
-                    width: drivePanel.width
-                    text: data[1]
+                clip: true
 
-                    property variant data: modelData.split(';')
-
-                    /* There should only be three '/'s after "file:" in the path. */
-                    onClicked: root.model.folder = (data[0].charAt(0) == '/' ? "file://" : "file:///") + data[0]
+                Text {
+                    color: "white"
+                    text: "Drives:"
                 }
-            }
 
-            Text {
-                color: "white"
-                text: "Bookmarks:"
-            }
+                Repeater {
+                    /* TODO - Updating list is broken. */
+                    model: DepthView.getStorageDevicePaths()
 
-            Repeater {
-                model: DepthView.bookmarks
+                    delegate: Button {
+                        width: drivePanel.width
+                        text: data[1]
 
-                delegate: Item {
-                    height: childrenRect.height
-                    width: drivePanel.width
+                        property variant data: modelData.split(';')
 
-                    Button {
-                        /* Fit to the parent item minus space for the "X" button on the right. */
-                        anchors {
-                            left: parent.left
-                            right: deleteButton.left
+                        /* There should only be three '/'s after "file:" in the path. */
+                        onClicked: root.model.folder = (data[0].charAt(0) == '/' ? "file://" : "file:///") + data[0]
+
+                        onImplicitWidthChanged: {
+                            drivePanel.width = Math.max(drivePanel.width, implicitWidth)
                         }
-                        text: modelData.substr(modelData.lastIndexOf("/") + 1)
-
-                        onClicked: root.model.folder = modelData
-                    }
-                    Button {
-                        id: deleteButton
-
-                        /* Take up 16 pixels on the right of the parent item. */
-                        anchors.right: parent.right
-                        width: 16
-
-                        text: "X"
-
-                        /* TODO - Maybe this should confirm? IDK... */
-                        onClicked: DepthView.deleteBookmark(modelData)
                     }
                 }
-            }
 
-            Button {
-                anchors {
-                    left: drivePanel.left
-                    right: drivePanel.right
+                Text {
+                    color: "white"
+                    text: "Bookmarks:"
                 }
-                text: "Add Bookmark"
 
-                onClicked: DepthView.addBookmark(root.model.folder)
+                Repeater {
+                    model: DepthView.bookmarks
+
+                    delegate: Item {
+                        height: childrenRect.height
+                        width: drivePanel.width
+
+                        Button {
+                            /* Fit to the parent item minus space for the "X" button on the right. */
+                            anchors {
+                                left: parent.left
+                                right: deleteButton.left
+                            }
+                            text: modelData.substr(modelData.lastIndexOf("/") + 1)
+
+                            onClicked: root.model.folder = modelData
+
+                            onImplicitWidthChanged: {
+                                drivePanel.width = Math.max(drivePanel.width, implicitWidth + 16)
+                            }
+                        }
+                        Button {
+                            id: deleteButton
+
+                            /* Take up 16 pixels on the right of the parent item. */
+                            anchors.right: parent.right
+                            width: 16
+
+                            text: "X"
+
+                            /* TODO - Maybe this should confirm? IDK... */
+                            onClicked: DepthView.deleteBookmark(modelData)
+                        }
+                    }
+                }
+
+                Button {
+                    anchors {
+                        left: drivePanelColumn.left
+                        right: drivePanelColumn.right
+                    }
+                    text: "Add Bookmark"
+
+                    onClicked: DepthView.addBookmark(root.model.folder)
+                }
             }
         }
 
