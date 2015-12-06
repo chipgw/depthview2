@@ -13,6 +13,22 @@ DVQmlCommunication::DVQmlCommunication(QWindow* parent) : QObject(parent),
 
     if (settings.contains("DrawMode"))
         m_drawMode = DVDrawMode::fromString(settings.value("DrawMode").toByteArray());
+
+    /* TODO - We can't check if it's valid from here, as the plugins are not inited yet.
+     * But it should check somehow... */
+    if (settings.contains("PluginMode"))
+        m_pluginMode = settings.value("PluginMode").toString();
+
+    if (settings.contains("GreyFac"))
+        m_greyFac = settings.value("GreyFac").toReal();
+
+    if (settings.contains("Anamorphic"))
+        m_anamorphicDualView = settings.value("Anamorphic").toBool();
+
+    if (settings.contains("MirrorLeft"))
+        m_mirrorLeft = settings.value("MirrorLeft").toBool();
+    if (settings.contains("MirrorRight"))
+        m_mirrorRight = settings.value("MirrorRight").toBool();
 }
 
 bool DVQmlCommunication::isLeft() const {
@@ -40,6 +56,7 @@ void DVQmlCommunication::setAnamorphicDualView(bool anamorphic) {
     /* Only emit if changed. */
     if(m_anamorphicDualView != anamorphic) {
         m_anamorphicDualView = anamorphic;
+        settings.setValue("Anamorphic", anamorphic);
         emit anamorphicDualViewChanged(anamorphic);
     }
 }
@@ -52,6 +69,7 @@ void DVQmlCommunication::setMirrorLeft(bool mirror) {
     /* Only emit if changed. */
     if (m_mirrorLeft != mirror) {
         m_mirrorLeft = mirror;
+        settings.setValue("MirrorLeft", mirror);
         emit mirrorLeftChanged(mirror);
     }
 }
@@ -64,6 +82,7 @@ void DVQmlCommunication::setMirrorRight(bool mirror) {
     /* Only emit if changed. */
     if (m_mirrorRight != mirror) {
         m_mirrorRight = mirror;
+        settings.setValue("MirrorRight", mirror);
         emit mirrorRightChanged(mirror);
     }
 }
@@ -95,6 +114,7 @@ void DVQmlCommunication::setGreyFac(qreal fac) {
     /* Only emit if changed. */
     if (fac != m_greyFac) {
         m_greyFac = fac;
+        settings.setValue("GreyFac", fac);
         emit greyFacChanged(fac);
     }
 }
@@ -107,6 +127,7 @@ void DVQmlCommunication::setPluginMode(QString mode) {
     /* Only set if valid. */
     if (mode != m_pluginMode && pluginModes.contains(mode)) {
         m_pluginMode = mode;
+        settings.setValue("PluginMode", mode);
         emit pluginModeChanged(mode);
     }
 }
