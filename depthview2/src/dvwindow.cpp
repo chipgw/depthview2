@@ -43,7 +43,6 @@ DVWindow::DVWindow() : QOpenGLWindow(), qmlCommunication(new DVQmlCommunication(
     /* We render a cursor inside QML so it is shown for both eyes. */
     setCursor(Qt::BlankCursor);
 
-    /* TODO - Remember previous geometry. */
     setGeometry(0,0, 800, 600);
 }
 
@@ -54,9 +53,24 @@ DVWindow::~DVWindow() {
     delete fboLeft;
 
     /* TODO - I'm pretty sure there is more that needs to be deleted here... */
+
+    /* Save the window geometry so that it can be restored next run. */
+    qmlCommunication->settings.beginGroup("Window");
+    qmlCommunication->settings.setValue("Geometry", geometry());
+    qmlCommunication->settings.setValue("State", windowState());
+    qmlCommunication->settings.endGroup();
 }
 
 void DVWindow::initializeGL() {
+    /* The window should be shown by this point... */
+    if (qmlCommunication->settings.childGroups().contains("Window")) {
+        /* Restore window state from the stored geometry. */
+        qmlCommunication->settings.beginGroup("Window");
+        setGeometry(qmlCommunication->settings.value("Geometry").toRect());
+        setWindowState(Qt::WindowState(qmlCommunication->settings.value("State").toInt()));
+        qmlCommunication->settings.endGroup();
+    }
+
     loadShaders();
 
     loadPlugins();

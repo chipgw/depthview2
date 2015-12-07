@@ -132,7 +132,7 @@ void DVQmlCommunication::setPluginMode(QString mode) {
     }
 }
 
-void DVQmlCommunication::addPluginModes(const QStringList &modes) {
+void DVQmlCommunication::addPluginModes(const QStringList& modes) {
     pluginModes.append(modes);
 }
 
