@@ -317,12 +317,10 @@ void DVWindow::resizeGL(int, int) {
 /* These events need only be passed on to the qmlWindow. */
 bool DVWindow::event(QEvent* e) {
     switch (e->type()) {
-    case QEvent::MouseMove: {
+    case QEvent::MouseMove:
         /* We also emit a special signal for this one so that the fake cursor
          * can be set to the right position without having a MouseArea that absorbs events. */
-        QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(e);
-        emit qmlCommunication->mouseMoved(mouseEvent->localPos());
-    }
+        emit qmlCommunication->mouseMoved(static_cast<QMouseEvent*>(e)->localPos());
     case QEvent::MouseButtonPress:
     case QEvent::MouseButtonRelease:
     case QEvent::MouseButtonDblClick:
@@ -351,8 +349,8 @@ bool DVWindow::event(QEvent* e) {
 void DVWindow::loadPlugins() {
     /* Load any statically linked plugins. (Currently there aren't any) */
     for (QObject *obj : QPluginLoader::staticInstances()) {
-        DVRenderPlugin* plugin;
-        if ((plugin = qobject_cast<DVRenderPlugin*>(obj)) != nullptr)
+        DVRenderPlugin* plugin = qobject_cast<DVRenderPlugin*>(obj);
+        if (plugin != nullptr)
             renderPlugins.append(plugin);
     }
 

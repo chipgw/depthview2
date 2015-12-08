@@ -190,6 +190,10 @@ Rectangle {
                     text: "Add Bookmark"
 
                     onClicked: DepthView.addBookmark(root.model.folder)
+
+                    onImplicitWidthChanged: {
+                        drivePanel.width = Math.max(drivePanel.width, implicitWidth)
+                    }
                 }
             }
         }
