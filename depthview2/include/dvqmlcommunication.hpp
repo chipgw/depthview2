@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QSettings>
+#include <QUrl>
 #include "dvenums.hpp"
 
 class QWindow;
@@ -71,6 +72,12 @@ public:
     QStringList bookmarks() const;
 
     Q_INVOKABLE QStringList getStorageDevicePaths() const;
+
+    Q_INVOKABLE bool fileExists(QString file) const;
+    Q_INVOKABLE bool dirExists(QString dir) const;
+
+    Q_INVOKABLE QUrl encodeURL(QString url) const;
+    Q_INVOKABLE QString decodeURL(QUrl url) const;
 
 signals:
     void isLeftChanged(bool isLeft);

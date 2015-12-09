@@ -20,8 +20,22 @@ const GLuint uv     = 1;
 
 #define DV_URI_VERSION "DepthView", 2, 0
 
+class RenderControl : public QQuickRenderControl {
+public:
+    RenderControl(DVWindow* win) : QQuickRenderControl(win), window(win) { }
+
+    QWindow* window;
+
+    QWindow* renderWindow(QPoint* offset) {
+        if (window == nullptr)
+            return QQuickRenderControl::renderWindow(offset);
+
+        return window;
+    }
+};
+
 DVWindow::DVWindow() : QOpenGLWindow(), qmlCommunication(new DVQmlCommunication(this)), fboRight(nullptr), fboLeft(nullptr) {
-    qmlRenderControl = new  QQuickRenderControl(this);
+    qmlRenderControl = new RenderControl(this);
     qmlWindow = new QQuickWindow(qmlRenderControl);
 
     qmlEngine = new QQmlEngine(this);
@@ -338,6 +352,10 @@ bool DVWindow::event(QEvent* e) {
         QCoreApplication::sendEvent(qmlWindow, e);
 
         emit qmlCommunication->touchEvent();
+        return true;
+    case QEvent::KeyPress:
+    case QEvent::KeyRelease:
+        QCoreApplication::sendEvent(qmlWindow, e);
         return true;
     default:
         break;

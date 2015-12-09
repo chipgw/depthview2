@@ -170,3 +170,17 @@ QStringList DVQmlCommunication::getStorageDevicePaths() const {
 
     return paths;
 }
+
+bool DVQmlCommunication::fileExists(QString file) const {
+    return QFile::exists(file);
+}
+bool DVQmlCommunication::dirExists(QString dir) const {
+    return QDir(dir).exists();
+}
+
+QUrl DVQmlCommunication::encodeURL(QString url) const {
+    return QUrl::fromLocalFile(url);
+}
+QString DVQmlCommunication::decodeURL(QUrl url) const {
+    return url.path();
+}

@@ -17,7 +17,15 @@ Rectangle {
 
     property url startingFolder
 
-    onVisibleChanged: if (visible) startingFolder = model.folder
+    onVisibleChanged: {
+        if (visible) {
+            startingFolder = model.folder
+
+            /* This forces anything bound to model.folder to update. Namely the pathText, without this it is blank at first. */
+            model.folder = ""
+            model.folder = startingFolder
+        }
+    }
 
     Component {
         id: fileComponent
@@ -132,8 +140,7 @@ Rectangle {
 
                         property variant data: modelData.split(';')
 
-                        /* There should only be three '/'s after "file:" in the path. */
-                        onClicked: root.model.folder = (data[0].charAt(0) == '/' ? "file://" : "file:///") + data[0]
+                        onClicked: root.model.folder = DepthView.encodeURL(data[0])
 
                         onImplicitWidthChanged: {
                             drivePanel.width = Math.max(drivePanel.width, implicitWidth)
@@ -242,12 +249,12 @@ Rectangle {
 
                 Layout.fillWidth: true
 
-                /* TODO - Make this editable. */
-                readOnly: true
+                onAccepted: {
+                    if (DepthView.dirExists(text))
+                        model.folder = DepthView.encodeURL(text)
+                }
 
-                /* TODO - This is blank at first, because folder is blank.
-                 * Hopefully I can find a way to get the actual absolute path... */
-                text: model.folder
+                text: DepthView.decodeURL(model.folder)
             }
 
             Button {
