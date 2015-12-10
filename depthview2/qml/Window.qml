@@ -338,6 +338,8 @@ Rectangle {
 
                         Shortcut {
                             key: ["Left"]
+
+                            enabled: !fileBrowser.visible
                         }
                     }
 
@@ -361,6 +363,8 @@ Rectangle {
 
                         Shortcut {
                             key: ["Right"]
+
+                            enabled: !fileBrowser.visible
                         }
                     }
                 }

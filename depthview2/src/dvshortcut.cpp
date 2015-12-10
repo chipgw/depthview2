@@ -3,7 +3,7 @@
 #include <QKeyEvent>
 #include <QQuickItem>
 
-DVShortcut::DVShortcut(QObject* parent) : QObject(parent) { /* STUB */ }
+DVShortcut::DVShortcut(QObject* parent) : QObject(parent), enabled(true) { /* STUB */ }
 
 void DVShortcut::setKey(const QVariantList& values) {
     QList<QKeySequence> newKeys;
@@ -44,7 +44,7 @@ QVariantList DVShortcut::key() const {
 }
 
 bool DVShortcut::eventFilter(QObject* obj, QEvent* e) {
-    if(e->type() == QEvent::KeyPress) {
+    if(enabled && e->type() == QEvent::KeyPress) {
         QKeyEvent* keyEvent = static_cast<QKeyEvent*>(e);
 
         /* Is this the right key combo? */

@@ -7,6 +7,7 @@
 class DVShortcut : public QObject {
     Q_OBJECT
     Q_PROPERTY(QVariantList key READ key WRITE setKey NOTIFY keyChanged)
+    Q_PROPERTY(bool enabled MEMBER enabled)
 
 public:
     explicit DVShortcut(QObject* parent = 0);
@@ -16,6 +17,8 @@ public:
 
     void setKey(const QVariantList& values);
     QVariantList key() const;
+
+    bool enabled;
 
 signals:
     void keyChanged();
