@@ -50,19 +50,24 @@ bool DVShortcut::eventFilter(QObject* obj, QEvent* e) {
         /* Is this the right key combo? */
         if(keys.contains(QKeySequence(keyEvent->modifiers() + keyEvent->key()))) {
             /* If nothing is bound to triggered() try doing something with the parent. */
-            if (receivers(SIGNAL(triggered())))
+            if (receivers(SIGNAL(triggered()))) {
                 emit triggered();
-            else {
+
+                /* Nobody else gets to see this event. Nobody. */
+                return true;
+            }
+            /* If the parent button/checkbox isn't enabled we just ignore. */
+            if (!parent()->property("enabled").isValid() || parent()->property("enabled").toBool()) {
                 QString parentClassName(parent()->metaObject()->className());
                 /* If the parent is a Button, click it. If the parent is a CheckBox, toggle it. */
                 if(!(parentClassName.contains("Button_QMLTYPE_") && QMetaObject::invokeMethod(parent(), "clicked")) &&
                    !(parentClassName.contains("CheckBox_QMLTYPE_") && parent()->setProperty("checked", !parent()->property("checked").toBool())))
                     /* TODO - There might be more parent types that could be automagically activated... */
                     qDebug("Nothing connected to shortcut!");
-            }
 
-            /* Nobody else gets to see this event. Nobody. */
-            return true;
+                /* Nobody else gets to see this event. Nobody. */
+                return true;
+            }
         }
     }
 
