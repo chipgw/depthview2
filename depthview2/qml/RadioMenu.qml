@@ -13,6 +13,37 @@ Button {
     /* Put children in the ColumnLayout. */
     default property alias contents: childrenTarget.children
 
+    MouseArea {
+        enabled: popup.visible
+
+        anchors {
+            fill: popup
+            margins: -1024
+        }
+
+        onClicked: popup.visible = false
+    }
+
+    MouseArea {
+        id: hoverArea
+
+        enabled: popup.visible
+
+        anchors {
+            fill: popup
+            margins: -64
+        }
+
+        Connections {
+            target: DepthView
+
+            onMouseMoved: {
+                if (!hoverArea.contains(hoverArea.mapFromItem(null, pos.x, pos.y)))
+                    popup.visible = false
+            }
+        }
+    }
+
     /* Show a simple rectangle behind mode dialog to ensure the text is always readable. */
     Rectangle {
         /* Get the background color from the system. */
@@ -39,23 +70,6 @@ Button {
             y: 8
 
             id: childrenTarget
-        }
-    }
-
-    Item {
-        id: hoverArea
-        anchors {
-            fill: popup
-            margins: -64
-        }
-
-        Connections {
-            target: DepthView
-
-            onMouseMoved: {
-                if (!hoverArea.contains(hoverArea.mapFromItem(null, pos.x, pos.y)))
-                    popup.visible = false
-            }
         }
     }
 }
