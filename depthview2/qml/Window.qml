@@ -77,6 +77,8 @@ Rectangle {
                 RadioMenu {
                     id: modeSelector
 
+                    root: root
+
                     text: "Pick Mode"
 
                     Repeater {
@@ -292,6 +294,8 @@ Rectangle {
 
                     RadioMenu {
                         id: sourceMode
+
+                        root: root
 
                         text: "Source Mode"
 

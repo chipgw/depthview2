@@ -13,12 +13,16 @@ Button {
     /* Put children in the ColumnLayout. */
     default property alias contents: childrenTarget.children
 
+    property Item root
+
     MouseArea {
         enabled: popup.visible
 
         anchors {
             fill: popup
-            margins: -1024
+
+            /* This way it will always fill the entire screen. (Unless the popup is offscreen, but does it really matter then?) */
+            margins: -Math.max(root.width, root.height)
         }
 
         onClicked: popup.visible = false
