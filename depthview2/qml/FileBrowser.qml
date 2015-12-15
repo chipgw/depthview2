@@ -131,8 +131,7 @@ Rectangle {
                 }
 
                 Repeater {
-                    /* TODO - Updating list is broken. */
-                    model: DepthView.getStorageDevicePaths()
+                    model: DepthView.storageDevicePaths
 
                     delegate: Button {
                         width: drivePanel.width

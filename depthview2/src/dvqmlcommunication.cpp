@@ -5,7 +5,8 @@
 
 DVQmlCommunication::DVQmlCommunication(QWindow* parent) : QObject(parent),
     settings(QSettings::IniFormat, QSettings::UserScope, QApplication::organizationName(), QApplication::applicationName()),
-    m_mirrorLeft(false), m_mirrorRight(false), m_greyFac(0.0), m_drawMode(DVDrawMode::Anaglyph), m_anamorphicDualView(false), owner(parent) {
+    m_mirrorLeft(false), m_mirrorRight(false), m_greyFac(0.0), m_drawMode(DVDrawMode::Anaglyph),
+    m_anamorphicDualView(false), owner(parent), driveTimer(this) {
     connect(owner, &QWindow::windowStateChanged, this, &DVQmlCommunication::ownerWindowStateChanged);
 
     if (settings.contains("Bookmarks"))
@@ -29,6 +30,10 @@ DVQmlCommunication::DVQmlCommunication(QWindow* parent) : QObject(parent),
         m_mirrorLeft = settings.value("MirrorLeft").toBool();
     if (settings.contains("MirrorRight"))
         m_mirrorRight = settings.value("MirrorRight").toBool();
+
+    /* TODO - Figure out a way to detect when there is actually a change rather than just putting it on a timer. */
+    connect(&driveTimer, &QTimer::timeout, this, &DVQmlCommunication::storageDevicePathsChanged);
+    driveTimer.start(8000);
 }
 
 bool DVQmlCommunication::isLeft() const {
@@ -100,6 +105,7 @@ void DVQmlCommunication::setFullscreen(bool fullscreen) {
 }
 
 void DVQmlCommunication::ownerWindowStateChanged(Qt::WindowState windowState) {
+    /* TODO - Somehow maybe this should only emit the signal if fullscreen is what changed? */
     emit fullscreenChanged(windowState == Qt::WindowFullScreen);
 }
 

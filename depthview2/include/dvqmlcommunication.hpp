@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QTimer>
 #include <QSettings>
 #include <QUrl>
 #include "dvenums.hpp"
@@ -27,6 +28,9 @@ class DVQmlCommunication : public QObject {
 
     /* There is no WRITE function because you add or remove via addBookmark() and deleteBookmark(). */
     Q_PROPERTY(QStringList bookmarks READ bookmarks NOTIFY bookmarksChanged)
+
+    /* By making this a property we can emit a signal when the list needs to be updated. */
+    Q_PROPERTY(QStringList storageDevicePaths READ getStorageDevicePaths NOTIFY storageDevicePathsChanged)
 
 public:
     /* Settings can be set from DVWindow. */
@@ -71,7 +75,7 @@ public:
 
     QStringList bookmarks() const;
 
-    Q_INVOKABLE QStringList getStorageDevicePaths() const;
+    QStringList getStorageDevicePaths() const;
 
     Q_INVOKABLE bool fileExists(QString file) const;
     Q_INVOKABLE bool dirExists(QString dir) const;
@@ -94,6 +98,8 @@ signals:
     void pluginModeChanged(QString mode);
 
     void bookmarksChanged(QStringList bookmarks);
+
+    void storageDevicePathsChanged();
 
     /* Used for setting the cursor position. */
     void mouseMoved(const QPointF& pos);
@@ -121,4 +127,6 @@ private:
     QStringList pluginModes;
 
     QStringList m_bookmarks;
+
+    QTimer driveTimer;
 };
