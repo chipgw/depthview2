@@ -147,8 +147,7 @@ QStringList DVQmlCommunication::getPluginModes() const {
 }
 
 void DVQmlCommunication::addBookmark(QString bookmark) {
-    /* TODO - Maybe we should make sure it exists? */
-    if (!m_bookmarks.contains(bookmark)) {
+    if (!m_bookmarks.contains(bookmark) && dirExists(decodeURL(bookmark))) {
         m_bookmarks.append(bookmark);
         bookmarksChanged(m_bookmarks);
         settings.setValue("Bookmarks", m_bookmarks);
@@ -188,5 +187,5 @@ QUrl DVQmlCommunication::encodeURL(QString url) const {
     return QUrl::fromLocalFile(url);
 }
 QString DVQmlCommunication::decodeURL(QUrl url) const {
-    return url.path();
+    return url.toLocalFile();
 }

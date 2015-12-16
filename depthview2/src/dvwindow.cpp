@@ -267,8 +267,6 @@ void DVWindow::loadShaders() {
     loadShader(shaderTopBottom,     ":/glsl/standard.vsh", ":/glsl/topbottom.fsh");
     loadShader(shaderInterlaced,    ":/glsl/standard.vsh", ":/glsl/interlaced.fsh");
     loadShader(shaderMono,          ":/glsl/standard.vsh", ":/glsl/standard.fsh");
-
-    /* TODO - Load other shaders. */
 }
 
 void DVWindow::loadShader(QOpenGLShaderProgram& shader, const char* vshader, const char* fshader) {
