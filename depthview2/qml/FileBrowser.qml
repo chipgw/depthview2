@@ -165,7 +165,7 @@ Rectangle {
                                 left: parent.left
                                 right: deleteButton.left
                             }
-                            text: modelData.substr(modelData.lastIndexOf("/") + 1)
+                            text: modelData.substr(modelData.lastIndexOf("/", modelData.length - 2) + 1)
 
                             onClicked: root.model.folder = modelData
 
