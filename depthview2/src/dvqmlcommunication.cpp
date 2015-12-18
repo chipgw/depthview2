@@ -3,33 +3,29 @@
 #include <QStorageInfo>
 #include <QApplication>
 
-DVQmlCommunication::DVQmlCommunication(QWindow* parent) : QObject(parent),
-    settings(QSettings::IniFormat, QSettings::UserScope, QApplication::organizationName(), QApplication::applicationName()),
-    m_mirrorLeft(false), m_mirrorRight(false), m_greyFac(0.0), m_drawMode(DVDrawMode::Anaglyph),
-    m_anamorphicDualView(false), owner(parent), driveTimer(this) {
+/* TODO - Make a "portable" build option that keeps settings in application directory. */
+#define SETTINGS_ARGS QSettings::IniFormat, QSettings::UserScope, QApplication::organizationName(), QApplication::applicationName()
+
+DVQmlCommunication::DVQmlCommunication(QWindow* parent) : QObject(parent), settings(SETTINGS_ARGS), owner(parent), driveTimer(this) {
+    /* We need to detect when the window state changes sowe can updatethe fullscreen property accordingly. */
     connect(owner, &QWindow::windowStateChanged, this, &DVQmlCommunication::ownerWindowStateChanged);
 
     if (settings.contains("Bookmarks"))
         m_bookmarks = settings.value("Bookmarks").toStringList();
 
-    if (settings.contains("DrawMode"))
-        m_drawMode = DVDrawMode::fromString(settings.value("DrawMode").toByteArray());
+    m_drawMode = settings.contains("DrawMode") ? DVDrawMode::fromString(settings.value("DrawMode").toByteArray()) : DVDrawMode::Anaglyph;
 
     /* TODO - We can't check if it's valid from here, as the plugins are not inited yet.
      * But it should check somehow... */
     if (settings.contains("PluginMode"))
         m_pluginMode = settings.value("PluginMode").toString();
 
-    if (settings.contains("GreyFac"))
-        m_greyFac = settings.value("GreyFac").toReal();
+    m_greyFac = settings.contains("GreyFac") ? settings.value("GreyFac").toReal() : 0.0;
 
-    if (settings.contains("Anamorphic"))
-        m_anamorphicDualView = settings.value("Anamorphic").toBool();
+    m_anamorphicDualView = settings.contains("Anamorphic") ? settings.value("Anamorphic").toBool() : false;
 
-    if (settings.contains("MirrorLeft"))
-        m_mirrorLeft = settings.value("MirrorLeft").toBool();
-    if (settings.contains("MirrorRight"))
-        m_mirrorRight = settings.value("MirrorRight").toBool();
+    m_mirrorLeft = settings.contains("MirrorLeft") ? settings.value("MirrorLeft").toBool() : false;
+    m_mirrorRight = settings.contains("MirrorRight") ? settings.value("MirrorRight").toBool() : false;
 
     /* TODO - Figure out a way to detect when there is actually a change rather than just putting it on a timer. */
     connect(&driveTimer, &QTimer::timeout, this, &DVQmlCommunication::storageDevicePathsChanged);
