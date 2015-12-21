@@ -3,8 +3,11 @@
 #include <QStorageInfo>
 #include <QApplication>
 
-/* TODO - Make a "portable" build option that keeps settings in application directory. */
+#ifdef DV_PORTABLE
+#define SETTINGS_ARGS QApplication::applicationDirPath() + "/DepthView.conf", QSettings::IniFormat
+#else
 #define SETTINGS_ARGS QSettings::IniFormat, QSettings::UserScope, QApplication::organizationName(), QApplication::applicationName()
+#endif
 
 DVQmlCommunication::DVQmlCommunication(QWindow* parent) : QObject(parent), settings(SETTINGS_ARGS), owner(parent), driveTimer(this) {
     /* We need to detect when the window state changes sowe can updatethe fullscreen property accordingly. */
