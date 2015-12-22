@@ -16,6 +16,8 @@ Rectangle {
 
         /* This might be a good idea to make into a setting... */
         showDirsFirst: true
+
+        onFolderChanged: DepthView.pushHistory(folder)
     }
 
     ImageViewer {

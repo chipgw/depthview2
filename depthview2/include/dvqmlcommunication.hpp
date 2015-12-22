@@ -83,6 +83,12 @@ public:
     Q_INVOKABLE QUrl encodeURL(QString url) const;
     Q_INVOKABLE QString decodeURL(QUrl url) const;
 
+    Q_INVOKABLE QString goBack();
+    Q_INVOKABLE QString goForward();
+    Q_INVOKABLE void pushHistory(QString value);
+    Q_INVOKABLE bool canGoBack() const;
+    Q_INVOKABLE bool canGoForward() const;
+
 signals:
     void isLeftChanged(bool isLeft);
     void drawModeChanged(DVDrawMode::Type mode);
@@ -127,6 +133,9 @@ private:
     QStringList pluginModes;
 
     QStringList m_bookmarks;
+
+    QStringList browserHistory;
+    int currentHistory;
 
     QTimer driveTimer;
 };

@@ -9,7 +9,7 @@
 #define SETTINGS_ARGS QSettings::IniFormat, QSettings::UserScope, QApplication::organizationName(), QApplication::applicationName()
 #endif
 
-DVQmlCommunication::DVQmlCommunication(QWindow* parent) : QObject(parent), settings(SETTINGS_ARGS), owner(parent), driveTimer(this) {
+DVQmlCommunication::DVQmlCommunication(QWindow* parent) : QObject(parent), settings(SETTINGS_ARGS), owner(parent), currentHistory(-1), driveTimer(this) {
     /* We need to detect when the window state changes sowe can updatethe fullscreen property accordingly. */
     connect(owner, &QWindow::windowStateChanged, this, &DVQmlCommunication::ownerWindowStateChanged);
 
@@ -187,4 +187,42 @@ QUrl DVQmlCommunication::encodeURL(QString url) const {
 }
 QString DVQmlCommunication::decodeURL(QUrl url) const {
     return url.toLocalFile();
+}
+
+QString DVQmlCommunication::goBack() {
+    return browserHistory[--currentHistory];
+}
+
+QString DVQmlCommunication::goForward() {
+    return browserHistory[++currentHistory];
+}
+
+void DVQmlCommunication::pushHistory(QString value) {
+    /* We ignore if value is empty or equal to the current history item. */
+    if (!value.isEmpty() && (browserHistory.isEmpty() || browserHistory[currentHistory] != value)) {
+        /* If the next item is equal to the passed value we keep the current history and just increment it. */
+        if (canGoForward() && browserHistory[currentHistory + 1] == value)
+            ++currentHistory;
+        /* Same for back, just decrement instead of increment. */
+        else if (canGoBack() && browserHistory[currentHistory - 1] == value)
+            --currentHistory;
+        else {
+            ++currentHistory;
+
+            /* If there are any forward entries, they must be cleared before adding the new entry. */
+            if (canGoForward())
+                browserHistory.erase(browserHistory.begin() + currentHistory, browserHistory.end());
+
+            browserHistory.append(value);
+        }
+    }
+}
+
+bool DVQmlCommunication::canGoBack() const {
+    return !browserHistory.isEmpty() && currentHistory > 0;
+}
+
+bool DVQmlCommunication::canGoForward() const {
+    /* We can go forward if currentHistory isn't the last item in the list. */
+    return !browserHistory.isEmpty() && currentHistory < (browserHistory.size() - 1);
 }
