@@ -190,11 +190,15 @@ QString DVQmlCommunication::decodeURL(QUrl url) const {
 }
 
 QString DVQmlCommunication::goBack() {
-    return browserHistory[--currentHistory];
+    --currentHistory;
+    emit historyChanged();
+    return browserHistory[currentHistory];
 }
 
 QString DVQmlCommunication::goForward() {
-    return browserHistory[++currentHistory];
+    ++currentHistory;
+    emit historyChanged();
+    return browserHistory[currentHistory];
 }
 
 void DVQmlCommunication::pushHistory(QString value) {
@@ -215,6 +219,8 @@ void DVQmlCommunication::pushHistory(QString value) {
 
             browserHistory.append(value);
         }
+
+        emit historyChanged();
     }
 }
 

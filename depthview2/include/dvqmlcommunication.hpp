@@ -32,6 +32,10 @@ class DVQmlCommunication : public QObject {
     /* By making this a property we can emit a signal when the list needs to be updated. */
     Q_PROPERTY(QStringList storageDevicePaths READ getStorageDevicePaths NOTIFY storageDevicePathsChanged)
 
+
+    Q_PROPERTY(bool canGoBack READ canGoBack NOTIFY historyChanged)
+    Q_PROPERTY(bool canGoForward READ canGoForward NOTIFY historyChanged)
+
 public:
     /* Settings can be set from DVWindow. */
     QSettings settings;
@@ -86,8 +90,8 @@ public:
     Q_INVOKABLE QString goBack();
     Q_INVOKABLE QString goForward();
     Q_INVOKABLE void pushHistory(QString value);
-    Q_INVOKABLE bool canGoBack() const;
-    Q_INVOKABLE bool canGoForward() const;
+    bool canGoBack() const;
+    bool canGoForward() const;
 
 signals:
     void isLeftChanged(bool isLeft);
@@ -106,6 +110,8 @@ signals:
     void bookmarksChanged(QStringList bookmarks);
 
     void storageDevicePathsChanged();
+
+    void historyChanged();
 
     /* Used for setting the cursor position. */
     void mouseMoved(const QPointF& pos);

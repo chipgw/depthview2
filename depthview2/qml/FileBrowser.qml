@@ -236,21 +236,17 @@ Rectangle {
             Button {
                 text: "<-"
 
-                onClicked: {
-                    /* Don't go back if there is no up to go. */
-                    if (DepthView.canGoBack())
-                        model.folder = DepthView.goBack()
-                }
+                enabled: DepthView.canGoBack
+
+                onClicked: model.folder = DepthView.goBack()
             }
 
             Button {
                 text: "->"
 
-                onClicked: {
-                    /* Don't go forward if there is no up to go. */
-                    if (DepthView.canGoForward())
-                        model.folder = DepthView.goForward()
-                }
+                enabled: DepthView.canGoForward
+
+                onClicked: model.folder = DepthView.goForward()
             }
 
             Button {
