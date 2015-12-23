@@ -252,11 +252,10 @@ Rectangle {
             Button {
                 text: "Up"
 
-                onClicked: {
-                    /* Don't go up if there is no up to go. */
-                    if (model.parentFolder.toString().length > 0)
-                        model.folder = model.parentFolder
-                }
+                /* Don't go up if there is no up to go. */
+                enabled: model.parentFolder.toString().length > 0
+
+                onClicked: model.folder = model.parentFolder
             }
 
             TextField {
