@@ -239,6 +239,10 @@ Rectangle {
                 enabled: DepthView.canGoBack
 
                 onClicked: model.folder = DepthView.goBack()
+
+                Shortcut {
+                    key: [StandardKey.Back]
+                }
             }
 
             Button {
@@ -247,6 +251,10 @@ Rectangle {
                 enabled: DepthView.canGoForward
 
                 onClicked: model.folder = DepthView.goForward()
+
+                Shortcut {
+                    key: [StandardKey.Forward]
+                }
             }
 
             Button {
