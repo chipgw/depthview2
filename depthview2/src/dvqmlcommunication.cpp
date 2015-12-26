@@ -4,8 +4,10 @@
 #include <QApplication>
 
 #ifdef DV_PORTABLE
+/* Portable builds store settings in a "DepthView.conf" next to the application executable. */
 #define SETTINGS_ARGS QApplication::applicationDirPath() + "/DepthView.conf", QSettings::IniFormat
 #else
+/* Non-portable builds use an ini file in "%APPDATA%/chipgw" or "~/.config/chipgw". */
 #define SETTINGS_ARGS QSettings::IniFormat, QSettings::UserScope, QApplication::organizationName(), QApplication::applicationName()
 #endif
 
@@ -18,8 +20,7 @@ DVQmlCommunication::DVQmlCommunication(QWindow* parent) : QObject(parent), setti
 
     m_drawMode = settings.contains("DrawMode") ? DVDrawMode::fromString(settings.value("DrawMode").toByteArray()) : DVDrawMode::Anaglyph;
 
-    /* TODO - We can't check if it's valid from here, as the plugins are not inited yet.
-     * But it should check somehow... */
+    /* TODO - We can't check if it's valid from here, as the plugins are not inited yet, but it should check somehow... */
     if (settings.contains("PluginMode"))
         m_pluginMode = settings.value("PluginMode").toString();
 
@@ -146,6 +147,7 @@ QStringList DVQmlCommunication::getPluginModes() const {
 }
 
 void DVQmlCommunication::addBookmark(QString bookmark) {
+    /* Don't add existing bookmarks, and don't add directories that don't exist. */
     if (!m_bookmarks.contains(bookmark) && dirExists(decodeURL(bookmark))) {
         m_bookmarks.append(bookmark);
         bookmarksChanged(m_bookmarks);
@@ -154,6 +156,7 @@ void DVQmlCommunication::addBookmark(QString bookmark) {
 }
 
 void DVQmlCommunication::deleteBookmark(QString bookmark) {
+    /* Only emit signal and update setting if something was actually deleted. */
     if (m_bookmarks.removeAll(bookmark) != 0) {
         bookmarksChanged(m_bookmarks);
         settings.setValue("Bookmarks", m_bookmarks);
@@ -170,6 +173,7 @@ QStringList DVQmlCommunication::getStorageDevicePaths() const {
     for (QStorageInfo info : QStorageInfo::mountedVolumes())
         paths.append(info.rootPath() + ';' + info.displayName());
 
+    /* There are duplicates on Android for some reason... */
     paths.removeDuplicates();
 
     return paths;
@@ -220,11 +224,13 @@ void DVQmlCommunication::pushHistory(QString value) {
             browserHistory.append(value);
         }
 
+        /* At this point no matter which branch it went through it has changed. */
         emit historyChanged();
     }
 }
 
 bool DVQmlCommunication::canGoBack() const {
+    /* We can go back if the list isn't empty and we aren't at the first item in the list. */
     return !browserHistory.isEmpty() && currentHistory > 0;
 }
 

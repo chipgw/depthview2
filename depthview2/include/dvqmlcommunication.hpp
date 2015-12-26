@@ -32,7 +32,7 @@ class DVQmlCommunication : public QObject {
     /* By making this a property we can emit a signal when the list needs to be updated. */
     Q_PROPERTY(QStringList storageDevicePaths READ getStorageDevicePaths NOTIFY storageDevicePathsChanged)
 
-
+    /* Basically the same situation as with storageDevicePaths, we want it to automagically update things that reference it. */
     Q_PROPERTY(bool canGoBack READ canGoBack NOTIFY historyChanged)
     Q_PROPERTY(bool canGoForward READ canGoForward NOTIFY historyChanged)
 
@@ -128,7 +128,7 @@ signals:
     void mouseMoved(const QPointF& pos);
 
     /* Used to show/hide ui based on touchscreen input. */
-    /* TODO - Mabe some args would be useful? */
+    /* TODO - Maybe some args would be useful? */
     void touchEvent();
 
 public slots:

@@ -20,21 +20,21 @@ const GLuint uv     = 1;
 
 #define DV_URI_VERSION "DepthView", 2, 0
 
+/* This class is needed for making forwarded keyboard events be recognized by QML. */
 class RenderControl : public QQuickRenderControl {
 public:
     RenderControl(DVWindow* win) : QQuickRenderControl(win), window(win) { }
 
     QWindow* window;
 
+    /* Apparently it has something to do with QML making sure the window has focus... */
     QWindow* renderWindow(QPoint* offset) {
-        if (window == nullptr)
-            return QQuickRenderControl::renderWindow(offset);
-
-        return window;
+        return window == nullptr ? QQuickRenderControl::renderWindow(offset) : window;
     }
 };
 
 DVWindow::DVWindow() : QOpenGLWindow(), qmlCommunication(new DVQmlCommunication(this)), fboRight(nullptr), fboLeft(nullptr) {
+    /* Use the class defined above. */
     qmlRenderControl = new RenderControl(this);
     qmlWindow = new QQuickWindow(qmlRenderControl);
 
