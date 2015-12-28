@@ -171,10 +171,12 @@ QStringList DVQmlCommunication::getStorageDevicePaths() const {
     QStringList paths;
 
     for (QStorageInfo info : QStorageInfo::mountedVolumes())
+#ifdef Q_OS_ANDROID
+        /* In my experience anything that doesn't have "storage" or "sdcard" in it on Android is useless. */
+        if (info.rootPath().contains("storage") || info.rootPath().contains("sdcard"))
+#endif
         paths.append(info.rootPath() + ';' + info.displayName());
 
-    /* There are duplicates on Android for some reason... */
-    paths.removeDuplicates();
 
     return paths;
 }
