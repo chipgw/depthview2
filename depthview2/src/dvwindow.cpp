@@ -1,3 +1,4 @@
+#include "version.hpp"
 #include "dvwindow.hpp"
 #include "dvshortcut.hpp"
 #include "dvqmlcommunication.hpp"
@@ -17,8 +18,6 @@
 /* Vertex attrib locations. */
 const GLuint vertex = 0;
 const GLuint uv     = 1;
-
-#define DV_URI_VERSION "DepthView", 2, 0
 
 /* This class is needed for making forwarded keyboard events be recognized by QML. */
 class RenderControl : public QQuickRenderControl {

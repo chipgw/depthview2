@@ -7,7 +7,8 @@ CONFIG += C++11
 SOURCES += src/main.cpp \
     src/dvwindow.cpp \
     src/dvqmlcommunication.cpp \
-    src/dvshortcut.cpp
+    src/dvshortcut.cpp \
+    src/version.cpp
 
 RESOURCES += qml.qrc
 
@@ -24,7 +25,8 @@ HEADERS += \
     include/dvenums.hpp \
     include/dvqmlcommunication.hpp \
     include/dvshortcut.hpp \
-    include/dvrenderplugin.hpp
+    include/dvrenderplugin.hpp \
+    include/version.hpp
 
 INCLUDEPATH += include
 
