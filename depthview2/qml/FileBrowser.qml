@@ -276,6 +276,9 @@ Rectangle {
                         model.folder = DepthView.encodeURL(text)
                 }
 
+                /* Android has some major issues with text input ATM, best to just leave read-only. */
+                readOnly: Qt.platform.os == "android"
+
                 text: DepthView.decodeURL(model.folder)
             }
 
