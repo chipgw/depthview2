@@ -15,6 +15,7 @@ RESOURCES += qml.qrc
 # Additional import path used to resolve QML modules in Qt Creator's code model
 QML_IMPORT_PATH =
 
+# Add "CONFIG+=portable" (with quotes) to qmake arguments to enable portable build.
 portable:DEFINES += DV_PORTABLE
 
 # Default rules for deployment.

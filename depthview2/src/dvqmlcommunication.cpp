@@ -1,4 +1,5 @@
-#include "include/dvqmlcommunication.hpp"
+#include "dvqmlcommunication.hpp"
+#include "version.hpp"
 #include <QWindow>
 #include <QStorageInfo>
 #include <QApplication>
@@ -239,4 +240,16 @@ bool DVQmlCommunication::canGoBack() const {
 bool DVQmlCommunication::canGoForward() const {
     /* We can go forward if currentHistory isn't the last item in the list. */
     return !browserHistory.isEmpty() && currentHistory < (browserHistory.size() - 1);
+}
+
+QString DVQmlCommunication::versionString() {
+    return version::versionString();
+}
+
+QString DVQmlCommunication::buildType() {
+    return version::build_type;
+}
+
+QString DVQmlCommunication::buildCompiler() {
+    return version::compiler;
 }

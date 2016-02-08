@@ -104,6 +104,10 @@ public:
     /* Is there a value to go forward to? */
     bool canGoForward() const;
 
+    Q_INVOKABLE QString versionString();
+    Q_INVOKABLE QString buildType();
+    Q_INVOKABLE QString buildCompiler();
+
 signals:
     void isLeftChanged(bool isLeft);
     void drawModeChanged(DVDrawMode::Type mode);
