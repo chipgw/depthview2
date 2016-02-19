@@ -426,33 +426,33 @@ Rectangle {
                 }
             }
         }
-    }
 
-    MouseArea {
-        id: aboutBox
-        anchors.fill: parent
+        MouseArea {
+            id: aboutBox
+            anchors.fill: parent
 
-        visible: false
-        enabled: visible
+            visible: false
+            enabled: visible
 
-        ToolBar {
-            anchors.centerIn: parent
+            ToolBar {
+                anchors.centerIn: parent
 
-            width: aboutLabel.width + 16
+                width: aboutLabel.width + 16
 
-            Label {
-                id: aboutLabel
-                text: "<h1>DepthView " + DepthView.versionString() +
-                      "</h1><p>DepthView is a basic application for viewing stereo 3D image files.</p>" +
-                      "<p>DepthView website: <a href=\"https://github.com/chipgw/depthview2\">github.com/chipgw/depthview2</a></p>" +
-                      "<p>Please report any bugs at: " +
-                      "<a href=\"https://github.com/chipgw/depthview2/issues\">github.com/chipgw/depthview2/issues</a></p>"
+                Label {
+                    id: aboutLabel
+                    text: "<h1>DepthView " + DepthView.versionString() +
+                          "</h1><p>DepthView is a basic application for viewing stereo 3D image files.</p>" +
+                          "<p>DepthView website: <a href=\"https://github.com/chipgw/depthview2\">github.com/chipgw/depthview2</a></p>" +
+                          "<p>Please report any bugs at: " +
+                          "<a href=\"https://github.com/chipgw/depthview2/issues\">github.com/chipgw/depthview2/issues</a></p>"
 
-                textFormat: Text.RichText
+                    textFormat: Text.RichText
+                }
             }
-        }
 
-        onClicked: visible = false
+            onClicked: visible = false
+        }
     }
 
     FileBrowser {
