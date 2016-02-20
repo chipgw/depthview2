@@ -114,6 +114,7 @@ Rectangle {
                         RadioButton {
                             text: modelData
                             exclusiveGroup: drawModeRadioGroup
+                            checked: DepthView.drawMode === DrawMode.Plugin && DepthView.pluginMode == modelData
 
                             onCheckedChanged:
                                 if (checked) {
