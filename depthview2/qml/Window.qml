@@ -286,11 +286,20 @@ Rectangle {
                 }
 
                 RowLayout {
-                    id: sourceModeControls
                     anchors {
                         margins: 4
                         left: parent.left
                         top: playbackControls.bottom
+                    }
+
+                    Button {
+                        text: "About"
+
+                        Shortcut {
+                            key: [StandardKey.HelpContents]
+                        }
+
+                        onClicked: aboutBox.visible = true
                     }
 
                     ExclusiveGroup { id: sourceModeRadioGroup }
@@ -331,24 +340,6 @@ Rectangle {
                 }
 
                 RowLayout {
-                    anchors {
-                        margins: 4
-                        left: parent.left
-                        top: playbackControls.bottom
-                    }
-                    Button {
-                        text: "About"
-
-                        Shortcut {
-                            key: [StandardKey.HelpContents]
-                        }
-
-                        onClicked: aboutBox.visible = true
-                    }
-                }
-
-                RowLayout {
-                    id: navigationButtons
                     anchors {
                         margins: 4
                         horizontalCenter: parent.horizontalCenter
