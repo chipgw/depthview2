@@ -25,6 +25,7 @@ class DVQmlCommunication : public QObject {
     Q_PROPERTY(bool fullscreen READ fullscreen WRITE setFullscreen NOTIFY fullscreenChanged)
 
     Q_PROPERTY(QString pluginMode READ pluginMode WRITE setPluginMode NOTIFY pluginModeChanged)
+    Q_PROPERTY(QStringList pluginModes READ getPluginModes NOTIFY pluginModesChanged)
 
     /* There is no WRITE function because you add or remove via addBookmark() and deleteBookmark(). */
     Q_PROPERTY(QStringList bookmarks READ bookmarks NOTIFY bookmarksChanged)
@@ -72,7 +73,7 @@ public:
     void setPluginMode(QString mode);
 
     void addPluginModes(const QStringList& modes);
-    Q_INVOKABLE QStringList getPluginModes() const;
+    QStringList getPluginModes() const;
 
     Q_INVOKABLE void addBookmark(QString bookmark);
     Q_INVOKABLE void deleteBookmark(QString bookmark);
@@ -121,6 +122,7 @@ signals:
     void fullscreenChanged(bool fullscreen);
 
     void pluginModeChanged(QString mode);
+    void pluginModesChanged();
 
     void bookmarksChanged(QStringList bookmarks);
 

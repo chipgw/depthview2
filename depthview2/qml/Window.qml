@@ -109,7 +109,7 @@ Rectangle {
                     }
                     Repeater {
                         id: pluginModeList
-                        model: DepthView.getPluginModes()
+                        model: DepthView.pluginModes
 
                         RadioButton {
                             text: modelData
