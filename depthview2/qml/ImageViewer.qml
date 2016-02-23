@@ -155,6 +155,8 @@ Item {
         MediaPlayer {
             id: media
             source: root.source
+
+            autoPlay: true
         }
 
         VideoOutput {
