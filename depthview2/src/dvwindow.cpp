@@ -75,15 +75,6 @@ DVWindow::~DVWindow() {
 }
 
 void DVWindow::initializeGL() {
-    /* The window should be shown by this point... */
-    if (qmlCommunication->settings.childGroups().contains("Window")) {
-        /* Restore window state from the stored geometry. */
-        qmlCommunication->settings.beginGroup("Window");
-        setGeometry(qmlCommunication->settings.value("Geometry").toRect());
-        setWindowState(Qt::WindowState(qmlCommunication->settings.value("State").toInt()));
-        qmlCommunication->settings.endGroup();
-    }
-
     loadShaders();
 
     loadPlugins();
@@ -112,6 +103,16 @@ void DVWindow::initializeGL() {
 
     /* Init to this window's OpenGL context. */
     qmlRenderControl->initialize(context());
+
+    /* The setGeometry() and setState() calls may try to set the qmlRoot geometry,
+     * which means this needs to be done after QML is all set up. */
+    if (qmlCommunication->settings.childGroups().contains("Window")) {
+        /* Restore window state from the stored geometry. */
+        qmlCommunication->settings.beginGroup("Window");
+        setGeometry(qmlCommunication->settings.value("Geometry").toRect());
+        setWindowState(Qt::WindowState(qmlCommunication->settings.value("State").toInt()));
+        qmlCommunication->settings.endGroup();
+    }
 }
 
 void DVWindow::paintGL() {
