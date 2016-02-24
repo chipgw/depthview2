@@ -14,5 +14,6 @@
         <file>qml/ImageViewer.qml</file>
         <file>qml/RadioMenu.qml</file>
         <file>glsl/interlaced.fsh</file>
+        <file>images/film.pns</file>
     </qresource>
 </RCC>

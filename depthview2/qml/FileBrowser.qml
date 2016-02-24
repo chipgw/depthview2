@@ -36,6 +36,8 @@ Rectangle {
             width: root.cellWidth
             height: root.cellHeight
 
+            property bool isVideo: fileName.match(/mp4$/) || fileName.match(/avi$/) || fileName.match(/m4v$/) || fileName.match(/mkv$/)
+
             /* Border/highlight rectangle. */
             Rectangle {
                 id: fileRect
@@ -75,8 +77,8 @@ Rectangle {
                         /* TODO - Video thumbnails. */
                         StereoImage {
                             anchors.centerIn: parent
-                            /* If it is a directory use the thumbnail in qrc. Otherwise the file should be an image itself. */
-                            source: fileIsDir ? "qrc:/images/folder.pns" : fileURL
+                            /* If it is a video or a directory use a thumbnail from qrc. Otherwise the file should be an image itself. */
+                            source: fileIsDir ? "qrc:/images/folder.pns" : isVideo ? "qrc:/images/film.pns" : fileURL
 
                             /* Images on the filesystem should be loaded asynchronously. */
                             asynchronous: !fileIsDir;
