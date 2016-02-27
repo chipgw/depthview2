@@ -362,7 +362,7 @@ Rectangle {
                         enabled: image.isVideo
                         visible: image.isVideo
 
-                        text: "Play/Pause"
+                        text: image.isPlaying ? "Pause" : "Play"
 
                         onClicked: image.playPause()
 

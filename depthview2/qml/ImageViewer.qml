@@ -47,6 +47,8 @@ Item {
         }
     }
 
+    property bool isPlaying: isVideo && media.playbackState == MediaPlayer.PlayingState
+
     property url source: "qrc:/images/test.pns"
 
     readonly property bool isVideo: media.hasVideo && media.hasAudio
