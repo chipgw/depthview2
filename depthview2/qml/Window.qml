@@ -455,6 +455,8 @@ Rectangle {
 
         model: folderModel
 
+        onVisibleChanged: if (image.isPlaying) image.playPause()
+
         onFileOpened: {
             visible = false
             image.currentIndex = index
