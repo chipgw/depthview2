@@ -54,6 +54,7 @@ Item {
     readonly property bool isVideo: media.hasVideo && media.hasAudio
     property alias videoPosition: media.position
     property alias videoDuration: media.duration
+    property alias videoVolume: media.volume
 
     property int videoMode: SourceMode.Mono
 

@@ -76,7 +76,7 @@ Rectangle {
 
                 ExclusiveGroup { id: drawModeRadioGroup }
 
-                RadioMenu {
+                PopupMenu {
                     id: modeSelector
 
                     root: root
@@ -206,7 +206,7 @@ Rectangle {
                 right: parent.right
             }
 
-            state: ((root.height - fakeCursor.y) < 128 && mouseTimer.running) || sourceMode.popupVisible || touchTimer.running ? "" : "HIDDEN"
+            state: ((root.height - fakeCursor.y) < 128 && mouseTimer.running) || sourceMode.popupVisible || volumePopup.popupVisible || touchTimer.running ? "" : "HIDDEN"
 
             states: [
                 State {
@@ -304,7 +304,7 @@ Rectangle {
 
                     ExclusiveGroup { id: sourceModeRadioGroup }
 
-                    RadioMenu {
+                    PopupMenu {
                         id: sourceMode
 
                         root: root
@@ -395,6 +395,26 @@ Rectangle {
                     function updateZoom() {
                         zoomFitButton.checked = image.zoom == -1
                         zoom100Button.checked = image.zoom == 1
+                    }
+
+                    /* Not a "zoom button" but goes in the same corner. */
+                    PopupMenu {
+                        id: volumePopup
+
+                        text: "Volume"
+
+                        visible: image.isVideo
+
+                        onTop: true
+
+                        Slider {
+                            orientation: Qt.Vertical
+
+                            /* Init to the default value. */
+                            value: image.videoVolume
+
+                            onValueChanged: image.videoVolume = value
+                        }
                     }
 
                     Button {

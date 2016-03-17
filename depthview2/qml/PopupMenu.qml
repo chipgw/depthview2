@@ -29,6 +29,7 @@ Button {
     }
 
     MouseArea {
+        /* Only a MouseArea in order to cover the above MouseArea. */
         id: hoverArea
 
         enabled: popup.visible
