@@ -405,6 +405,8 @@ Rectangle {
 
                         visible: image.isVideo
 
+                        root: root
+
                         onTop: true
 
                         Slider {
