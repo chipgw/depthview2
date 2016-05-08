@@ -199,17 +199,14 @@ void DVWindow::paintGL() {
                 /* Let it do it's thing. */
                 plugin->render(qmlCommunication->pluginMode(), f);
 
-                /* Don't check any other plugins. */
-                break;
+                /* Don't check any other plugins, return from here to avoid the default fullscreen quad.
+                 * We still want to queue up the next frame as we do below. */
+                return update();
             }
         }
-
-        /* Return from here to avoid the default fullscreen quad.
-         * We still want to queue up the next frame as we do below. */
-        return update();
     default:
-        /* Whoops invalid renderer... */
-        /* TODO - What happens here? */
+        /* Whoops, invalid renderer. Reset to Anaglyph... */
+        qmlCommunication->setDrawMode(DVDrawMode::Anaglyph);
         break;
     }
 
@@ -397,14 +394,17 @@ void DVWindow::loadPlugins() {
 
         /* If it can't be cast to a DVRenderPlugin* it isn't a valid plugin. */
         if (obj != nullptr && (plugin = qobject_cast<DVRenderPlugin*>(obj)) != nullptr) {
-            renderPlugins.append(plugin);
             qDebug("Found plugin: \"%s\"", qPrintable(filename));
+
+            if (plugin->init(context()->functions())) {
+                qmlCommunication->addPluginModes(plugin->drawModeNames());
+                renderPlugins.append(plugin);
+                qDebug("Loaded plugin: \"%s\"", qPrintable(filename));
+            } else {
+                qDebug("Plugin: \"%s\" failed to init.", qPrintable(filename));
+            }
         }
     }
-
-    /* Init any/all loaded plugins. */
-    for (DVRenderPlugin* plugin : renderPlugins)
-        if (plugin->init(context()->functions())) qmlCommunication->addPluginModes(plugin->drawModeNames());
 }
 
 void DVWindow::unloadPlugins() {
