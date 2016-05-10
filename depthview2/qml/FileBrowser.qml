@@ -299,5 +299,18 @@ Rectangle {
             }
         }
     }
+
+    MouseArea {
+        anchors.fill: parent
+
+        acceptedButtons: Qt.ForwardButton | Qt.BackButton
+
+        onClicked: {
+            if (mouse.button == Qt.BackButton && DepthView.canGoBack)
+                model.folder = DepthView.goBack()
+            if (mouse.button == Qt.ForwardButton && DepthView.canGoForward)
+                model.folder = DepthView.goForward()
+        }
+    }
 }
 
