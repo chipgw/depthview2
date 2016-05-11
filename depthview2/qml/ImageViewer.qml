@@ -185,6 +185,9 @@ Item {
 
         acceptedButtons: Qt.MiddleButton
 
+        /* Reset zoom on wheel double-click. */
+        onDoubleClicked: zoom = -1;
+
         onWheel: {
             /* Don't zoom if covered. */
             if (!fileBrowser.visible) {
