@@ -181,16 +181,14 @@ Item {
     MouseArea {
         anchors.fill: parent
 
-        enabled: !isVideo
-
-        acceptedButtons: Qt.MiddleButton
+        acceptedButtons: Qt.MiddleButton | Qt.ForwardButton | Qt.BackButton
 
         /* Reset zoom on wheel double-click. */
-        onDoubleClicked: zoom = -1;
+        onDoubleClicked: if (mouse.button == Qt.MiddleButton) zoom = -1;
 
         onWheel: {
             /* Don't zoom if covered. */
-            if (!fileBrowser.visible) {
+            if (!fileBrowser.visible && !isVideo) {
                 /* If zoom-to-fit is active retrieve the current scale before zooming in or out. */
                 if (zoom < 0)
                     zoom = image.scale
@@ -199,7 +197,14 @@ Item {
                 zoom = Math.max(0.2, Math.min(zoom, 4.0))
             }
         }
+        onClicked: {
+            if (mouse.button == Qt.BackButton)
+                prevFile()
+            if (mouse.button == Qt.ForwardButton)
+                nextFile()
+        }
     }
+
     PinchArea {
         anchors.fill: parent
 
