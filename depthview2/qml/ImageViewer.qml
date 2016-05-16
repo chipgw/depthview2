@@ -184,7 +184,7 @@ Item {
         acceptedButtons: Qt.MiddleButton | Qt.ForwardButton | Qt.BackButton
 
         /* Reset zoom on wheel double-click. */
-        onDoubleClicked: if (mouse.button == Qt.MiddleButton) zoom = -1;
+        onDoubleClicked: if (mouse.button == Qt.MiddleButton) zoom = (zoom == -1) ? 1 : -1;
 
         onWheel: {
             /* Don't zoom if covered. */
