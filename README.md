@@ -18,6 +18,7 @@ I am also working on a VR plugin, but I have no ETA on it.
 Dependencies
 ------------
 * [Qt]
+* [QtAV]
 
 License
 -------
@@ -25,4 +26,5 @@ License
 
 [DepthView]:https://github.com/chipgw/depthview
 [Qt]:http://www.qt.io
+[QtAV]:http://www.qtav.org/
 [MIT License]:LICENSE
