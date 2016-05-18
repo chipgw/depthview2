@@ -187,14 +187,21 @@ Item {
         onDoubleClicked: if (mouse.button == Qt.MiddleButton) zoom = (zoom == -1) ? 1 : -1;
 
         onWheel: {
-            /* Don't zoom if covered. */
-            if (!fileBrowser.visible && !isVideo) {
-                /* If zoom-to-fit is active retrieve the current scale before zooming in or out. */
-                if (zoom < 0)
-                    zoom = image.scale
+            /* Don't zoom or seek if covered. */
+            if (!fileBrowser.visible) {
+                if (isVideo) {
+                    if (wheel.angleDelta.y > 0)
+                        media.seekForward()
+                    else
+                        media.seekBackward()
+                } else {
+                    /* If zoom-to-fit is active retrieve the current scale before zooming in or out. */
+                    if (zoom < 0)
+                        zoom = image.scale
 
-                zoom += wheel.angleDelta.y * image.scale * 0.001
-                zoom = Math.max(0.2, Math.min(zoom, 4.0))
+                    zoom += wheel.angleDelta.y * image.scale * 0.001
+                    zoom = Math.max(0.2, Math.min(zoom, 4.0))
+                }
             }
         }
         onClicked: {
