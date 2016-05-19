@@ -302,6 +302,12 @@ Rectangle {
                         onClicked: aboutBox.visible = true
                     }
 
+                    Button {
+                        text: "Info"
+
+                        onClicked: mediaInfoBox.visible = true
+                    }
+
                     ExclusiveGroup { id: sourceModeRadioGroup }
 
                     PopupMenu {
@@ -442,30 +448,46 @@ Rectangle {
         }
 
         MouseArea {
-            id: aboutBox
             anchors.fill: parent
 
-            visible: false
+            visible: aboutBox.visible | mediaInfoBox.visible
             enabled: visible
 
-            ToolBar {
-                anchors.centerIn: parent
+            onClicked: aboutBox.visible = mediaInfoBox.visible = false
+        }
+        ToolBar {
+            id: aboutBox
+            anchors.centerIn: parent
 
-                width: aboutLabel.width + 16
+            visible: false
+            width: aboutLabel.width + 16
 
-                Label {
-                    id: aboutLabel
-                    text: "<h1>DepthView " + DepthView.versionString() +
-                          "</h1><p>DepthView is a basic application for viewing stereo 3D image files.</p>" +
-                          "<p>DepthView website: <a href=\"https://github.com/chipgw/depthview2\">github.com/chipgw/depthview2</a></p>" +
-                          "<p>Please report any bugs at: " +
-                          "<a href=\"https://github.com/chipgw/depthview2/issues\">github.com/chipgw/depthview2/issues</a></p>"
+            Label {
+                id: aboutLabel
 
-                    textFormat: Text.RichText
-                }
+                text: "<h1>DepthView " + DepthView.versionString() +
+                      "</h1><p>DepthView is a basic application for viewing stereo 3D image files.</p>" +
+                      "<p>DepthView website: <a href=\"https://github.com/chipgw/depthview2\">github.com/chipgw/depthview2</a></p>" +
+                      "<p>Please report any bugs at: " +
+                      "<a href=\"https://github.com/chipgw/depthview2/issues\">github.com/chipgw/depthview2/issues</a></p>" +
+                      "<hr>"
+
+                textFormat: Text.RichText
             }
+        }
+        ToolBar {
+            id: mediaInfoBox
+            anchors.centerIn: parent
 
-            onClicked: visible = false
+            visible: false
+            width: mediaInfoLabel.width + 16
+
+            Label {
+                id: mediaInfoLabel
+                text: image.mediaInfo
+
+                textFormat: Text.RichText
+            }
         }
     }
 

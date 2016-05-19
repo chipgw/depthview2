@@ -56,6 +56,22 @@ Item {
     property alias videoDuration: media.duration
     property alias videoVolume: media.volume
 
+    property string mediaInfo: isVideo ? "<h1>Media Info:</h1>" +
+                                         "<p>duration: " + media.metaData.duration + "</p>" +
+                                         "<h2>Video Info:</h2>" +
+                                         "<p>Codec: " + media.metaData.videoCodec + "</p>" +
+                                         "<p>Frame Rate: " + media.metaData.videoFrameRate + "</p>" +
+                                         "<p>Bit Rate: " + media.metaData.videoBitRate + "</p>" +
+                                         "<p>Resolution: " + media.metaData.resolution.width + "x" + media.metaData.resolution.height + "</p>" +
+                                         "<p>Pixel Format: " + media.metaData.pixelFormat + "</p>" +
+                                         "<h2>Audio Info:</h2>" +
+                                         "<p>Codec: " + media.metaData.audioCodec + "</p>" +
+                                         "<p>Bit Rate: " + media.metaData.audioBitRate + "</p>" +
+                                         "<hr>"
+                                       : "<h1>Media Info:</h1>" +
+                                         "resolution: " + image.width + "x" + image.height +
+                                         "<hr>"
+
     property int videoMode: SourceMode.Mono
 
     function seek(offset) {
