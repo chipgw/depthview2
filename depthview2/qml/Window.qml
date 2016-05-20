@@ -233,11 +233,6 @@ Rectangle {
                 RowLayout {
                     id: playbackControls
 
-                    function timeString(ms) {
-                        /* Turn a time value in milliseconds into a string in the format:  "h:mm:ss". */
-                        return Math.floor(ms / 3600000) + ":" + ("0" + Math.floor(ms / 60000) % 60).slice(-2) + ":" + ("0" + Math.floor(ms / 1000) % 60).slice(-2)
-                    }
-
                     anchors {
                         left: parent.left
                         right: parent.right
@@ -249,7 +244,7 @@ Rectangle {
 
                     Label {
                         /* Show the time elapsed. */
-                        text: playbackControls.timeString(image.videoPosition)
+                        text: image.timeString(image.videoPosition)
 
                         /* When the video is loading the duration is -1, which just looks odd. */
                         visible:  image.videoDuration > 0
@@ -278,7 +273,7 @@ Rectangle {
                     }
                     Label {
                         /* The time remaining. */
-                        text: "-" + playbackControls.timeString(image.videoDuration - image.videoPosition)
+                        text: "-" + image.timeString(image.videoDuration - image.videoPosition)
 
                         /* When the video is loading the duration is -1, which just looks odd. */
                         visible:  image.videoDuration > 0

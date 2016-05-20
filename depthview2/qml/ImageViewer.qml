@@ -47,6 +47,11 @@ Item {
         }
     }
 
+    function timeString(ms) {
+        /* Turn a time value in milliseconds into a string in the format:  "h:mm:ss". */
+        return Math.floor(ms / 3600000) + ":" + ("0" + Math.floor(ms / 60000) % 60).slice(-2) + ":" + ("0" + Math.floor(ms / 1000) % 60).slice(-2)
+    }
+
     property bool isPlaying: isVideo && media.playbackState == MediaPlayer.PlayingState
 
     property url source: "qrc:/images/test.pns"
@@ -57,16 +62,16 @@ Item {
     property alias videoVolume: media.volume
 
     property string mediaInfo: isVideo ? "<h1>Media Info:</h1>" +
-                                         "<p>duration: " + media.metaData.duration + "</p>" +
+                                         "duration: " + timeString(media.metaData.duration)  +
                                          "<h2>Video Info:</h2>" +
-                                         "<p>Codec: " + media.metaData.videoCodec + "</p>" +
-                                         "<p>Frame Rate: " + media.metaData.videoFrameRate + "</p>" +
-                                         "<p>Bit Rate: " + media.metaData.videoBitRate + "</p>" +
-                                         "<p>Resolution: " + media.metaData.resolution.width + "x" + media.metaData.resolution.height + "</p>" +
-                                         "<p>Pixel Format: " + media.metaData.pixelFormat + "</p>" +
+                                         "Codec: " + media.metaData.videoCodec +
+                                         "<br>Frame Rate: " + media.metaData.videoFrameRate +
+                                         "<br>Bit Rate: " + media.metaData.videoBitRate +
+                                         "<br>Resolution: " + media.metaData.resolution.width + "x" + media.metaData.resolution.height +
+                                         "<br>Pixel Format: " + media.metaData.pixelFormat +
                                          "<h2>Audio Info:</h2>" +
-                                         "<p>Codec: " + media.metaData.audioCodec + "</p>" +
-                                         "<p>Bit Rate: " + media.metaData.audioBitRate + "</p>" +
+                                         "Codec: " + media.metaData.audioCodec +
+                                         "<br>Bit Rate: " + media.metaData.audioBitRate +
                                          "<hr>"
                                        : "<h1>Media Info:</h1>" +
                                          "resolution: " + image.width + "x" + image.height +
