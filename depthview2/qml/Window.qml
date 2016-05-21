@@ -531,9 +531,7 @@ Rectangle {
                 mouseTimer.restart()
             }
 
-            onTouchEvent: {
-                touchTimer.restart()
-            }
+            onTouchEvent: touchTimer.restart()
         }
 
         /* This puts the cursor a little bit above the screen. */

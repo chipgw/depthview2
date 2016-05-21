@@ -81,7 +81,7 @@ Rectangle {
                             source: fileIsDir ? "qrc:/images/folder.pns" : isVideo ? "qrc:/images/film.pns" : fileURL
 
                             /* Images on the filesystem should be loaded asynchronously. */
-                            asynchronous: !fileIsDir;
+                            asynchronous: !(fileIsDir || isVideo);
 
                             /* The image should onlt be stored at the needed size. */
                             sourceSize: Qt.size(parent.width * 2, parent.height)
@@ -139,13 +139,12 @@ Rectangle {
                         width: drivePanel.width
                         text: data[1]
 
+                        /* Drive info is provided as "<path>;<display name>". */
                         property variant data: modelData.split(';')
 
                         onClicked: root.model.folder = DepthView.encodeURL(data[0])
 
-                        onImplicitWidthChanged: {
-                            drivePanel.width = Math.max(drivePanel.width, implicitWidth)
-                        }
+                        onImplicitWidthChanged: drivePanel.width = Math.max(drivePanel.width, implicitWidth)
                     }
                 }
 
@@ -171,9 +170,7 @@ Rectangle {
 
                             onClicked: root.model.folder = modelData
 
-                            onImplicitWidthChanged: {
-                                drivePanel.width = Math.max(drivePanel.width, implicitWidth + 16)
-                            }
+                            onImplicitWidthChanged: drivePanel.width = Math.max(drivePanel.width, implicitWidth + 16)
                         }
                         Button {
                             id: deleteButton
@@ -199,9 +196,7 @@ Rectangle {
 
                     onClicked: DepthView.addBookmark(root.model.folder)
 
-                    onImplicitWidthChanged: {
-                        drivePanel.width = Math.max(drivePanel.width, implicitWidth)
-                    }
+                    onImplicitWidthChanged: drivePanel.width = Math.max(drivePanel.width, implicitWidth)
                 }
             }
         }

@@ -195,7 +195,7 @@ Item {
 
             /* Same thing as the StereoImage does. Show half for each eye. */
             x: (!DepthView.isLeft && (videoMode == SourceMode.SidebySide || videoMode == SourceMode.SidebySideAnamorphic)) ? -width / 2 : 0
-            y: (!DepthView.isLeft && (videoMode == SourceMode.TopBottom || videoMode == SourceMode.TopBottomAnamorphic)) ? -height / 2 :0
+            y: (!DepthView.isLeft && (videoMode == SourceMode.TopBottom || videoMode == SourceMode.TopBottomAnamorphic)) ? -height / 2 : 0
         }
     }
 

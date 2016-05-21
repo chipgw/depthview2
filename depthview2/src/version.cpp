@@ -1,6 +1,5 @@
 #include "include/version.hpp"
 
-
 namespace version {
 
 const int major = 2;
