@@ -3,6 +3,7 @@ import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.2
 import Qt.labs.folderlistmodel 2.1
 import DepthView 2.0
+import QtAV 1.6
 
 Rectangle {
     id: root
@@ -74,7 +75,6 @@ Rectangle {
                         }
 
                         /* 3D thumbnails! */
-                        /* TODO - Video thumbnails. */
                         StereoImage {
                             anchors.centerIn: parent
                             /* If it is a video or a directory use a thumbnail from qrc. Otherwise the file should be an image itself. */
@@ -83,8 +83,24 @@ Rectangle {
                             /* Images on the filesystem should be loaded asynchronously. */
                             asynchronous: !(fileIsDir || isVideo);
 
-                            /* The image should onlt be stored at the needed size. */
+                            /* The image should only be stored at the needed size. */
                             sourceSize: Qt.size(parent.width * 2, parent.height)
+                        }
+
+                        /* Video thumbnails! */
+                        /* TODO - Set up a system to detect if a video is 3D... */
+                        VideoPreview {
+                            anchors.fill: parent
+                            file: fileURL
+
+                            visible: isVideo
+                            enabled: isVideo
+
+                            /* Set timestamp to one minute in. */
+                            Component.onCompleted: timestamp = 60000
+
+                            /* This doesn't work because it doesn't send the signal to the thing that gets the frame. */
+                            /*timestamp: 60000*/
                         }
                     }
 
