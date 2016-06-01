@@ -35,6 +35,11 @@ Item {
     }
 
     function updateImage() {
+        /* Reset video settings. */
+        videoMode = SourceMode.Mono
+        seek(0);
+
+        /* Set the source path from the model. */
         source = model.get(currentIndex, "fileURL")
     }
 
