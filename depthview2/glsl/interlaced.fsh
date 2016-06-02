@@ -1,7 +1,3 @@
-#ifdef GL_ES
-#extension GL_EXT_gpu_shader4 : enable
-#endif
-
 uniform sampler2D textureL;
 uniform sampler2D textureR;
 
@@ -17,7 +13,7 @@ void main() {
     ivec2 screenCoord = ivec2(texCoord * windowSize);
     screenCoord.y = int(windowSize.y) - screenCoord.y;
     screenCoord += ivec2(windowCorner);
-    bool left = (vertical ? (screenCoord.x & 1) : 0) == (horizontal ? (screenCoord.y & 1) : 0);
+    bool left = (vertical ? mod(float(screenCoord.x), 2.0) : 0.0) == (horizontal ? mod(float(screenCoord.y), 2.0) : 0.0);
     gl_FragColor = left ? texture2D(textureL, texCoord) : texture2D(textureR, texCoord);
 }
 
