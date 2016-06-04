@@ -1,7 +1,7 @@
 import QtQuick 2.5
-import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.2
 import DepthView 2.0
+import Qt.labs.controls 1.0
 import Qt.labs.folderlistmodel 2.1
 
 Rectangle {
@@ -45,9 +45,13 @@ Rectangle {
 
         ToolBar {
             id: topMenu
-            anchors.top: parent.top
+            anchors {
+                top: parent.top
+                left: parent.left
+                right: parent.right
+            }
 
-            state: (fakeCursor.y < 128 &&  mouseTimer.running) || modeSelector.popupVisible || touchTimer.running ? "" : "HIDDEN"
+            state: (fakeCursor.y < 128 &&  mouseTimer.running) || modeSelector.popup.visible || touchTimer.running ? "" : "HIDDEN"
 
             states: [
                 State {
@@ -68,60 +72,20 @@ Rectangle {
             ]
 
             RowLayout {
-                anchors {
-                    margins: 4
-                    top: parent.top
-                    left: parent.left
-                }
-
-                ExclusiveGroup { id: drawModeRadioGroup }
-
-                PopupMenu {
+                ComboBox {
                     id: modeSelector
 
-                    root: root
+                    /* TODO - Doesn't work right with plugin modes. */
+                    currentIndex: DepthView.drawMode
 
-                    text: "Pick Mode"
+                    model: DepthView.modes
 
-                    Repeater {
-                        id: modeList
-                        model: ListModel {
-                            ListElement { text: "Anaglyph"; mode: DrawMode.Anaglyph }
-                            ListElement { text: "Side-by-Side"; mode: DrawMode.SidebySide }
-                            ListElement { text: "Top/Bottom"; mode: DrawMode.TopBottom }
-                            ListElement { text: "Interlaced Horizontal"; mode: DrawMode.InterlacedH }
-                            ListElement { text: "Interlaced Vertical"; mode: DrawMode.InterlacedV }
-                            ListElement { text: "Checkerboard"; mode: DrawMode.Checkerboard }
-                            ListElement { text: "Mono Left"; mode: DrawMode.MonoLeft }
-                            ListElement { text: "Mono Right"; mode: DrawMode.MonoRight }
-                        }
-                        RadioButton {
-                            text: model.text
-                            exclusiveGroup: drawModeRadioGroup
-                            checked: DepthView.drawMode === model.mode
-
-                            onCheckedChanged:
-                                if (checked) {
-                                    DepthView.drawMode = model.mode
-                                    modeSelector.popupVisible = false
-                                }
-                        }
-                    }
-                    Repeater {
-                        id: pluginModeList
-                        model: DepthView.pluginModes
-
-                        RadioButton {
-                            text: modelData
-                            exclusiveGroup: drawModeRadioGroup
-                            checked: DepthView.drawMode === DrawMode.Plugin && DepthView.pluginMode == modelData
-
-                            onCheckedChanged:
-                                if (checked) {
-                                    DepthView.drawMode = DrawMode.Plugin
-                                    DepthView.pluginMode = modelData
-                                    modeSelector.popupVisible = false
-                                }
+                    onActivated: {
+                        if (index < DrawMode.Plugin)
+                            DepthView.drawMode = index
+                        else {
+                            DepthView.drawMode = DrawMode.Plugin
+                            DepthView.pluginMode = currentText
                         }
                     }
                 }
@@ -206,7 +170,7 @@ Rectangle {
                 right: parent.right
             }
 
-            state: ((root.height - fakeCursor.y) < 128 && mouseTimer.running) || sourceMode.popupVisible || volumePopup.popupVisible || touchTimer.running ? "" : "HIDDEN"
+            state: ((root.height - fakeCursor.y) < 128 && mouseTimer.running) || sourceMode.popup.visible || volumePopup.popupVisible || touchTimer.running ? "" : "HIDDEN"
 
             states: [
                 State {
@@ -226,9 +190,8 @@ Rectangle {
                 }
             ]
 
-            Item {
+            ColumnLayout {
                 width: parent.width
-                height: childrenRect.height
 
                 RowLayout {
                     id: playbackControls
@@ -254,7 +217,7 @@ Rectangle {
 
                         Layout.fillWidth: true
 
-                        maximumValue: image.videoDuration
+                        to: image.videoDuration
 
                         /* Use this property to keep track of when value changes via binding. */
                         property int videoPos
@@ -280,44 +243,36 @@ Rectangle {
                     }
                 }
 
-                RowLayout {
+                Item {
                     anchors {
-                        margins: 4
                         left: parent.left
-                        top: playbackControls.bottom
+                        right: parent.right
                     }
+                    height: childrenRect.height
 
-                    Button {
-                        text: "About"
+                    RowLayout {
+                        anchors.left: parent.left
 
-                        Shortcut {
-                            key: [StandardKey.HelpContents]
+                        Button {
+                            text: "About"
+
+                            Shortcut {
+                                key: [StandardKey.HelpContents]
+                            }
+
+                            onClicked: aboutBox.visible = true
                         }
 
-                        onClicked: aboutBox.visible = true
-                    }
+                        Button {
+                            text: "Info"
 
-                    Button {
-                        text: "Info"
+                            onClicked: mediaInfoBox.visible = true
+                        }
 
-                        onClicked: mediaInfoBox.visible = true
-                    }
+                        ComboBox {
+                            id: sourceMode
 
-                    ExclusiveGroup { id: sourceModeRadioGroup }
-
-                    PopupMenu {
-                        id: sourceMode
-
-                        root: root
-
-                        text: "Source Mode"
-
-                        visible: image.isVideo
-
-                        onTop: true
-
-                        Repeater {
-                            id: sourceModeList
+                            textRole: "text"
                             model: ListModel {
                                 ListElement { text: "Side-by-Side"; mode: SourceMode.SidebySide }
                                 ListElement { text: "Side-by-Side Anamorphic"; mode: SourceMode.SidebySideAnamorphic }
@@ -325,118 +280,108 @@ Rectangle {
                                 ListElement { text: "Top/Bottom Anamorphic"; mode: SourceMode.TopBottomAnamorphic }
                                 ListElement { text: "Mono"; mode: SourceMode.Mono }
                             }
-                            RadioButton {
-                                text: model.text
-                                exclusiveGroup: sourceModeRadioGroup
-                                checked: image.videoMode === model.mode
 
-                                onCheckedChanged:
-                                    if (checked) {
-                                        image.videoMode = model.mode
-                                        sourceMode.popupVisible = false
-                                    }
+                            visible: image.isVideo
+                            currentIndex: image.videoMode
+
+                            onActivated: {
+                                image.videoMode = model.get(index).mode
+                                sourceMode.popupVisible = false
                             }
                         }
                     }
-                }
 
-                RowLayout {
-                    anchors {
-                        margins: 4
-                        horizontalCenter: parent.horizontalCenter
-                        top: playbackControls.bottom
-                    }
+                    RowLayout {
+                        anchors.horizontalCenter: parent.horizontalCenter
 
-                    Button {
-                        text: "<"
+                        Button {
+                            text: "<"
 
-                        onClicked: image.prevFile()
+                            onClicked: image.prevFile()
 
-                        Shortcut {
-                            key: ["Left"]
+                            Shortcut {
+                                key: ["Left"]
 
-                            enabled: !fileBrowser.visible
+                                enabled: !fileBrowser.visible
+                            }
+                        }
+
+                        Button {
+                            enabled: image.isVideo
+                            visible: image.isVideo
+
+                            text: image.isPlaying ? "Pause" : "Play"
+
+                            onClicked: image.playPause()
+
+                            Shortcut {
+                                key: ["Space"]
+                            }
+                        }
+
+                        Button {
+                            text: ">"
+
+                            onClicked: image.nextFile()
+
+                            Shortcut {
+                                key: ["Right"]
+
+                                enabled: !fileBrowser.visible
+                            }
                         }
                     }
 
-                    Button {
-                        enabled: image.isVideo
-                        visible: image.isVideo
+                    RowLayout {
+                        id: zoomButtons
 
-                        text: image.isPlaying ? "Pause" : "Play"
+                        anchors.right: parent.right
 
-                        onClicked: image.playPause()
-
-                        Shortcut {
-                            key: ["Space"]
+                        function updateZoom() {
+                            zoomFitButton.checked = image.zoom == -1
+                            zoom100Button.checked = image.zoom == 1
                         }
-                    }
 
-                    Button {
-                        text: ">"
+                        /* Not a "zoom button" but goes in the same corner. */
+                        PopupMenu {
+                            id: volumePopup
 
-                        onClicked: image.nextFile()
+                            text: "Volume"
 
-                        Shortcut {
-                            key: ["Right"]
+                            visible: image.isVideo
 
-                            enabled: !fileBrowser.visible
+                            root: root
+
+                            onTop: true
+
+                            Slider {
+                                orientation: Qt.Vertical
+
+                                /* Init to the default value. */
+                                value: image.videoVolume
+
+                                onValueChanged: image.videoVolume = value
+                            }
                         }
-                    }
-                }
-                RowLayout {
-                    id: zoomButtons
 
-                    anchors {
-                        margins: 4
-                        right: parent.right
-                        top: playbackControls.bottom
-                    }
+                        Button {
+                            id: zoomFitButton
+                            text: "Fit"
 
-                    function updateZoom() {
-                        zoomFitButton.checked = image.zoom == -1
-                        zoom100Button.checked = image.zoom == 1
-                    }
+                            checkable: true
+                            checked: image.zoom == -1
 
-                    /* Not a "zoom button" but goes in the same corner. */
-                    PopupMenu {
-                        id: volumePopup
-
-                        text: "Volume"
-
-                        visible: image.isVideo
-
-                        root: root
-
-                        onTop: true
-
-                        Slider {
-                            orientation: Qt.Vertical
-
-                            /* Init to the default value. */
-                            value: image.videoVolume
-
-                            onValueChanged: image.videoVolume = value
+                            onClicked: { image.zoom = -1; zoomButtons.updateZoom() }
                         }
-                    }
+                        Button {
+                            id: zoom100Button
+                            text: "1:1"
 
-                    Button {
-                        id: zoomFitButton
-                        text: "Fit"
+                            checkable: true
+                            checked: image.zoom == 1
 
-                        checkable: true
-                        checked: image.zoom == -1
-
-                        onClicked: { image.zoom = -1; zoomButtons.updateZoom() }
-                    }
-                    Button {
-                        id: zoom100Button
-                        text: "1:1"
-
-                        checkable: true
-                        checked: image.zoom == 1
-
-                        onClicked: { image.zoom = 1; zoomButtons.updateZoom() }
+                            onClicked: { image.zoom = 1; zoomButtons.updateZoom() }
+                        }
                     }
                 }
             }

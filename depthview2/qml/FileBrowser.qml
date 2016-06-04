@@ -1,6 +1,6 @@
 import QtQuick 2.5
-import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.2
+import Qt.labs.controls 1.0
 import Qt.labs.folderlistmodel 2.1
 import DepthView 2.0
 import QtAV 1.6
@@ -120,20 +120,18 @@ Rectangle {
         }
     }
 
-    SplitView {
-        anchors {
-            top: controls.bottom
-            left:  parent.left
-            right:  parent.right
-            bottom:  parent.bottom
-        }
-        orientation: Qt.Horizontal
+    Page {
+        id: page
+        anchors.fill: parent
 
         Flickable {
             id: drivePanel
             height: parent.height
-
-            contentHeight: drivePanelColumn.height
+            anchors {
+                left: parent.left
+                top: parent.top
+                bottom: parent.bottom
+            }
 
             Column {
                 id: drivePanelColumn
@@ -141,10 +139,7 @@ Rectangle {
                 width: parent.width
                 height: childrenRect.height
 
-                clip: true
-
-                Text {
-                    color: "white"
+                Label {
                     text: "Drives:"
                 }
 
@@ -164,8 +159,7 @@ Rectangle {
                     }
                 }
 
-                Text {
-                    color: "white"
+                Label {
                     text: "Bookmarks:"
                 }
 
@@ -217,95 +211,99 @@ Rectangle {
             }
         }
 
-        GridView {
+        Rectangle {
+            color: "black"
+            anchors {
+                left: drivePanel.right
+                right: parent.right
+                top: parent.top
+                bottom: parent.bottom
+            }
             Layout.fillWidth: true
 
-            model: root.model
-            delegate: fileComponent
+            GridView {
+                anchors.fill: parent
+                model: root.model
+                delegate: fileComponent
 
-            /* So that it is the same as the delegate. */
-            cellWidth: root.cellWidth
-            cellHeight: root.cellHeight
-        }
-    }
+                ScrollBar.vertical: ScrollBar { }
 
-    ToolBar {
-        id: controls
-        anchors {
-            margins: 12
-            top: parent.top
-            left: parent.left
-            right: parent.right
+                /* So that it is the same as the delegate. */
+                cellWidth: root.cellWidth
+                cellHeight: root.cellHeight
+            }
         }
 
-        /* Put all interface items a bit above the screen. */
-        transform: Translate {
-            x: DepthView.isLeft ? 4 : -4
-        }
-
-        RowLayout {
-            anchors.fill: parent
-
-            Button {
-                text: "<-"
-
-                enabled: DepthView.canGoBack
-
-                onClicked: model.folder = DepthView.goBack()
-
-                Shortcut {
-                    key: [StandardKey.Back]
-                }
+        header: ToolBar {
+            /* Put all interface items a bit above the screen. */
+            transform: Translate {
+                x: DepthView.isLeft ? 4 : -4
             }
+            
+            RowLayout {
+                anchors.fill: parent
 
-            Button {
-                text: "->"
-
-                enabled: DepthView.canGoForward
-
-                onClicked: model.folder = DepthView.goForward()
-
-                Shortcut {
-                    key: [StandardKey.Forward]
+                Button {
+                    text: "<-"
+                    
+                    enabled: DepthView.canGoBack
+                    
+                    onClicked: model.folder = DepthView.goBack()
+                    
+                    Shortcut {
+                        key: [StandardKey.Back]
+                    }
                 }
-            }
-
-            Button {
-                text: "Up"
-
-                /* Don't go up if there is no up to go. */
-                enabled: model.parentFolder.toString().length > 0
-
-                onClicked: model.folder = model.parentFolder
-            }
-
-            TextField {
-                id: pathText
-
-                Layout.fillWidth: true
-
-                onAccepted: {
-                    if (DepthView.dirExists(text))
-                        model.folder = DepthView.encodeURL(text)
+                
+                Button {
+                    text: "->"
+                    
+                    enabled: DepthView.canGoForward
+                    
+                    onClicked: model.folder = DepthView.goForward()
+                    
+                    Shortcut {
+                        key: [StandardKey.Forward]
+                    }
                 }
-
-                /* Android has some major issues with text input ATM, best to just leave read-only. */
-                readOnly: Qt.platform.os == "android"
-
-                text: DepthView.decodeURL(model.folder)
-            }
-
-            Button {
-                text: "Cancel"
-
-                onClicked: {
-                    /* Reset to the folder that was active when the browser was first shown. */
-                    model.folder = startingFolder
-                    root.visible = false
+                
+                Button {
+                    text: "Up"
+                    
+                    /* Don't go up if there is no up to go. */
+                    enabled: model.parentFolder.toString().length > 0
+                    
+                    onClicked: model.folder = model.parentFolder
                 }
-
-                Shortcut {
-                    key: ["Esc"]
+                
+                TextField {
+                    id: pathText
+                    
+                    Layout.fillWidth: true
+                    
+                    onAccepted: {
+                        if (DepthView.dirExists(text))
+                            model.folder = DepthView.encodeURL(text)
+                    }
+                    
+                    /* Android has some major issues with text input ATM, best to just leave read-only. */
+                    readOnly: Qt.platform.os == "android"
+                    
+                    text: DepthView.decodeURL(model.folder)
+                }
+                
+                Button {
+                    text: "Cancel"
+                    
+                    onClicked: {
+                        /* Reset to the folder that was active when the browser was first shown. */
+                        model.folder = startingFolder
+                        root.visible = false
+                    }
+                    
+                    Shortcut {
+                        key: ["Esc"]
+                    }
                 }
             }
         }

@@ -148,6 +148,18 @@ QStringList DVQmlCommunication::getPluginModes() const {
     return pluginModes;
 }
 
+QStringList DVQmlCommunication::getModes() const {
+    return QStringList() << "Anaglyph"
+                         << "Side-by-Side"
+                         << "Top/Bottom"
+                         << "Interlaced Horizontal"
+                         << "Interlaced Vertical"
+                         << "Checkerboard"
+                         << "Mono Left"
+                         << "Mono Right"
+                         << pluginModes;
+}
+
 void DVQmlCommunication::addBookmark(QString bookmark) {
     /* Don't add existing bookmarks, and don't add directories that don't exist. */
     if (!m_bookmarks.contains(bookmark) && dirExists(decodeURL(bookmark))) {

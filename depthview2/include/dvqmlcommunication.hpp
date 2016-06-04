@@ -26,6 +26,7 @@ class DVQmlCommunication : public QObject {
 
     Q_PROPERTY(QString pluginMode READ pluginMode WRITE setPluginMode NOTIFY pluginModeChanged)
     Q_PROPERTY(QStringList pluginModes READ getPluginModes NOTIFY pluginModesChanged)
+    Q_PROPERTY(QStringList modes READ getModes NOTIFY pluginModesChanged)
 
     /* There is no WRITE function because you add or remove via addBookmark() and deleteBookmark(). */
     Q_PROPERTY(QStringList bookmarks READ bookmarks NOTIFY bookmarksChanged)
@@ -74,6 +75,7 @@ public:
 
     void addPluginModes(const QStringList& modes);
     QStringList getPluginModes() const;
+    QStringList getModes() const;
 
     Q_INVOKABLE void addBookmark(QString bookmark);
     Q_INVOKABLE void deleteBookmark(QString bookmark);
