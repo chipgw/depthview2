@@ -18,6 +18,12 @@ Rectangle {
 
     property url startingFolder
 
+    function cancel() {
+        /* Reset to the folder that was active when the browser was first shown. */
+        model.folder = startingFolder
+        root.visible = false
+    }
+
     onVisibleChanged: {
         if (visible) {
             startingFolder = model.folder
@@ -249,10 +255,6 @@ Rectangle {
                     enabled: DepthView.canGoBack
                     
                     onClicked: model.folder = DepthView.goBack()
-                    
-                    Shortcut {
-                        key: [StandardKey.Back]
-                    }
                 }
                 
                 Button {
@@ -261,10 +263,6 @@ Rectangle {
                     enabled: DepthView.canGoForward
                     
                     onClicked: model.folder = DepthView.goForward()
-                    
-                    Shortcut {
-                        key: [StandardKey.Forward]
-                    }
                 }
                 
                 Button {
@@ -295,15 +293,7 @@ Rectangle {
                 Button {
                     text: "Cancel"
                     
-                    onClicked: {
-                        /* Reset to the folder that was active when the browser was first shown. */
-                        model.folder = startingFolder
-                        root.visible = false
-                    }
-                    
-                    Shortcut {
-                        key: ["Esc"]
-                    }
+                    onClicked: root.cancel()
                 }
             }
         }
@@ -320,6 +310,27 @@ Rectangle {
             if (mouse.button == Qt.ForwardButton && DepthView.canGoForward)
                 model.folder = DepthView.goForward()
         }
+    }
+
+    Shortcut {
+        sequence: StandardKey.Back
+        enabled: parent.visible && DepthView.canGoBack
+        context: Qt.ApplicationShortcut
+        onActivated: model.folder = DepthView.goBack()
+    }
+
+    Shortcut {
+        sequence: StandardKey.Forward
+        enabled: parent.visible && DepthView.canGoForward
+        context: Qt.ApplicationShortcut
+        onActivated: model.folder = DepthView.goForward()
+    }
+
+    Shortcut {
+        sequence: "Esc"
+        enabled: parent.visible
+        context: Qt.ApplicationShortcut
+        onActivated: root.cancel()
     }
 }
 

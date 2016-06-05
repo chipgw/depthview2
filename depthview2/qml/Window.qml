@@ -94,10 +94,6 @@ Rectangle {
                     text: "Open"
 
                     onClicked: fileBrowser.visible = true
-
-                    Shortcut {
-                        key: [StandardKey.Open]
-                    }
                 }
 
                 Label {
@@ -153,10 +149,6 @@ Rectangle {
                         target: DepthView
 
                         onFullscreenChanged: fullscreenCheckBox.checked = fullscreen
-                    }
-
-                    Shortcut {
-                        key: [StandardKey.FullScreen, "Ctrl+F"]
                     }
                 }
             }
@@ -256,10 +248,6 @@ Rectangle {
                         Button {
                             text: "About"
 
-                            Shortcut {
-                                key: [StandardKey.HelpContents]
-                            }
-
                             onClicked: aboutBox.visible = true
                         }
 
@@ -298,12 +286,6 @@ Rectangle {
                             text: "<"
 
                             onClicked: image.prevFile()
-
-                            Shortcut {
-                                key: ["Left"]
-
-                                enabled: !fileBrowser.visible
-                            }
                         }
 
                         Button {
@@ -313,22 +295,12 @@ Rectangle {
                             text: image.isPlaying ? "Pause" : "Play"
 
                             onClicked: image.playPause()
-
-                            Shortcut {
-                                key: ["Space"]
-                            }
                         }
 
                         Button {
                             text: ">"
 
                             onClicked: image.nextFile()
-
-                            Shortcut {
-                                key: ["Right"]
-
-                                enabled: !fileBrowser.visible
-                            }
                         }
                     }
 
@@ -483,5 +455,49 @@ Rectangle {
         transform: Translate {
             x: DepthView.isLeft ? 4 : -4
         }
+    }
+
+    Shortcut {
+        sequence: StandardKey.Open
+        context: Qt.ApplicationShortcut
+
+        onActivated: fileBrowser.visible = true
+    }
+
+    Shortcut {
+        sequence: "Right"
+        context: Qt.ApplicationShortcut
+
+        enabled: !fileBrowser.visible
+
+        onActivated: image.nextFile()
+    }
+    Shortcut {
+        sequence: "Left"
+        context: Qt.ApplicationShortcut
+
+        enabled: !fileBrowser.visible
+
+        onActivated: image.prevFile()
+    }
+    Shortcut {
+        sequence: "Space"
+        context: Qt.ApplicationShortcut
+
+        enabled: image.isVideo
+
+        onActivated: image.playPause()
+    }
+    Shortcut {
+        sequence: StandardKey.HelpContents
+        context: Qt.ApplicationShortcut
+
+        onActivated: aboutBox.visible = true
+    }
+    Shortcut {
+        sequence: StandardKey.FullScreen
+        context: Qt.ApplicationShortcut
+
+        onActivated: DepthView.fullscreen = !DepthView.fullscreen
     }
 }

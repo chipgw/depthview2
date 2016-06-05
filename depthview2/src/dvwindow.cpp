@@ -1,6 +1,5 @@
 #include "version.hpp"
 #include "dvwindow.hpp"
-#include "dvshortcut.hpp"
 #include "dvqmlcommunication.hpp"
 #include "dvrenderplugin.hpp"
 #include <QQuickRenderControl>
@@ -41,8 +40,6 @@ DVWindow::DVWindow() : QOpenGLWindow(), qmlCommunication(new DVQmlCommunication(
 
     if (qmlEngine->incubationController() == nullptr)
         qmlEngine->setIncubationController(qmlWindow->incubationController());
-
-    qmlRegisterType<DVShortcut>(DV_URI_VERSION, "Shortcut");
 
     qmlEngine->rootContext()->setContextProperty("DepthView", qmlCommunication);
 
