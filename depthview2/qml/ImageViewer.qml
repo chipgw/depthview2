@@ -1,5 +1,6 @@
 import QtQuick 2.5
 import Qt.labs.folderlistmodel 2.1
+import Qt.labs.controls 1.0
 import QtAV 1.6
 import DepthView 2.0
 
@@ -98,6 +99,9 @@ Item {
 
         /* Only enable panning when the image is zoomed in enough. */
         interactive: (contentWidth > width || contentHeight > height)
+
+        ScrollBar.horizontal: ScrollBar { }
+        ScrollBar.vertical: ScrollBar { }
 
         /* The location that the center of the screen is focused on. */
         property point currentCenter: Qt.point(0.5, 0.5)
