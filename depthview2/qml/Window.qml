@@ -248,13 +248,13 @@ Rectangle {
                         Button {
                             text: "About"
 
-                            onClicked: aboutBox.visible = true
+                            onClicked: aboutBox.open()
                         }
 
                         Button {
                             text: "Info"
 
-                            onClicked: mediaInfoBox.visible = true
+                            onClicked: mediaInfoBox.open()
                         }
 
                         ComboBox {
@@ -359,20 +359,14 @@ Rectangle {
             }
         }
 
-        MouseArea {
-            anchors.fill: parent
-
-            visible: aboutBox.visible | mediaInfoBox.visible
-            enabled: visible
-
-            onClicked: aboutBox.visible = mediaInfoBox.visible = false
-        }
-        ToolBar {
+        Popup {
             id: aboutBox
-            anchors.centerIn: parent
 
-            visible: false
-            width: aboutLabel.width + 16
+            /* No anchors for some reason... */
+            x: (parent.width - width) / 2
+            y: (parent.height - height) / 2
+
+            closePolicy: Popup.OnPressOutside | Popup.OnEscape
 
             Label {
                 id: aboutLabel
@@ -387,12 +381,14 @@ Rectangle {
                 textFormat: Text.RichText
             }
         }
-        ToolBar {
+        Popup {
             id: mediaInfoBox
-            anchors.centerIn: parent
 
-            visible: false
-            width: mediaInfoLabel.width + 16
+            /* No anchors for some reason... */
+            x: (parent.width - width) / 2
+            y: (parent.height - height) / 2
+
+            closePolicy: Popup.OnPressOutside | Popup.OnEscape
 
             Label {
                 id: mediaInfoLabel
