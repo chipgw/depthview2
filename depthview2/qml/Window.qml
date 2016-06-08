@@ -272,10 +272,7 @@ Rectangle {
                             visible: image.isVideo
                             currentIndex: image.videoMode
 
-                            onActivated: {
-                                image.videoMode = model.get(index).mode
-                                sourceMode.popupVisible = false
-                            }
+                            onActivated: image.videoMode = model.get(index).mode
                         }
                     }
 
@@ -451,6 +448,11 @@ Rectangle {
         transform: Translate {
             x: DepthView.isLeft ? 4 : -4
         }
+
+        /* Popups create their item as a child of the window's contentItem, which is the parent of the root item.
+         * Thus, in order to appear above them the cursor must be parented to the same item AND have a higher z. */
+        parent: root.parent
+        z: 12000
     }
 
     Shortcut {
