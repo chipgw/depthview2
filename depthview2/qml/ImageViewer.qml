@@ -67,9 +67,8 @@ Item {
     property alias videoDuration: media.duration
     property alias videoVolume: media.volume
 
-    property string mediaInfo: isVideo ? "<h1>Media Info:</h1>" +
-                                         "file path: " + source +
-                                         "<br>duration: " + timeString(media.metaData.duration)  +
+    property string mediaInfo: isVideo ? "<h1>Media Info:</h1>" + source +
+                                         "<br>Duration: " + timeString(media.metaData.duration)  +
                                          "<h2>Video Info:</h2>" +
                                          "Codec: " + media.metaData.videoCodec +
                                          "<br>Frame Rate: " + media.metaData.videoFrameRate +
@@ -80,9 +79,8 @@ Item {
                                          "Codec: " + media.metaData.audioCodec +
                                          "<br>Bit Rate: " + media.metaData.audioBitRate +
                                          "<hr>"
-                                       : "<h1>Media Info:</h1>" +
-                                         "file path: " + source +
-                                         "<br>resolution: " + image.width + "x" + image.height +
+                                       : "<h1>Media Info:</h1>" + source +
+                                         "<br>Resolution: " + image.width + "x" + image.height +
                                          "<hr>"
 
     property int videoMode: SourceMode.Mono
