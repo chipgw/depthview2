@@ -53,7 +53,8 @@ DVWindow::DVWindow() : QOpenGLWindow(), qmlCommunication(new DVQmlCommunication(
     /* We render a cursor inside QML so it is shown for both eyes. */
     setCursor(Qt::BlankCursor);
 
-    setGeometry(0,0, 800, 600);
+    setMinimumSize(QSize(1000, 500));
+    setGeometry(0,0, 1000, 600);
 }
 
 DVWindow::~DVWindow() {
@@ -357,13 +358,6 @@ bool DVWindow::event(QEvent* e) {
 }
 
 void DVWindow::loadPlugins() {
-    /* Load any statically linked plugins. (Currently there aren't any) */
-    for (QObject *obj : QPluginLoader::staticInstances()) {
-        DVRenderPlugin* plugin = qobject_cast<DVRenderPlugin*>(obj);
-        if (plugin != nullptr)
-            renderPlugins.append(plugin);
-    }
-
     /* Start with the path the application is in. */
     QDir pluginsDir(qApp->applicationDirPath());
 
