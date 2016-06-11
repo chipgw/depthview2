@@ -38,11 +38,6 @@ Rectangle {
             bottomMargin: 2
         }
 
-        /* Put all interface items a bit above the screen. */
-        transform: Translate {
-            x: DepthView.isLeft ? 4 : -4
-        }
-
         ToolBar {
             id: topMenu
             anchors {
@@ -442,11 +437,6 @@ Rectangle {
             }
 
             onTouchEvent: touchTimer.restart()
-        }
-
-        /* This puts the cursor a little bit above the screen. */
-        transform: Translate {
-            x: DepthView.isLeft ? 4 : -4
         }
 
         /* Popups create their item as a child of the window's contentItem, which is the parent of the root item.
