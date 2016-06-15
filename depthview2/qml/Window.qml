@@ -27,20 +27,21 @@ Rectangle {
         model: folderModel
 
         onZoomChanged: zoomButtons.updateZoom()
+
+        /* Keep the video slider updated. */
+        onVideoPositionChanged: {
+            playbackSlider.videoPos = image.videoPosition
+            playbackSlider.value = playbackSlider.videoPos
+        }
     }
 
     Item {
-        anchors {
-            fill: parent
-            leftMargin: 12
-            rightMargin: 12
-            topMargin: 2
-            bottomMargin: 2
-        }
+        anchors.fill: parent
 
         ToolBar {
             id: topMenu
             anchors {
+                /* Fill the top edge of the screen. */
                 top: parent.top
                 left: parent.left
                 right: parent.right
@@ -152,6 +153,7 @@ Rectangle {
         ToolBar {
             id: bottomMenu
             anchors {
+                /* Fill the bottom edge of the screen. */
                 bottom: parent.bottom
                 left: parent.left
                 right: parent.right
@@ -211,15 +213,6 @@ Rectangle {
 
                         /* If the value isn't the same as the tracked position then it changed by user input. */
                         onValueChanged: if (value != videoPos) image.seek(value)
-
-                        Connections {
-                            target: image
-
-                            onVideoPositionChanged: {
-                                playbackSlider.videoPos = image.videoPosition
-                                playbackSlider.value = playbackSlider.videoPos
-                            }
-                        }
                     }
                     Label {
                         /* The time remaining. */
