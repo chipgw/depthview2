@@ -86,7 +86,7 @@ Rectangle {
                     }
                 }
 
-                Button {
+                ToolButton {
                     text: "Open"
 
                     onClicked: fileBrowser.visible = true
@@ -159,7 +159,7 @@ Rectangle {
                 right: parent.right
             }
 
-            state: ((root.height - fakeCursor.y) < 128 && mouseTimer.running) || sourceMode.popup.visible || volumePopup.popupVisible || touchTimer.running ? "" : "HIDDEN"
+            state: ((root.height - fakeCursor.y) < 128 && mouseTimer.running) || sourceMode.popup.visible || volumePopup.visible || touchTimer.running ? "" : "HIDDEN"
 
             states: [
                 State {
@@ -233,13 +233,13 @@ Rectangle {
                     RowLayout {
                         anchors.left: parent.left
 
-                        Button {
+                        ToolButton {
                             text: "About"
 
                             onClicked: aboutBox.open()
                         }
 
-                        Button {
+                        ToolButton {
                             text: "Info"
 
                             onClicked: mediaInfoBox.open()
@@ -267,13 +267,13 @@ Rectangle {
                     RowLayout {
                         anchors.horizontalCenter: parent.horizontalCenter
 
-                        Button {
+                        ToolButton {
                             text: "<"
 
                             onClicked: image.prevFile()
                         }
 
-                        Button {
+                        ToolButton {
                             enabled: image.isVideo
                             visible: image.isVideo
 
@@ -282,7 +282,7 @@ Rectangle {
                             onClicked: image.playPause()
                         }
 
-                        Button {
+                        ToolButton {
                             text: ">"
 
                             onClicked: image.nextFile()
@@ -300,44 +300,63 @@ Rectangle {
                         }
 
                         /* Not a "zoom button" but goes in the same corner. */
-                        PopupMenu {
-                            id: volumePopup
+                        ToolButton {
+                            id: volumeButton
 
                             text: "Volume"
-
                             visible: image.isVideo
 
-                            root: root
+                            onClicked: volumePopup.visible ? volumePopup.close() : volumePopup.open()
 
-                            onTop: true
+                            Popup {
+                                id: volumePopup
 
-                            Slider {
-                                orientation: Qt.Vertical
+                                closePolicy: Popup.OnEscape | Popup.OnPressOutside
 
-                                /* Init to the default value. */
-                                value: image.videoVolume
+                                Slider {
+                                    orientation: Qt.Vertical
 
-                                onValueChanged: image.videoVolume = value
+                                    /* Init to the default value. */
+                                    value: image.videoVolume
+
+                                    onValueChanged: image.videoVolume = value
+                                }
                             }
                         }
 
-                        Button {
+                        ToolButton {
                             id: zoomFitButton
                             text: "Fit"
 
                             checkable: true
                             checked: image.zoom == -1
 
-                            onClicked: { image.zoom = -1; zoomButtons.updateZoom() }
+                            onCheckedChanged: {
+                                /* If this button was checked, set the zoom value to -1. */
+                                if (checked)
+                                    image.zoom = -1;
+
+                                /* Either way, update the checked state of both buttons.
+                                 * (If checked was set to false via mouse but the zoom is still -1 this will set it to true again.) */
+                                zoomButtons.updateZoom()
+                            }
                         }
-                        Button {
+                        ToolButton {
                             id: zoom100Button
                             text: "1:1"
 
                             checkable: true
                             checked: image.zoom == 1
 
-                            onClicked: { image.zoom = 1; zoomButtons.updateZoom() }
+                            onCheckedChanged: {
+                                /* If this button was checked, set the zoom value to 1. */
+                                if (checked)
+                                    image.zoom = 1;
+
+                                /* Either way, update the checked state of both buttons.
+                                 * (If checked was set to false via mouse but the zoom is still 1 this will set it to true again.) */
+                                zoomButtons.updateZoom()
+                            }
                         }
                     }
                 }

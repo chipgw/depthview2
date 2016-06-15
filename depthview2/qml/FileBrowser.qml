@@ -12,7 +12,8 @@ Rectangle {
     property real cellWidth: 320
     property real cellHeight: 240
 
-    signal fileOpened(url fileURL, int index)
+    /* The signal sends the index of the selected file within the model. */
+    signal fileOpened(int index)
 
     property FolderListModel model
 
@@ -57,11 +58,12 @@ Rectangle {
                     anchors { fill: parent; margins: 4 }
 
                     onClicked: {
+                        /* For the short time it's still visible, highlight the clicked item. */
                         fileRect.color = "#888866"
                         if(fileIsDir)
                             root.model.folder = fileURL
                         else
-                            root.fileOpened(fileURL, index)
+                            root.fileOpened(index)
                     }
 
                     hoverEnabled: true
@@ -130,9 +132,9 @@ Rectangle {
         id: page
         anchors.fill: parent
 
+        /* Sidebar containing the drive list and bookmarks. */
         Flickable {
             id: drivePanel
-            height: parent.height
             anchors {
                 left: parent.left
                 top: parent.top
@@ -146,6 +148,7 @@ Rectangle {
                 height: childrenRect.height
 
                 Label {
+                    padding: 8
                     text: "Drives:"
                 }
 
@@ -166,6 +169,7 @@ Rectangle {
                 }
 
                 Label {
+                    padding: 8
                     text: "Bookmarks:"
                 }
 
@@ -244,7 +248,7 @@ Rectangle {
             RowLayout {
                 anchors.fill: parent
 
-                Button {
+                ToolButton {
                     text: "<-"
                     
                     enabled: DepthView.canGoBack
@@ -252,7 +256,7 @@ Rectangle {
                     onClicked: model.folder = DepthView.goBack()
                 }
                 
-                Button {
+                ToolButton {
                     text: "->"
                     
                     enabled: DepthView.canGoForward
@@ -260,7 +264,7 @@ Rectangle {
                     onClicked: model.folder = DepthView.goForward()
                 }
                 
-                Button {
+                ToolButton {
                     text: "Up"
                     
                     /* Don't go up if there is no up to go. */
@@ -285,7 +289,7 @@ Rectangle {
                     text: DepthView.decodeURL(model.folder)
                 }
                 
-                Button {
+                ToolButton {
                     text: "Cancel"
                     
                     onClicked: root.cancel()
@@ -294,6 +298,7 @@ Rectangle {
         }
     }
 
+    /* A mouseArea covering everythingto capture back/forward buttons. */
     MouseArea {
         anchors.fill: parent
 
