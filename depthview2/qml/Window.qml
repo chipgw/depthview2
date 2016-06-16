@@ -1,7 +1,7 @@
 import QtQuick 2.5
 import QtQuick.Layouts 1.2
 import DepthView 2.0
-import Qt.labs.controls 1.0
+import QtQuick.Controls 2.0
 import Qt.labs.folderlistmodel 2.1
 
 Rectangle {
@@ -306,12 +306,13 @@ Rectangle {
                             text: "Volume"
                             visible: image.isVideo
 
-                            onClicked: volumePopup.visible ? volumePopup.close() : volumePopup.open()
+                            /* It is only possible to click this when the popup is closed. */
+                            onClicked: volumePopup.open()
 
                             Popup {
                                 id: volumePopup
 
-                                closePolicy: Popup.OnEscape | Popup.OnPressOutside
+                                closePolicy: Popup.OnPressOutside
 
                                 Slider {
                                     orientation: Qt.Vertical
@@ -370,7 +371,7 @@ Rectangle {
             x: (parent.width - width) / 2
             y: (parent.height - height) / 2
 
-            closePolicy: Popup.OnPressOutside | Popup.OnEscape
+            closePolicy: Popup.OnPressOutside
 
             Label {
                 id: aboutLabel
@@ -392,7 +393,7 @@ Rectangle {
             x: (parent.width - width) / 2
             y: (parent.height - height) / 2
 
-            closePolicy: Popup.OnPressOutside | Popup.OnEscape
+            closePolicy: Popup.OnPressOutside
 
             Label {
                 id: mediaInfoLabel

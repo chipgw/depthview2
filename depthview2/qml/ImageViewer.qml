@@ -1,6 +1,6 @@
 import QtQuick 2.5
 import Qt.labs.folderlistmodel 2.1
-import Qt.labs.controls 1.0
+import QtQuick.Controls 2.0
 import QtAV 1.6
 import DepthView 2.0
 
