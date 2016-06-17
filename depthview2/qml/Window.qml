@@ -105,37 +105,41 @@ Rectangle {
                     onValueChanged: DepthView.greyFac = value
                 }
 
-                CheckBox {
+                ToolButton {
                     visible: DepthView.drawMode === DrawMode.SidebySide || DepthView.drawMode === DrawMode.TopBottom
                     text: "Anamorphic"
 
+                    checkable: true
                     checked: DepthView.anamorphicDualView
 
                     onCheckedChanged: DepthView.anamorphicDualView = checked
                 }
 
-                CheckBox {
+                ToolButton {
                     visible: DepthView.drawMode === DrawMode.SidebySide || DepthView.drawMode === DrawMode.TopBottom
                     text: "Mirror Left"
 
+                    checkable: true
                     checked: DepthView.mirrorLeft
 
                     onCheckedChanged: DepthView.mirrorLeft = checked
                 }
 
-                CheckBox {
+                ToolButton {
                     visible: DepthView.drawMode === DrawMode.SidebySide || DepthView.drawMode === DrawMode.TopBottom
                     text: "Mirror Right"
 
+                    checkable: true
                     checked: DepthView.mirrorRight
 
                     onCheckedChanged: DepthView.mirrorRight = checked
                 }
 
-                CheckBox {
+                ToolButton {
                     id: fullscreenCheckBox
                     text: "Fullscreen"
 
+                    checkable: true
                     checked: DepthView.fullscreen
 
                     onCheckedChanged: DepthView.fullscreen = checked
@@ -382,6 +386,8 @@ Rectangle {
                       "<p>Please report any bugs at: " +
                       "<a href=\"https://github.com/chipgw/depthview2/issues\">github.com/chipgw/depthview2/issues</a></p>" +
                       "<hr>"
+
+                onLinkActivated: Qt.openUrlExternally(link)
 
                 textFormat: Text.RichText
             }
