@@ -316,7 +316,7 @@ Rectangle {
                             Popup {
                                 id: volumePopup
 
-                                closePolicy: Popup.OnPressOutside
+                                closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
 
                                 Slider {
                                     orientation: Qt.Vertical
@@ -375,7 +375,7 @@ Rectangle {
             x: (parent.width - width) / 2
             y: (parent.height - height) / 2
 
-            closePolicy: Popup.OnPressOutside
+            closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
 
             Label {
                 id: aboutLabel
@@ -399,7 +399,7 @@ Rectangle {
             x: (parent.width - width) / 2
             y: (parent.height - height) / 2
 
-            closePolicy: Popup.OnPressOutside
+            closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
 
             Label {
                 id: mediaInfoLabel
