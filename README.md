@@ -17,7 +17,7 @@ I am also working on a VR plugin, but I have no ETA on it.
 
 Dependencies
 ------------
-* [Qt]
+* [Qt] 5.7 or newer.
 * [QtAV]
 
 License

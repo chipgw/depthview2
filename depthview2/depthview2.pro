@@ -2,7 +2,7 @@ TEMPLATE = app
 
 QT += qml quick widgets
 
-CONFIG += C++11
+lessThan(QT_MAJOR_VERSION, 5) || lessThan(QT_MINOR_VERSION, 7): error("This program requires Qt 5.7 or later.")
 
 SOURCES += src/main.cpp \
     src/dvwindow.cpp \
