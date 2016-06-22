@@ -85,11 +85,15 @@ Rectangle {
                         /* 3D thumbnails! */
                         StereoImage {
                             anchors.centerIn: parent
-                            /* If it is a video or a directory use a thumbnail from qrc. Otherwise the file should be an image itself. */
-                            source: fileIsDir ? "qrc:/images/folder.pns" : isVideo ? "qrc:/images/film.pns" : fileURL
+
+                            visible: !isVideo
+                            enabled: !isVideo
+
+                            /* If it is a directory use a thumbnail from qrc. Otherwise the file should be an image itself. */
+                            source: fileIsDir ? "qrc:/images/folder.pns" : fileURL
 
                             /* Images on the filesystem should be loaded asynchronously. */
-                            asynchronous: !(fileIsDir || isVideo);
+                            asynchronous: !fileIsDir;
 
                             /* The image should only be stored at the needed size. */
                             sourceSize: Qt.size(parent.width * 2, parent.height)
