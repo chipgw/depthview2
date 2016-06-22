@@ -256,7 +256,7 @@ bool DVQmlCommunication::canGoForward() const {
 }
 
 QString DVQmlCommunication::versionString() {
-    return version::versionString();
+    return version::number.toString();
 }
 
 QString DVQmlCommunication::buildType() {

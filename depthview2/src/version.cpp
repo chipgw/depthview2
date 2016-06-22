@@ -2,8 +2,7 @@
 
 namespace version {
 
-const int major = 2;
-const int minor = 0;
+const QVersionNumber number = QVersionNumber(2, 0);
 
 #ifdef NDEBUG
 const char* build_type = "Release";
@@ -30,9 +29,5 @@ const char* compiler = "Oracle Solaris Studio";
 #else
 const char* compiler = "Unknown";
 #endif
-
-const QString versionString() {
-    return QString("%1.%2").arg(major).arg(minor);
-}
 
 }

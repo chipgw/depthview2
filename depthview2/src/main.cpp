@@ -8,7 +8,7 @@ int main(int argc, char *argv[]) {
 
     app.setOrganizationName("chipgw");
     app.setApplicationName("DepthView2");
-    app.setApplicationVersion(version::versionString());
+    app.setApplicationVersion(version::number.toString());
 
     /* QML needs a stencil buffer. */
     QSurfaceFormat fmt;
