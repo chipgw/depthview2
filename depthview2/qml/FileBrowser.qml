@@ -59,7 +59,7 @@ Rectangle {
 
                     onClicked: {
                         /* For the short time it's still visible, highlight the clicked item. */
-                        fileRect.color = "#888866"
+                        fileRect.color = "#888844"
                         if(fileIsDir)
                             root.model.folder = fileURL
                         else
@@ -69,7 +69,7 @@ Rectangle {
                     hoverEnabled: true
 
                     /* Highlight on mouseover. */
-                    onEntered: fileRect.color = "#44444444"
+                    onEntered: fileRect.color = "#44444488"
                     onExited: fileRect.color = "transparent"
 
                     /* Item to center the thumbnail inside. */
@@ -118,6 +118,8 @@ Rectangle {
 
                     Text {
                         id: fileNameText
+
+                        /* On the bottom of the item, fill the width but be automatic height. */
                         anchors.bottom: parent.bottom
                         width: parent.width
 
@@ -125,6 +127,8 @@ Rectangle {
                         text: fileName
 
                         horizontalAlignment: Text.AlignHCenter
+
+                        /* We wrap text and then when it is more than one line the thumbnail will automatically resize to compensate. */
                         wrapMode: Text.Wrap
                     }
                 }
