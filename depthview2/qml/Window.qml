@@ -47,7 +47,7 @@ Rectangle {
                 right: parent.right
             }
 
-            state: (fakeCursor.y < 128 &&  mouseTimer.running) || modeSelector.popup.visible || touchTimer.running ? "" : "HIDDEN"
+            state: fakeCursor.y < 128 || modeSelector.popup.visible || touchTimer.running ? "" : "HIDDEN"
 
             states: [
                 State {
@@ -163,7 +163,7 @@ Rectangle {
                 right: parent.right
             }
 
-            state: ((root.height - fakeCursor.y) < 128 && mouseTimer.running) || sourceMode.popup.visible || volumePopup.visible || touchTimer.running ? "" : "HIDDEN"
+            state: (root.height - fakeCursor.y) < 128 || sourceMode.popup.visible || volumePopup.visible || touchTimer.running ? "" : "HIDDEN"
 
             states: [
                 State {
@@ -432,7 +432,7 @@ Rectangle {
         source: "qrc:/images/cursor.png"
 
         /* Visible when the timer is running or UI is visible. */
-        visible: mouseTimer.running || fileBrowser.visible
+        visible: mouseTimer.running || fileBrowser.visible || topMenu.state == "" || bottomMenu.state == ""
 
         Timer {
             id: mouseTimer
