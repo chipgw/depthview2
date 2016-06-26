@@ -18,6 +18,10 @@ Rectangle {
         showDirsFirst: true
 
         onFolderChanged: DepthView.pushHistory(folder)
+
+        Component.onCompleted:
+            if (DepthView.startDir != "")
+                folder = DepthView.startDir
     }
 
     ImageViewer {

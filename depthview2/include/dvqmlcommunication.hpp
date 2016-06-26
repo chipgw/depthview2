@@ -38,9 +38,13 @@ class DVQmlCommunication : public QObject {
     Q_PROPERTY(bool canGoBack READ canGoBack NOTIFY historyChanged)
     Q_PROPERTY(bool canGoForward READ canGoForward NOTIFY historyChanged)
 
+    Q_PROPERTY(QUrl startDir MEMBER startDir)
+
 public:
     /* Settings can be set from DVWindow. */
     QSettings settings;
+
+    QUrl startDir;
 
     explicit DVQmlCommunication(QWindow* parent);
 
@@ -106,6 +110,9 @@ public:
     bool canGoBack() const;
     /* Is there a value to go forward to? */
     bool canGoForward() const;
+
+    /* Parse command line arguments from QApplication. */
+    void doCommandLine();
 
     Q_INVOKABLE QString versionString();
     Q_INVOKABLE QString buildType();

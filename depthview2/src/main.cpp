@@ -1,6 +1,6 @@
 #include <QApplication>
 #include <QDir>
-#include <version.hpp>
+#include "version.hpp"
 #include "dvwindow.hpp"
 
 int main(int argc, char *argv[]) {

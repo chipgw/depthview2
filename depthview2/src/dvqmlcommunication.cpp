@@ -3,6 +3,8 @@
 #include <QWindow>
 #include <QStorageInfo>
 #include <QApplication>
+#include <QMessageBox>
+#include <QCommandLineParser>
 
 #ifdef DV_PORTABLE
 /* Portable builds store settings in a "DepthView.conf" next to the application executable. */
@@ -31,6 +33,8 @@ DVQmlCommunication::DVQmlCommunication(QWindow* parent) : QObject(parent), setti
 
     m_mirrorLeft = settings.contains("MirrorLeft") ? settings.value("MirrorLeft").toBool() : false;
     m_mirrorRight = settings.contains("MirrorRight") ? settings.value("MirrorRight").toBool() : false;
+
+    doCommandLine();
 
     /* TODO - Figure out a way to detect when there is actually a change rather than just putting it on a timer. */
     connect(&driveTimer, &QTimer::timeout, this, &DVQmlCommunication::storageDevicePathsChanged);
@@ -253,6 +257,61 @@ bool DVQmlCommunication::canGoBack() const {
 bool DVQmlCommunication::canGoForward() const {
     /* We can go forward if currentHistory isn't the last item in the list. */
     return !browserHistory.isEmpty() && currentHistory < (browserHistory.size() - 1);
+}
+
+void DVQmlCommunication::doCommandLine() {
+    QCommandLineParser parser;
+
+    /* TODO - More arguments. */
+    parser.addOptions({
+            { {"f", "fullscreen"},
+              QCoreApplication::translate("main", "")},
+            { {"d", "startdir"},
+              QCoreApplication::translate("main", ""),
+              QCoreApplication::translate("main", "directory")},
+            { {"r", "renderer"},
+              QCoreApplication::translate("main", ""),
+              QCoreApplication::translate("main", "renderer")},
+        });
+
+    parser.parse(QApplication::arguments());
+
+    /* We use one string to hold all warning messages, so we only have to show one dialog. */
+    QString warning;
+
+    if(parser.isSet("f"))
+        setFullscreen(true);
+
+    if(parser.isSet("d")){
+        QUrl dir = QUrl::fromLocalFile(parser.value("d"));
+
+        if(!dir.isValid() || !QDir(dir.toLocalFile()).exists())
+            warning += tr("<p>Invalid directory \"%1\" passed to \"--startdir\" argument!</p>").arg(dir.toString());
+        else
+            /* TODO - How do we warn if this fails? Will it ever fail? */
+            startDir = dir;
+    }
+
+    if(parser.isSet("r")){
+        const QString &renderer = parser.value("r");
+
+        int mode = getModes().indexOf(renderer);
+
+        if(mode == -1)
+            warning += tr("<p>Invalid renderer \"%1\" passed to \"--renderer\" argument!</p>").arg(renderer);
+
+        if (mode >= DVDrawMode::Plugin) {
+            m_pluginMode = renderer;
+            m_drawMode = DVDrawMode::Plugin;
+        } else {
+            m_drawMode = DVDrawMode::Type(mode);
+        }
+    }
+
+    /* If there weren't any warnings we don't show the dialog. */
+    if(!warning.isEmpty())
+        /* TODO - Perhaps this should be done within QML? */
+        QMessageBox::warning(nullptr, tr("Invalid Command Line!"), warning);
 }
 
 QString DVQmlCommunication::versionString() {
