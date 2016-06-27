@@ -51,7 +51,7 @@ Rectangle {
                 right: parent.right
             }
 
-            state: fakeCursor.y < 128 || modeSelector.popup.visible || touchTimer.running ? "" : "HIDDEN"
+            state: fakeCursor.y < 128 || fileMenu.visible || viewMenu.visible || modeMenu.visible || helpMenu.visible || touchTimer.running ? "" : "HIDDEN"
 
             states: [
                 State {
@@ -72,87 +72,176 @@ Rectangle {
             ]
 
             RowLayout {
-                ComboBox {
-                    id: modeSelector
 
-                    /* TODO - Doesn't work right with plugin modes. */
-                    currentIndex: DepthView.drawMode
+                ToolButton {
+                    text: "File"
+                    onClicked: fileMenu.open()
 
-                    model: DepthView.modes
+                    Menu {
+                        id: fileMenu
 
-                    onActivated: {
-                        if (index < DrawMode.Plugin)
-                            DepthView.drawMode = index
-                        else {
-                            DepthView.drawMode = DrawMode.Plugin
-                            DepthView.pluginMode = currentText
+                        MenuItem {
+                            text: "Open..."
+
+                            onTriggered: fileBrowser.visible = true
+                        }
+
+                        MenuItem {
+                            text: "File Info"
+
+                            onTriggered: mediaInfoBox.open()
+                        }
+
+                        MenuItem {
+                            text: "Quit"
+                            onTriggered: Qt.quit()
                         }
                     }
                 }
 
                 ToolButton {
-                    text: "Open"
+                    text: "View"
+                    onClicked: viewMenu.open()
 
-                    onClicked: fileBrowser.visible = true
-                }
+                    Menu {
+                        id: viewMenu
 
-                Label {
-                    text: "Grey Factor:"
+                        /* The layout makes it collapse items that aren't visible. */
+                        ColumnLayout {
+                            MenuItem {
+                                visible: DepthView.drawMode === DrawMode.Anaglyph
+                                text: "Grey Factor"
 
-                    visible: DepthView.drawMode === DrawMode.Anaglyph
-                }
+                                onTriggered: greyFacPopup.open()
 
-                Slider {
-                    value: DepthView.greyFac
-                    visible: DepthView.drawMode === DrawMode.Anaglyph
+                                Popup {
+                                    id: greyFacPopup
+                                    Slider {
+                                        value: DepthView.greyFac
+                                        visible: DepthView.drawMode === DrawMode.Anaglyph
 
-                    onValueChanged: DepthView.greyFac = value
+                                        onValueChanged: DepthView.greyFac = value
+                                    }
+                                }
+                            }
+
+                            MenuItem {
+                                visible: DepthView.drawMode === DrawMode.SidebySide || DepthView.drawMode === DrawMode.TopBottom
+                                text: "Anamorphic"
+
+                                checkable: true
+                                checked: DepthView.anamorphicDualView
+
+                                onCheckedChanged: DepthView.anamorphicDualView = checked
+                            }
+
+                            MenuItem {
+                                visible: DepthView.drawMode === DrawMode.SidebySide || DepthView.drawMode === DrawMode.TopBottom
+                                text: "Mirror Left"
+
+                                checkable: true
+                                checked: DepthView.mirrorLeft
+
+                                onCheckedChanged: DepthView.mirrorLeft = checked
+                            }
+
+                            MenuItem {
+                                visible: DepthView.drawMode === DrawMode.SidebySide || DepthView.drawMode === DrawMode.TopBottom
+                                text: "Mirror Right"
+
+                                checkable: true
+                                checked: DepthView.mirrorRight
+
+                                onCheckedChanged: DepthView.mirrorRight = checked
+                            }
+
+                            MenuItem {
+                                id: fullscreenCheckBox
+                                text: "Fullscreen"
+
+                                checkable: true
+                                checked: DepthView.fullscreen
+
+                                onCheckedChanged: DepthView.fullscreen = checked
+
+                                /* Maintain the correct state if it changes by some other means. */
+                                Connections {
+                                    target: DepthView
+
+                                    onFullscreenChanged: fullscreenCheckBox.checked = fullscreen
+                                }
+                            }
+                        }
+                    }
                 }
 
                 ToolButton {
-                    visible: DepthView.drawMode === DrawMode.SidebySide || DepthView.drawMode === DrawMode.TopBottom
-                    text: "Anamorphic"
+                    text: "Draw Mode"
+                    onClicked: modeMenu.open()
 
-                    checkable: true
-                    checked: DepthView.anamorphicDualView
+                    Menu {
+                        id: modeMenu
 
-                    onCheckedChanged: DepthView.anamorphicDualView = checked
+                        /* This layout avoids a situation where they all end up jumbled one on top of the other for some reason... */
+                        ColumnLayout {
+                            Repeater {
+                                id: modeList
+                                model: ListModel {
+                                    ListElement { text: "Anaglyph"; mode: DrawMode.Anaglyph }
+                                    ListElement { text: "Side-by-Side"; mode: DrawMode.SidebySide }
+                                    ListElement { text: "Top/Bottom"; mode: DrawMode.TopBottom }
+                                    ListElement { text: "Interlaced Horizontal"; mode: DrawMode.InterlacedH }
+                                    ListElement { text: "Interlaced Vertical"; mode: DrawMode.InterlacedV }
+                                    ListElement { text: "Checkerboard"; mode: DrawMode.Checkerboard }
+                                    ListElement { text: "Mono Left"; mode: DrawMode.MonoLeft }
+                                    ListElement { text: "Mono Right"; mode: DrawMode.MonoRight }
+                                }
+                                MenuItem {
+                                    text: model.text
+
+                                    checkable: true
+                                    checked: DepthView.drawMode === model.mode
+
+                                    onCheckedChanged:
+                                        if (checked) {
+                                            DepthView.drawMode = model.mode
+                                            modeMenu.close()
+                                        }
+                                }
+                            }
+                            Repeater {
+                                id: pluginModeList
+                                model: DepthView.pluginModes
+
+                                MenuItem {
+                                    text: modelData
+                                    checkable: true
+                                    checked: DepthView.drawMode === DrawMode.Plugin && DepthView.pluginMode == modelData
+
+                                    onCheckedChanged:
+                                        if (checked) {
+                                            DepthView.drawMode = DrawMode.Plugin
+                                            DepthView.pluginMode = modelData
+                                            modeMenu.close()
+                                        }
+                                }
+                            }
+                        }
+                    }
                 }
 
                 ToolButton {
-                    visible: DepthView.drawMode === DrawMode.SidebySide || DepthView.drawMode === DrawMode.TopBottom
-                    text: "Mirror Left"
+                    text: "Help"
+                    onClicked: helpMenu.open()
 
-                    checkable: true
-                    checked: DepthView.mirrorLeft
+                    Menu {
+                        id: helpMenu
 
-                    onCheckedChanged: DepthView.mirrorLeft = checked
-                }
+                        MenuItem {
+                            text: "About"
 
-                ToolButton {
-                    visible: DepthView.drawMode === DrawMode.SidebySide || DepthView.drawMode === DrawMode.TopBottom
-                    text: "Mirror Right"
-
-                    checkable: true
-                    checked: DepthView.mirrorRight
-
-                    onCheckedChanged: DepthView.mirrorRight = checked
-                }
-
-                ToolButton {
-                    id: fullscreenCheckBox
-                    text: "Fullscreen"
-
-                    checkable: true
-                    checked: DepthView.fullscreen
-
-                    onCheckedChanged: DepthView.fullscreen = checked
-
-                    /* Maintain the correct state if it changes by some other means. */
-                    Connections {
-                        target: DepthView
-
-                        onFullscreenChanged: fullscreenCheckBox.checked = fullscreen
+                            onClicked: aboutBox.open()
+                        }
                     }
                 }
             }
@@ -240,18 +329,6 @@ Rectangle {
 
                     RowLayout {
                         anchors.left: parent.left
-
-                        ToolButton {
-                            text: "About"
-
-                            onClicked: aboutBox.open()
-                        }
-
-                        ToolButton {
-                            text: "Info"
-
-                            onClicked: mediaInfoBox.open()
-                        }
 
                         ComboBox {
                             id: sourceMode
