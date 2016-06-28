@@ -79,6 +79,7 @@ Rectangle {
 
                     Menu {
                         id: fileMenu
+                        y: parent.height
 
                         MenuItem {
                             text: "Open..."
@@ -105,6 +106,7 @@ Rectangle {
 
                     Menu {
                         id: viewMenu
+                        y: parent.height
 
                         /* The layout makes it collapse items that aren't visible. */
                         ColumnLayout {
@@ -181,6 +183,7 @@ Rectangle {
 
                     Menu {
                         id: modeMenu
+                        y: parent.height
 
                         /* This layout avoids a situation where they all end up jumbled one on top of the other for some reason... */
                         ColumnLayout {
@@ -236,6 +239,7 @@ Rectangle {
 
                     Menu {
                         id: helpMenu
+                        y: parent.height
 
                         MenuItem {
                             text: "About"
