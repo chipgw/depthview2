@@ -43,6 +43,9 @@ DVWindow::DVWindow() : QOpenGLWindow(), qmlCommunication(new DVQmlCommunication(
 
     qmlEngine->rootContext()->setContextProperty("DepthView", qmlCommunication);
 
+    /* When the Qt.quit() function is called in QML, close this window. */
+    connect(qmlEngine, &QQmlEngine::quit, this, &DVWindow::close);
+
     qmlRegisterUncreatableType<DVDrawMode>(DV_URI_VERSION, "DrawMode", "Only for enum values.");
     qmlRegisterUncreatableType<DVSourceMode>(DV_URI_VERSION, "SourceMode", "Only for enum values.");
 
