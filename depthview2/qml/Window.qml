@@ -165,13 +165,6 @@ Rectangle {
                                 checked: DepthView.fullscreen
 
                                 onCheckedChanged: DepthView.fullscreen = checked
-
-                                /* Maintain the correct state if it changes by some other means. */
-                                Connections {
-                                    target: DepthView
-
-                                    onFullscreenChanged: fullscreenCheckBox.checked = fullscreen
-                                }
                             }
                         }
                     }
@@ -219,7 +212,7 @@ Rectangle {
                                 MenuItem {
                                     text: modelData
                                     checkable: true
-                                    checked: DepthView.drawMode === DrawMode.Plugin && DepthView.pluginMode == modelData
+                                    checked: DepthView.drawMode === DrawMode.Plugin && DepthView.pluginMode === modelData
 
                                     onCheckedChanged:
                                         if (checked) {
