@@ -212,9 +212,11 @@ Rectangle {
                                 MenuItem {
                                     text: modelData
                                     checkable: true
+
                                     checked: DepthView.drawMode === DrawMode.Plugin && DepthView.pluginMode === modelData
 
                                     onCheckedChanged:
+                                        /* When checked we set the mode to Plugin and use the button text as the plugin mode. */
                                         if (checked) {
                                             DepthView.drawMode = DrawMode.Plugin
                                             DepthView.pluginMode = modelData
@@ -449,7 +451,7 @@ Rectangle {
         Popup {
             id: aboutBox
 
-            /* No anchors for some reason... */
+            /* Anchors don't work on popups because they are appended to the wjindow content item. */
             x: (parent.width - width) / 2
             y: (parent.height - height) / 2
 
@@ -465,6 +467,7 @@ Rectangle {
                       "<a href=\"https://github.com/chipgw/depthview2/issues\">github.com/chipgw/depthview2/issues</a></p>" +
                       "<hr>"
 
+                /* Allow clicking links in the window. */
                 onLinkActivated: Qt.openUrlExternally(link)
 
                 textFormat: Text.RichText
@@ -490,16 +493,17 @@ Rectangle {
 
     FileBrowser {
         id: fileBrowser
-        anchors.fill: parent
-        visible: false
-        enabled: visible
+
+        width: parent.width
+        height: parent.height
 
         model: folderModel
 
-        onVisibleChanged: if (image.isPlaying) image.playPause()
+        /* Ensure video is paused when file browser is opened. */
+        onOpened: if (image.isPlaying) image.playPause()
 
         onFileOpened: {
-            visible = false
+            close()
             image.currentIndex = index
             image.updateImage()
         }
@@ -546,7 +550,7 @@ Rectangle {
         sequence: StandardKey.Open
         context: Qt.ApplicationShortcut
 
-        onActivated: fileBrowser.visible = true
+        onActivated: fileBrowser.open()
     }
 
     Shortcut {

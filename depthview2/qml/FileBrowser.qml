@@ -5,9 +5,10 @@ import Qt.labs.folderlistmodel 2.1
 import DepthView 2.0
 import QtAV 1.6
 
-Rectangle {
+Popup {
     id: root
-    color: "black"
+
+    padding: 0
 
     property real cellWidth: 320
     property real cellHeight: 240
@@ -22,17 +23,15 @@ Rectangle {
     function cancel() {
         /* Reset to the folder that was active when the browser was first shown. */
         model.folder = startingFolder
-        root.visible = false
+        close()
     }
 
-    onVisibleChanged: {
-        if (visible) {
-            startingFolder = model.folder
+    onOpened: {
+        startingFolder = model.folder
 
-            /* This forces anything bound to model.folder to update. Namely the pathText, without this it is blank at first. */
-            model.folder = ""
-            model.folder = startingFolder
-        }
+        /* This forces anything bound to model.folder to update. Namely the pathText, without this it is blank at first. */
+        model.folder = ""
+        model.folder = startingFolder
     }
 
     Component {
