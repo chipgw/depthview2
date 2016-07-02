@@ -81,37 +81,45 @@ Popup {
                             bottom: fileNameText.top
                         }
 
-                        /* 3D thumbnails! */
-                        StereoImage {
-                            anchors.centerIn: parent
-
-                            visible: !isVideo
-                            enabled: !isVideo
-
-                            /* If it is a directory use a thumbnail from qrc. Otherwise the file should be an image itself. */
-                            source: fileIsDir ? "qrc:/images/folder.pns" : fileURL
-
-                            /* Images on the filesystem should be loaded asynchronously. */
-                            asynchronous: !fileIsDir;
-
-                            /* The image should only be stored at the needed size. */
-                            sourceSize: Qt.size(parent.width * 2, parent.height)
+                        Loader {
+                            anchors.fill: parent
+                            sourceComponent: isVideo ? videoThumbComponent : imageThumbComponent
                         }
 
-                        /* Video thumbnails! */
-                        /* TODO - Set up a system to detect if a video is 3D... */
-                        VideoPreview {
-                            anchors.fill: parent
-                            file: fileURL
+                        Component {
+                            id: imageThumbComponent
 
-                            visible: isVideo
-                            enabled: isVideo
+                            Item {
+                                /* 3D thumbnails! */
+                                StereoImage {
+                                    anchors.centerIn: parent
 
-                            /* Set timestamp to one minute in. */
-                            Component.onCompleted: timestamp = 60000
+                                    /* If it is a directory use a thumbnail from qrc. Otherwise the file should be an image itself. */
+                                    source: fileIsDir ? "qrc:/images/folder.pns" : fileURL
 
-                            /* This doesn't work because it doesn't send the signal to the thing that gets the frame. */
-                            /*timestamp: 60000*/
+                                    /* Images on the filesystem should be loaded asynchronously. */
+                                    asynchronous: !fileIsDir;
+
+                                    /* The image should only be stored at the needed size. */
+                                    sourceSize: Qt.size(parent.width * 2, parent.height)
+                                }
+                            }
+                        }
+
+                        Component {
+                            id: videoThumbComponent
+
+                            /* Video thumbnails! */
+                            /* TODO - Set up a system to detect if a video is 3D... */
+                            VideoPreview {
+                                file: fileURL
+
+                                /* Set timestamp to one minute in. */
+                                Component.onCompleted: timestamp = 60000
+
+                                /* This doesn't work because it doesn't send the signal to the thing that gets the frame. */
+                                /*timestamp: 60000*/
+                            }
                         }
                     }
 
