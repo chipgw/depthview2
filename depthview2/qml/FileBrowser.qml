@@ -179,6 +179,7 @@ Popup {
 
                         onClicked: root.model.folder = DepthView.encodeURL(data[0])
 
+                        /* Whenever the text width changes, make sure that the panel is large enough to fit. */
                         onImplicitWidthChanged: drivePanel.width = Math.max(drivePanel.width, implicitWidth)
                     }
                 }
@@ -205,6 +206,7 @@ Popup {
 
                             onClicked: root.model.folder = modelData
 
+                            /* Whenever the text width changes, make sure that the panel is large enough to fit. */
                             onImplicitWidthChanged: drivePanel.width = Math.max(drivePanel.width, implicitWidth + 16)
                         }
                         Button {
@@ -231,6 +233,7 @@ Popup {
 
                     onClicked: DepthView.addBookmark(root.model.folder)
 
+                    /* Whenever the text width changes, make sure that the panel is large enough to fit. */
                     onImplicitWidthChanged: drivePanel.width = Math.max(drivePanel.width, implicitWidth)
                 }
             }
@@ -251,6 +254,7 @@ Popup {
                 model: root.model
                 delegate: fileComponent
 
+                /* Include a plain scrollbar on the file view. */
                 ScrollBar.vertical: ScrollBar { }
 
                 /* So that it is the same as the delegate. */
@@ -313,7 +317,7 @@ Popup {
         }
     }
 
-    /* A mouseArea covering everythingto capture back/forward buttons. */
+    /* A mouseArea covering everything to capture back/forward buttons. */
     MouseArea {
         anchors.fill: parent
 
@@ -339,13 +343,6 @@ Popup {
         enabled: parent.visible && DepthView.canGoForward
         context: Qt.ApplicationShortcut
         onActivated: model.folder = DepthView.goForward()
-    }
-
-    Shortcut {
-        sequence: "Esc"
-        enabled: parent.visible
-        context: Qt.ApplicationShortcut
-        onActivated: root.cancel()
     }
 }
 

@@ -589,4 +589,31 @@ Rectangle {
 
         onActivated: DepthView.fullscreen = !DepthView.fullscreen
     }
+
+    /* The popup close policy escape shortcut isn't working, so take care of it here. */
+    Shortcut {
+        sequence: "Esc"
+        context: Qt.ApplicationShortcut
+        onActivated: {
+            /* TODO - There must be an easier way to do this... */
+            if (fileBrowser.visible)
+                fileBrowser.cancel()
+            if (aboutBox.visible)
+                aboutBox.close()
+            if (mediaInfoBox.visible)
+                mediaInfoBox.close()
+            if (volumePopup.visible)
+                volumePopup.close()
+            if (fileMenu.visible)
+                fileMenu.close()
+            if (viewMenu.visible)
+                viewMenu.close()
+            if (greyFacPopup.visible)
+                greyFacPopup.close()
+            if (modeMenu.visible)
+                modeMenu.close()
+            if (helpMenu.visible)
+                helpMenu.close()
+        }
+    }
 }
