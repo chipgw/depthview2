@@ -329,22 +329,42 @@ Rectangle {
                     RowLayout {
                         anchors.left: parent.left
 
-                        ComboBox {
-                            id: sourceMode
-
-                            textRole: "text"
-                            model: ListModel {
-                                ListElement { text: "Side-by-Side"; mode: SourceMode.SidebySide }
-                                ListElement { text: "Side-by-Side Anamorphic"; mode: SourceMode.SidebySideAnamorphic }
-                                ListElement { text: "Top/Bottom"; mode: SourceMode.TopBottom }
-                                ListElement { text: "Top/Bottom Anamorphic"; mode: SourceMode.TopBottomAnamorphic }
-                                ListElement { text: "Mono"; mode: SourceMode.Mono }
-                            }
-
+                        ToolButton {
                             visible: image.isVideo
-                            currentIndex: image.videoMode
+                            onClicked: sourceMode.open()
 
-                            onActivated: image.videoMode = model.get(index).mode
+                            text: "Source Mode"
+
+                            Menu {
+                                id: sourceMode
+                                y: -height
+
+                                /* This layout avoids a situation where they all end up jumbled one on top of the other for some reason... */
+                                ColumnLayout {
+                                    Repeater {
+                                        model: ListModel {
+                                            ListElement { text: "Side-by-Side"; mode: SourceMode.SidebySide }
+                                            ListElement { text: "Side-by-Side Anamorphic"; mode: SourceMode.SidebySideAnamorphic }
+                                            ListElement { text: "Top/Bottom"; mode: SourceMode.TopBottom }
+                                            ListElement { text: "Top/Bottom Anamorphic"; mode: SourceMode.TopBottomAnamorphic }
+                                            ListElement { text: "Mono"; mode: SourceMode.Mono }
+                                        }
+
+                                        MenuItem {
+                                            text: model.text
+
+                                            checkable: true
+                                            checked: image.videoMode === model.mode
+
+                                            onCheckedChanged:
+                                                if (checked) {
+                                                    image.videoMode = model.mode
+                                                    sourceMode.close()
+                                                }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
 
