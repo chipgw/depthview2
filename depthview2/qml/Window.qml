@@ -255,7 +255,7 @@ Rectangle {
                 right: parent.right
             }
 
-            state: (root.height - fakeCursor.y) < 128 || sourceMode.popup.visible || volumePopup.visible || touchTimer.running ? "" : "HIDDEN"
+            state: (root.height - fakeCursor.y) < 128 || sourceMode.visible || volumePopup.visible || touchTimer.running ? "" : "HIDDEN"
 
             states: [
                 State {
@@ -634,6 +634,8 @@ Rectangle {
                 modeMenu.close()
             if (helpMenu.visible)
                 helpMenu.close()
+            if (sourceMode.visible)
+                sourceMode.close()
         }
     }
 }
