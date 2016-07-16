@@ -24,13 +24,18 @@ Rectangle {
                 folder = DepthView.startDir
     }
 
+    function updateZoom() {
+        zoomFitButton.checked = image.zoom == -1
+        zoom100Button.checked = image.zoom == 1
+    }
+
     ImageViewer {
         id: image
         anchors.fill: parent
 
         model: folderModel
 
-        onZoomChanged: zoomButtons.updateZoom()
+        onZoomChanged: updateZoom()
 
         /* Keep the video slider updated. */
         onVideoPositionChanged: {
@@ -394,14 +399,7 @@ Rectangle {
                     }
 
                     RowLayout {
-                        id: zoomButtons
-
                         anchors.right: parent.right
-
-                        function updateZoom() {
-                            zoomFitButton.checked = image.zoom == -1
-                            zoom100Button.checked = image.zoom == 1
-                        }
 
                         /* Not a "zoom button" but goes in the same corner. */
                         ToolButton {
@@ -443,7 +441,7 @@ Rectangle {
 
                                 /* Either way, update the checked state of both buttons.
                                  * (If checked was set to false via mouse but the zoom is still -1 this will set it to true again.) */
-                                zoomButtons.updateZoom()
+                                updateZoom()
                             }
                         }
                         ToolButton {
@@ -460,7 +458,7 @@ Rectangle {
 
                                 /* Either way, update the checked state of both buttons.
                                  * (If checked was set to false via mouse but the zoom is still 1 this will set it to true again.) */
-                                zoomButtons.updateZoom()
+                                updateZoom()
                             }
                         }
                     }
