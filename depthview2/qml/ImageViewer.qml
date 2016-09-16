@@ -222,9 +222,9 @@ Item {
                 if (isVideo) {
                     if (wheel.angleDelta.y > 0)
                         media.seekForward()
-                    else
+                    else if (wheel.angleDelta.y < 0)
                         media.seekBackward()
-                } else {
+                } else if (wheel.angleDelta.y != 0) {
                     /* If zoom-to-fit is active retrieve the current scale before zooming in or out. */
                     if (zoom < 0)
                         zoom = image.scale
@@ -232,6 +232,12 @@ Item {
                     zoom += wheel.angleDelta.y * image.scale * 0.001
                     zoom = Math.max(0.2, Math.min(zoom, 4.0))
                 }
+
+                /* Sideways scroll goes through files. */
+                if (wheel.angleDelta.x > 0)
+                    prevFile()
+                if (wheel.angleDelta.x < 0)
+                    nextFile()
             }
         }
         onClicked: {
