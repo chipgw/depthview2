@@ -62,7 +62,7 @@ Item {
 
     property url source: "qrc:/images/test.pns"
 
-    readonly property bool isVideo: media.hasVideo && media.hasAudio
+    property bool isVideo: source.toString().match(/mp4$/) || source.toString().match(/avi$/) || source.toString().match(/m4v$/) || source.toString().match(/mkv$/)
     property alias videoPosition: media.position
     property alias videoDuration: media.duration
     property alias videoVolume: media.volume
@@ -187,7 +187,7 @@ Item {
 
         MediaPlayer {
             id: media
-            source: root.source
+            source: isVideo ? root.source : ""
 
             autoPlay: true
         }
