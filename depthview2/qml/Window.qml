@@ -56,7 +56,9 @@ Rectangle {
                 right: parent.right
             }
 
-            state: fakeCursor.y < 128 || fileMenu.visible || viewMenu.visible || modeMenu.visible || helpMenu.visible || touchTimer.running ? "" : "HIDDEN"
+            /* Visible when the mouse is close, when the screen was recently touched, when any of the menus are open, or when a video is paused. */
+            state: fakeCursor.y < 128 || fileMenu.visible || viewMenu.visible || modeMenu.visible || helpMenu.visible ||
+                   touchTimer.running || (image.isVideo && !image.isPlaying) ? "" : "HIDDEN"
 
             states: [
                 State {
@@ -260,7 +262,9 @@ Rectangle {
                 right: parent.right
             }
 
-            state: (root.height - fakeCursor.y) < 128 || sourceMode.visible || volumePopup.visible || touchTimer.running ? "" : "HIDDEN"
+            /* Visible when the mouse is close, when the screen was recently touched, when any of the menus are open, or when a video is paused. */
+            state: (root.height - fakeCursor.y) < 128 || sourceMode.visible || volumePopup.visible || touchTimer.running || (image.isVideo && !image.isPlaying)
+                   ? "" : "HIDDEN"
 
             states: [
                 State {
@@ -528,10 +532,14 @@ Rectangle {
     }
 
     Image {
+        /* Start out off-screen so if the position doesn't get set it won't show up in the corner. */
+        x: -width
+        y: -height
+
         id: fakeCursor
         source: "qrc:/images/cursor.png"
 
-        /* Visible when the timer is running or UI is visible. */
+        /* Visible when the timer is running or when the UI is visible. */
         visible: mouseTimer.running || fileBrowser.visible || topMenu.state == "" || bottomMenu.state == ""
 
         Timer {
