@@ -378,6 +378,7 @@ Rectangle {
                     }
 
                     RowLayout {
+                        /* Navigation controls in the middle. */
                         anchors.horizontalCenter: parent.horizontalCenter
 
                         ToolButton {
@@ -387,7 +388,6 @@ Rectangle {
                         }
 
                         ToolButton {
-                            enabled: image.isVideo
                             visible: image.isVideo
 
                             text: image.isPlaying ? "Pause" : "Play"
@@ -473,7 +473,7 @@ Rectangle {
         Popup {
             id: aboutBox
 
-            /* Anchors don't work on popups because they are appended to the wjindow content item. */
+            /* Anchors don't work on popups because they are appended to the window content item. */
             x: (parent.width - width) / 2
             y: (parent.height - height) / 2
 
@@ -547,7 +547,7 @@ Rectangle {
             interval: 4000
         }
 
-        /* Use a separate timer for touchscreen events so that it doesn't show the cursor. */
+        /* Use a separate timer for touchscreen events for showing toolbars instead of the cursor. */
         Timer {
             id: touchTimer
             interval: 2000
@@ -607,7 +607,7 @@ Rectangle {
         sequence: StandardKey.HelpContents
         context: Qt.ApplicationShortcut
 
-        onActivated: aboutBox.visible = true
+        onActivated: aboutBox.open()
     }
     Shortcut {
         sequence: StandardKey.FullScreen

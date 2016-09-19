@@ -54,8 +54,10 @@ Item {
     }
 
     function timeString(ms) {
-        /* Turn a time value in milliseconds into a string in the format:  "h:mm:ss". */
-        return Math.floor(ms / 3600000) + ":" + ("0" + Math.floor(ms / 60000) % 60).slice(-2) + ":" + ("0" + Math.floor(ms / 1000) % 60).slice(-2)
+        /* Turn a time value in milliseconds into a string in the format: "[h:]mm:ss". */
+        return (ms > 3600000 ? (Math.floor(ms / 3600000) + ":") : "") /* Don't show hours if there are none. */
+                + ("0" + Math.floor(ms / 60000) % 60).slice(-2) /* Always pad minutes with a zero. */
+                + ":" + ("0" + Math.floor(ms / 1000) % 60).slice(-2) /* Always put a colon in between and pad with a zero. */
     }
 
     property bool isPlaying: isVideo && media.playbackState == MediaPlayer.PlayingState
