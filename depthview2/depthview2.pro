@@ -7,7 +7,8 @@ lessThan(QT_MAJOR_VERSION, 5) || lessThan(QT_MINOR_VERSION, 7): error("This prog
 SOURCES += src/main.cpp \
     src/dvwindow.cpp \
     src/dvqmlcommunication.cpp \
-    src/version.cpp
+    src/version.cpp \
+    src/dvfolderlisting.cpp
 
 RESOURCES += qml.qrc
 
@@ -25,7 +26,8 @@ HEADERS += \
     include/dvenums.hpp \
     include/dvqmlcommunication.hpp \
     include/dvrenderplugin.hpp \
-    include/version.hpp
+    include/version.hpp \
+    include/dvfolderlisting.hpp
 
 INCLUDEPATH += include
 

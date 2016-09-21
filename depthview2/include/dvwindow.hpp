@@ -2,9 +2,11 @@
 
 #include <QOpenGLWindow>
 #include <QOpenGLShaderProgram>
+#include <QSettings>
 
 /* DepthView forward declarations. */
 class DVQmlCommunication;
+class DVFolderListing;
 class DVRenderPlugin;
 
 /* Qt forward declarations. */
@@ -40,6 +42,9 @@ private:
     QSize qmlSize;
 
     DVQmlCommunication* qmlCommunication;
+    DVFolderListing* folderListing;
+
+    QSettings settings;
 
     /* Shaders for built-in draw modes. */
     QOpenGLShaderProgram shaderAnaglyph;

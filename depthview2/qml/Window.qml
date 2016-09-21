@@ -17,7 +17,7 @@ Rectangle {
         /* This might be a good idea to make into a setting... */
         showDirsFirst: true
 
-        onFolderChanged: DepthView.pushHistory(folder)
+        onFolderChanged: FolderListing.pushHistory(folder)
 
         Component.onCompleted:
             if (DepthView.startDir != "")

@@ -168,7 +168,7 @@ Popup {
                 }
 
                 Repeater {
-                    model: DepthView.storageDevicePaths
+                    model: FolderListing.storageDevicePaths
 
                     delegate: Button {
                         width: drivePanel.width
@@ -177,7 +177,7 @@ Popup {
                         /* Drive info is provided as "<path>;<display name>". */
                         property variant data: modelData.split(';')
 
-                        onClicked: root.model.folder = DepthView.encodeURL(data[0])
+                        onClicked: root.model.folder = FolderListing.encodeURL(data[0])
 
                         /* Whenever the text width changes, make sure that the panel is large enough to fit. */
                         onImplicitWidthChanged: drivePanel.width = Math.max(drivePanel.width, implicitWidth)
@@ -190,7 +190,7 @@ Popup {
                 }
 
                 Repeater {
-                    model: DepthView.bookmarks
+                    model: FolderListing.bookmarks
 
                     delegate: Item {
                         height: childrenRect.height
@@ -219,7 +219,7 @@ Popup {
                             text: "X"
 
                             /* TODO - Maybe this should confirm? IDK... */
-                            onClicked: DepthView.deleteBookmark(modelData)
+                            onClicked: FolderListing.deleteBookmark(modelData)
                         }
                     }
                 }
@@ -231,7 +231,7 @@ Popup {
                     }
                     text: "Add Bookmark"
 
-                    onClicked: DepthView.addBookmark(root.model.folder)
+                    onClicked: FolderListing.addBookmark(root.model.folder)
 
                     /* Whenever the text width changes, make sure that the panel is large enough to fit. */
                     onImplicitWidthChanged: drivePanel.width = Math.max(drivePanel.width, implicitWidth)
@@ -270,17 +270,17 @@ Popup {
                 ToolButton {
                     text: "<-"
                     
-                    enabled: DepthView.canGoBack
+                    enabled: FolderListing.canGoBack
                     
-                    onClicked: model.folder = DepthView.goBack()
+                    onClicked: model.folder = FolderListing.goBack()
                 }
                 
                 ToolButton {
                     text: "->"
                     
-                    enabled: DepthView.canGoForward
+                    enabled: FolderListing.canGoForward
                     
-                    onClicked: model.folder = DepthView.goForward()
+                    onClicked: model.folder = FolderListing.goForward()
                 }
                 
                 ToolButton {
@@ -298,14 +298,14 @@ Popup {
                     Layout.fillWidth: true
                     
                     onAccepted: {
-                        if (DepthView.dirExists(text))
-                            model.folder = DepthView.encodeURL(text)
+                        if (FolderListing.dirExists(text))
+                            model.folder = FolderListing.encodeURL(text)
                     }
                     
                     /* Android has some major issues with text input ATM, best to just leave read-only. */
                     readOnly: Qt.platform.os == "android"
                     
-                    text: DepthView.decodeURL(model.folder)
+                    text: FolderListing.decodeURL(model.folder)
                 }
                 
                 ToolButton {
@@ -324,25 +324,25 @@ Popup {
         acceptedButtons: Qt.ForwardButton | Qt.BackButton
 
         onClicked: {
-            if (mouse.button == Qt.BackButton && DepthView.canGoBack)
-                model.folder = DepthView.goBack()
-            if (mouse.button == Qt.ForwardButton && DepthView.canGoForward)
-                model.folder = DepthView.goForward()
+            if (mouse.button == Qt.BackButton && FolderListing.canGoBack)
+                model.folder = FolderListing.goBack()
+            if (mouse.button == Qt.ForwardButton && FolderListing.canGoForward)
+                model.folder = FolderListing.goForward()
         }
     }
 
     Shortcut {
         sequence: StandardKey.Back
-        enabled: parent.visible && DepthView.canGoBack
+        enabled: parent.visible && FolderListing.canGoBack
         context: Qt.ApplicationShortcut
-        onActivated: model.folder = DepthView.goBack()
+        onActivated: model.folder = FolderListing.goBack()
     }
 
     Shortcut {
         sequence: StandardKey.Forward
-        enabled: parent.visible && DepthView.canGoForward
+        enabled: parent.visible && FolderListing.canGoForward
         context: Qt.ApplicationShortcut
-        onActivated: model.folder = DepthView.goForward()
+        onActivated: model.folder = FolderListing.goForward()
     }
 }
 

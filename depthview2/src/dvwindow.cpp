@@ -1,7 +1,9 @@
 #include "version.hpp"
 #include "dvwindow.hpp"
 #include "dvqmlcommunication.hpp"
+#include "dvfolderlisting.hpp"
 #include "dvrenderplugin.hpp"
+#include <QApplication>
 #include <QQuickRenderControl>
 #include <QQuickWindow>
 #include <QQuickItem>
@@ -31,7 +33,18 @@ public:
     }
 };
 
-DVWindow::DVWindow() : QOpenGLWindow(), qmlCommunication(new DVQmlCommunication(this)), fboRight(nullptr), fboLeft(nullptr) {
+#ifdef DV_PORTABLE
+/* Portable builds store settings in a "DepthView.conf" next to the application executable. */
+#define SETTINGS_ARGS QApplication::applicationDirPath() + "/DepthView.conf", QSettings::IniFormat
+#else
+/* Non-portable builds use an ini file in "%APPDATA%/chipgw" or "~/.config/chipgw". */
+#define SETTINGS_ARGS QSettings::IniFormat, QSettings::UserScope, QApplication::organizationName(), QApplication::applicationName()
+#endif
+
+DVWindow::DVWindow() : QOpenGLWindow(), settings(SETTINGS_ARGS), fboRight(nullptr), fboLeft(nullptr) {
+    qmlCommunication = new DVQmlCommunication(this, settings);
+    folderListing = new DVFolderListing(this, settings);
+
     /* Use the class defined above. */
     qmlRenderControl = new RenderControl(this);
     qmlWindow = new QQuickWindow(qmlRenderControl);
@@ -42,6 +55,7 @@ DVWindow::DVWindow() : QOpenGLWindow(), qmlCommunication(new DVQmlCommunication(
         qmlEngine->setIncubationController(qmlWindow->incubationController());
 
     qmlEngine->rootContext()->setContextProperty("DepthView", qmlCommunication);
+    qmlEngine->rootContext()->setContextProperty("FolderListing", folderListing);
 
     /* When the Qt.quit() function is called in QML, close this window. */
     connect(qmlEngine, &QQmlEngine::quit, this, &DVWindow::close);

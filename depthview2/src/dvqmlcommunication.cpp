@@ -1,25 +1,15 @@
 #include "dvqmlcommunication.hpp"
 #include "version.hpp"
 #include <QWindow>
-#include <QStorageInfo>
+#include <QDir>
 #include <QApplication>
 #include <QMessageBox>
 #include <QCommandLineParser>
+#include <QSettings>
 
-#ifdef DV_PORTABLE
-/* Portable builds store settings in a "DepthView.conf" next to the application executable. */
-#define SETTINGS_ARGS QApplication::applicationDirPath() + "/DepthView.conf", QSettings::IniFormat
-#else
-/* Non-portable builds use an ini file in "%APPDATA%/chipgw" or "~/.config/chipgw". */
-#define SETTINGS_ARGS QSettings::IniFormat, QSettings::UserScope, QApplication::organizationName(), QApplication::applicationName()
-#endif
-
-DVQmlCommunication::DVQmlCommunication(QWindow* parent) : QObject(parent), settings(SETTINGS_ARGS), owner(parent), currentHistory(-1), driveTimer(this) {
+DVQmlCommunication::DVQmlCommunication(QWindow* parent, QSettings& s) : QObject(parent), settings(s), owner(parent) {
     /* We need to detect when the window state changes sowe can updatethe fullscreen property accordingly. */
     connect(owner, &QWindow::windowStateChanged, this, &DVQmlCommunication::ownerWindowStateChanged);
-
-    if (settings.contains("Bookmarks"))
-        m_bookmarks = settings.value("Bookmarks").toStringList();
 
     m_drawMode = settings.contains("DrawMode") ? DVDrawMode::fromString(settings.value("DrawMode").toByteArray()) : DVDrawMode::Anaglyph;
 
@@ -35,10 +25,6 @@ DVQmlCommunication::DVQmlCommunication(QWindow* parent) : QObject(parent), setti
     m_mirrorRight = settings.contains("MirrorRight") ? settings.value("MirrorRight").toBool() : false;
 
     doCommandLine();
-
-    /* TODO - Figure out a way to detect when there is actually a change rather than just putting it on a timer. */
-    connect(&driveTimer, &QTimer::timeout, this, &DVQmlCommunication::storageDevicePathsChanged);
-    driveTimer.start(8000);
 }
 
 bool DVQmlCommunication::isLeft() const {
@@ -162,101 +148,6 @@ QStringList DVQmlCommunication::getModes() const {
                          << "Mono Left"
                          << "Mono Right"
                          << pluginModes;
-}
-
-void DVQmlCommunication::addBookmark(QString bookmark) {
-    /* Don't add existing bookmarks, and don't add directories that don't exist. */
-    if (!m_bookmarks.contains(bookmark) && dirExists(decodeURL(bookmark))) {
-        m_bookmarks.append(bookmark);
-        bookmarksChanged(m_bookmarks);
-        settings.setValue("Bookmarks", m_bookmarks);
-    }
-}
-
-void DVQmlCommunication::deleteBookmark(QString bookmark) {
-    /* Only emit signal and update setting if something was actually deleted. */
-    if (m_bookmarks.removeAll(bookmark) != 0) {
-        bookmarksChanged(m_bookmarks);
-        settings.setValue("Bookmarks", m_bookmarks);
-    }
-}
-
-QStringList DVQmlCommunication::bookmarks() const {
-    return m_bookmarks;
-}
-
-QStringList DVQmlCommunication::getStorageDevicePaths() const {
-    QStringList paths;
-
-    for (QStorageInfo info : QStorageInfo::mountedVolumes())
-#ifdef Q_OS_ANDROID
-        /* In my experience anything that doesn't have "storage" or "sdcard" in it on Android is useless. */
-        if (info.rootPath().contains("storage") || info.rootPath().contains("sdcard"))
-#endif
-        paths.append(info.rootPath() + ';' + info.displayName());
-
-
-    return paths;
-}
-
-bool DVQmlCommunication::fileExists(QString file) const {
-    return QFile::exists(file);
-}
-bool DVQmlCommunication::dirExists(QString dir) const {
-    return QDir(dir).exists();
-}
-
-QUrl DVQmlCommunication::encodeURL(QString url) const {
-    return QUrl::fromLocalFile(url);
-}
-QString DVQmlCommunication::decodeURL(QUrl url) const {
-    return url.toLocalFile();
-}
-
-QString DVQmlCommunication::goBack() {
-    --currentHistory;
-    emit historyChanged();
-    return browserHistory[currentHistory];
-}
-
-QString DVQmlCommunication::goForward() {
-    ++currentHistory;
-    emit historyChanged();
-    return browserHistory[currentHistory];
-}
-
-void DVQmlCommunication::pushHistory(QString value) {
-    /* We ignore if value is empty or equal to the current history item. */
-    if (!value.isEmpty() && (browserHistory.isEmpty() || browserHistory[currentHistory] != value)) {
-        /* If the next item is equal to the passed value we keep the current history and just increment it. */
-        if (canGoForward() && browserHistory[currentHistory + 1] == value)
-            ++currentHistory;
-        /* Same for back, just decrement instead of increment. */
-        else if (canGoBack() && browserHistory[currentHistory - 1] == value)
-            --currentHistory;
-        else {
-            ++currentHistory;
-
-            /* If there are any forward entries, they must be cleared before adding the new entry. */
-            if (canGoForward())
-                browserHistory.erase(browserHistory.begin() + currentHistory, browserHistory.end());
-
-            browserHistory.append(value);
-        }
-
-        /* At this point no matter which branch it went through it has changed. */
-        emit historyChanged();
-    }
-}
-
-bool DVQmlCommunication::canGoBack() const {
-    /* We can go back if the list isn't empty and we aren't at the first item in the list. */
-    return !browserHistory.isEmpty() && currentHistory > 0;
-}
-
-bool DVQmlCommunication::canGoForward() const {
-    /* We can go forward if currentHistory isn't the last item in the list. */
-    return !browserHistory.isEmpty() && currentHistory < (browserHistory.size() - 1);
 }
 
 void DVQmlCommunication::doCommandLine() {
