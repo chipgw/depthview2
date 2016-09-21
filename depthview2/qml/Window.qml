@@ -2,27 +2,10 @@ import QtQuick 2.5
 import QtQuick.Layouts 1.2
 import DepthView 2.0
 import QtQuick.Controls 2.0
-import Qt.labs.folderlistmodel 2.1
 
 Rectangle {
     id: root
     color: "black"
-
-    FolderListModel {
-        id: folderModel
-        nameFilters: ["*.pns", "*.jps",
-            /* TODO - What other video types can we do? */
-            "*.avi", "*.mp4", "*.m4v", "*.mkv"]
-
-        /* This might be a good idea to make into a setting... */
-        showDirsFirst: true
-
-        onFolderChanged: FolderListing.pushHistory(folder)
-
-        Component.onCompleted:
-            if (DepthView.startDir != "")
-                folder = DepthView.startDir
-    }
 
     function updateZoom() {
         zoomFitButton.checked = image.zoom == -1
@@ -32,8 +15,6 @@ Rectangle {
     ImageViewer {
         id: image
         anchors.fill: parent
-
-        model: folderModel
 
         onZoomChanged: updateZoom()
 
@@ -384,7 +365,7 @@ Rectangle {
                         ToolButton {
                             text: "<"
 
-                            onClicked: image.prevFile()
+                            onClicked: FolderListing.openPrevious()
                         }
 
                         ToolButton {
@@ -398,7 +379,7 @@ Rectangle {
                         ToolButton {
                             text: ">"
 
-                            onClicked: image.nextFile()
+                            onClicked: FolderListing.openNext()
                         }
                     }
 
@@ -519,16 +500,8 @@ Rectangle {
         width: parent.width
         height: parent.height
 
-        model: folderModel
-
         /* Ensure video is paused when file browser is opened. */
         onOpened: if (image.isPlaying) image.playPause()
-
-        onFileOpened: {
-            close()
-            image.currentIndex = index
-            image.updateImage()
-        }
     }
 
     Image {
@@ -585,7 +558,7 @@ Rectangle {
 
         enabled: !fileBrowser.visible
 
-        onActivated: image.nextFile()
+        onActivated: FolderListing.openNext()
     }
     Shortcut {
         sequence: "Left"
@@ -593,7 +566,7 @@ Rectangle {
 
         enabled: !fileBrowser.visible
 
-        onActivated: image.prevFile()
+        onActivated: FolderListing.openPrevious()
     }
     Shortcut {
         sequence: "Space"

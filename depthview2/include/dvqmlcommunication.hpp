@@ -27,13 +27,9 @@ class DVQmlCommunication : public QObject {
     Q_PROPERTY(QStringList pluginModes READ getPluginModes NOTIFY pluginModesChanged)
     Q_PROPERTY(QStringList modes READ getModes NOTIFY pluginModesChanged)
 
-    Q_PROPERTY(QUrl startDir MEMBER startDir)
-
 public:
     /* Settings can be set from DVWindow. */
     QSettings& settings;
-
-    QUrl startDir;
 
     explicit DVQmlCommunication(QWindow* parent, QSettings& s);
 

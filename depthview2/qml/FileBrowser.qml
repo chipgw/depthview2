@@ -1,7 +1,6 @@
 import QtQuick 2.5
 import QtQuick.Layouts 1.2
 import QtQuick.Controls 2.0
-import Qt.labs.folderlistmodel 2.1
 import DepthView 2.0
 import QtAV 1.6
 
@@ -13,26 +12,16 @@ Popup {
     property real cellWidth: 320
     property real cellHeight: 240
 
-    /* The signal sends the index of the selected file within the model. */
-    signal fileOpened(int index)
-
-    property FolderListModel model
-
     property url startingFolder
 
     function cancel() {
         /* Reset to the folder that was active when the browser was first shown. */
-        model.folder = startingFolder
+        FolderListing.currentDir = startingFolder
         close()
     }
 
-    onOpened: {
-        startingFolder = model.folder
-
-        /* This forces anything bound to model.folder to update. Namely the pathText, without this it is blank at first. */
-        model.folder = ""
-        model.folder = startingFolder
-    }
+    onOpened:
+        startingFolder = FolderListing.currentDir
 
     Component {
         id: fileComponent
@@ -42,8 +31,6 @@ Popup {
             /* So that it is the same as the GridView. */
             width: root.cellWidth
             height: root.cellHeight
-
-            property bool isVideo: fileName.match(/mp4$/) || fileName.match(/avi$/) || fileName.match(/m4v$/) || fileName.match(/mkv$/)
 
             /* Border/highlight rectangle. */
             Rectangle {
@@ -59,10 +46,12 @@ Popup {
                     onClicked: {
                         /* For the short time it's still visible, highlight the clicked item. */
                         fileRect.color = "#888844"
-                        if(fileIsDir)
-                            root.model.folder = fileURL
-                        else
-                            root.fileOpened(index)
+                        if (fileIsDir)
+                            FolderListing.currentDir = fileURL
+                        else {
+                            FolderListing.openFile(fileURL)
+                            close();
+                        }
                     }
 
                     hoverEnabled: true
@@ -83,7 +72,7 @@ Popup {
 
                         Loader {
                             anchors.fill: parent
-                            sourceComponent: isVideo ? videoThumbComponent : imageThumbComponent
+                            sourceComponent: fileIsVideo ? videoThumbComponent : imageThumbComponent
                         }
 
                         Component {
@@ -177,7 +166,7 @@ Popup {
                         /* Drive info is provided as "<path>;<display name>". */
                         property variant data: modelData.split(';')
 
-                        onClicked: root.model.folder = FolderListing.encodeURL(data[0])
+                        onClicked: FolderListing.currentDir = FolderListing.encodeURL(data[0])
 
                         /* Whenever the text width changes, make sure that the panel is large enough to fit. */
                         onImplicitWidthChanged: drivePanel.width = Math.max(drivePanel.width, implicitWidth)
@@ -204,7 +193,7 @@ Popup {
                             }
                             text: modelData.substr(modelData.lastIndexOf("/", modelData.length - 2) + 1)
 
-                            onClicked: root.model.folder = modelData
+                            onClicked: FolderListing.currentDir = modelData
 
                             /* Whenever the text width changes, make sure that the panel is large enough to fit. */
                             onImplicitWidthChanged: drivePanel.width = Math.max(drivePanel.width, implicitWidth + 16)
@@ -251,7 +240,7 @@ Popup {
 
             GridView {
                 anchors.fill: parent
-                model: root.model
+                model: FolderListing
                 delegate: fileComponent
 
                 /* Include a plain scrollbar on the file view. */
@@ -272,7 +261,7 @@ Popup {
                     
                     enabled: FolderListing.canGoBack
                     
-                    onClicked: model.folder = FolderListing.goBack()
+                    onClicked: FolderListing.goBack()
                 }
                 
                 ToolButton {
@@ -280,16 +269,16 @@ Popup {
                     
                     enabled: FolderListing.canGoForward
                     
-                    onClicked: model.folder = FolderListing.goForward()
+                    onClicked: FolderListing.goForward()
                 }
                 
                 ToolButton {
                     text: "Up"
                     
                     /* Don't go up if there is no up to go. */
-                    enabled: model.parentFolder.toString().length > 0
+                    enabled: FolderListing.canGoUp
                     
-                    onClicked: model.folder = model.parentFolder
+                    onClicked: FolderListing.goUp()
                 }
                 
                 TextField {
@@ -299,13 +288,13 @@ Popup {
                     
                     onAccepted: {
                         if (FolderListing.dirExists(text))
-                            model.folder = FolderListing.encodeURL(text)
+                            FolderListing.currentDir = FolderListing.encodeURL(text)
                     }
                     
                     /* Android has some major issues with text input ATM, best to just leave read-only. */
                     readOnly: Qt.platform.os == "android"
                     
-                    text: FolderListing.decodeURL(model.folder)
+                    text: FolderListing.decodeURL(FolderListing.currentDir)
                 }
                 
                 ToolButton {
@@ -325,9 +314,9 @@ Popup {
 
         onClicked: {
             if (mouse.button == Qt.BackButton && FolderListing.canGoBack)
-                model.folder = FolderListing.goBack()
+                FolderListing.goBack()
             if (mouse.button == Qt.ForwardButton && FolderListing.canGoForward)
-                model.folder = FolderListing.goForward()
+                FolderListing.goForward()
         }
     }
 
@@ -335,14 +324,14 @@ Popup {
         sequence: StandardKey.Back
         enabled: parent.visible && FolderListing.canGoBack
         context: Qt.ApplicationShortcut
-        onActivated: model.folder = FolderListing.goBack()
+        onActivated: FolderListing.goBack()
     }
 
     Shortcut {
         sequence: StandardKey.Forward
         enabled: parent.visible && FolderListing.canGoForward
         context: Qt.ApplicationShortcut
-        onActivated: model.folder = FolderListing.goForward()
+        onActivated: FolderListing.goForward()
     }
 }
 

@@ -1,5 +1,4 @@
 import QtQuick 2.5
-import Qt.labs.folderlistmodel 2.1
 import QtQuick.Controls 2.0
 import QtAV 1.6
 import DepthView 2.0
@@ -7,41 +6,12 @@ import DepthView 2.0
 Item {
     id: root
 
-    property FolderListModel model
     property real zoom: -1
-
-    /* The index of the current file in the FolderListModel. */
-    property int currentIndex
-
-    function prevFile() {
-        /* Decrease by one. If it is a folder, go to the end of the list. If it's STILL a folder there are no images. */
-        if ((model.isFolder(--currentIndex) || currentIndex < 0) && model.isFolder(currentIndex = model.count - 1))
-            return
-
-        updateImage()
-    }
-
-    function nextFile() {
-        /* Advance by one. If we're at the end of the list go back to the start. */
-        if (++currentIndex >= folderModel.count)
-            currentIndex = 0
-
-        /* Skip over all folders. */
-        while (model.isFolder(currentIndex))
-            if (++currentIndex >= folderModel.count)
-                /* No files in the folder! */
-                return
-
-        updateImage()
-    }
 
     function updateImage() {
         /* Reset video settings. */
         videoMode = SourceMode.Mono
         seek(0);
-
-        /* Set the source path from the model. */
-        source = model.get(currentIndex, "fileURL")
     }
 
     function playPause() {
@@ -62,7 +32,7 @@ Item {
 
     property bool isPlaying: isVideo && media.playbackState == MediaPlayer.PlayingState
 
-    property url source: "qrc:/images/test.pns"
+    property url source: FolderListing.currentURL
 
     property bool isVideo: source.toString().match(/mp4$/) || source.toString().match(/avi$/) || source.toString().match(/m4v$/) || source.toString().match(/mkv$/)
     property alias videoPosition: media.position
@@ -237,16 +207,16 @@ Item {
 
                 /* Sideways scroll goes through files. */
                 if (wheel.angleDelta.x > 0)
-                    prevFile()
+                    FolderListing.openPrevious()
                 if (wheel.angleDelta.x < 0)
-                    nextFile()
+                    FolderListing.openNext()
             }
         }
         onClicked: {
             if (mouse.button == Qt.BackButton)
-                prevFile()
+                FolderListing.openPrevious()
             if (mouse.button == Qt.ForwardButton)
-                nextFile()
+                FolderListing.openNext()
         }
     }
 

@@ -2,13 +2,118 @@
 #include <QStorageInfo>
 #include <QSettings>
 
-DVFolderListing::DVFolderListing(QObject *parent, QSettings& s) : QObject(parent), settings(s), currentHistory(-1), driveTimer(this) {
+
+DVFolderListing::DVFolderListing(QObject *parent, QSettings& s) : QAbstractListModel(parent), settings(s), currentHistory(-1), driveTimer(this) {
     if (settings.contains("Bookmarks"))
         m_bookmarks = settings.value("Bookmarks").toStringList();
+
+    m_currentDir = QDir::current();
+    pushHistory();
+
+    /* These extensions are the supported stereo image/video formats. */
+    m_currentDir.setNameFilters(QStringList() << "*.jps" << "*.pns" <<
+                                /* TODO - What other video types can we do? */
+                                "*.avi" << "*.mp4" << "*.m4v" << "*.mkv");
+
+    m_currentDir.setFilter(QDir::AllDirs | QDir::NoDotAndDotDot | QDir::Files);
+    m_currentDir.setSorting(QDir::DirsFirst | QDir::Name | QDir::IgnoreCase);
 
     /* TODO - Figure out a way to detect when there is actually a change rather than just putting it on a timer. */
     connect(&driveTimer, &QTimer::timeout, this, &DVFolderListing::storageDevicePathsChanged);
     driveTimer.start(8000);
+}
+
+void DVFolderListing::openNext() {
+    /* Just files with the default name filter please. */
+    QFileInfoList entryList = m_currentDir.entryInfoList(QDir::Files);
+
+    if(!entryList.empty()){
+        /* Try to find the current file in the list. */
+        int index = entryList.indexOf(m_currentFile);
+        ++index;
+
+        /* Wrap the index value if it ends up outside the list bounds. */
+        if(index >= entryList.count())
+            index = 0;
+
+        openFile(entryList[index]);
+    }
+}
+
+void DVFolderListing::openPrevious() {
+    /* Just files with the default name filter please. */
+    QFileInfoList entryList = m_currentDir.entryInfoList(QDir::Files);
+
+    if(!entryList.empty()){
+        /* Try to find the current file in the list. */
+        int index = entryList.indexOf(m_currentFile);
+
+        --index;
+
+        /* Wrap the index value if it ends up outside the list bounds. */
+        if(index < 0)
+            index = entryList.count() - 1;
+
+        openFile(entryList[index]);
+    }
+}
+
+QString DVFolderListing::currentFile() {
+    return m_currentFile.fileName();
+}
+
+QUrl DVFolderListing::currentURL() {
+    /* The URL is always the absolute path of the file. */
+    return encodeURL(m_currentFile.absoluteFilePath());
+}
+
+void DVFolderListing::openFile(QFileInfo fileInfo) {
+    if (fileInfo != m_currentFile) {
+        /* Check to see if the file is in the current dir, and if it isn't update the dir. */
+        if (fileInfo.absolutePath() != m_currentDir.absolutePath())
+            setCurrentDir(fileInfo.absolutePath());
+
+        m_currentFile = fileInfo;
+        emit currentFileChanged(m_currentFile.fileName());
+    }
+}
+
+void DVFolderListing::openFile(QUrl url) {
+    openFile(QFileInfo(decodeURL(url)));
+}
+
+QUrl DVFolderListing::currentDir() {
+    return encodeURL(m_currentDir.absolutePath());
+}
+
+void DVFolderListing::setCurrentDir(QUrl url) {
+    setCurrentDir(url.toLocalFile());
+}
+
+void DVFolderListing::setCurrentDir(QString dir) {
+    /* Tell the model system that we're going to be changing all the things. */
+    beginResetModel();
+
+    if (m_currentDir.cd(dir)) {
+        pushHistory();
+        emit currentDirChanged();
+    }
+
+    /* Tell the model system that we've finished changing all the things. */
+    endResetModel();
+
+    /* TODO - What happens to currentFile? */
+}
+
+bool DVFolderListing::canGoUp() const {
+    /* Use a copy of currentDir to test whether or not cdUp() will work. */
+    QDir tmp = m_currentDir;
+    return tmp.cdUp();
+}
+
+void DVFolderListing::goUp() {
+    /* Calling m_currentDir.cd("..") is equivalent to m_currentDir.cdUp() anyway... */
+    setCurrentDir("..");
 }
 
 QStringList DVFolderListing::getStorageDevicePaths() const {
@@ -39,19 +144,19 @@ QString DVFolderListing::decodeURL(QUrl url) const {
     return url.toLocalFile();
 }
 
-QString DVFolderListing::goBack() {
-    --currentHistory;
+void DVFolderListing::goBack() {
+    setCurrentDir(browserHistory[--currentHistory]);
     emit historyChanged();
-    return browserHistory[currentHistory];
 }
 
-QString DVFolderListing::goForward() {
-    ++currentHistory;
+void DVFolderListing::goForward() {
+    setCurrentDir(browserHistory[++currentHistory]);
     emit historyChanged();
-    return browserHistory[currentHistory];
 }
 
-void DVFolderListing::pushHistory(QString value) {
+void DVFolderListing::pushHistory() {
+    QString value = m_currentDir.absolutePath();
+
     /* We ignore if value is empty or equal to the current history item. */
     if (!value.isEmpty() && (browserHistory.isEmpty() || browserHistory[currentHistory] != value)) {
         /* If the next item is equal to the passed value we keep the current history and just increment it. */
@@ -64,7 +169,7 @@ void DVFolderListing::pushHistory(QString value) {
             ++currentHistory;
 
             /* If there are any forward entries, they must be cleared before adding the new entry. */
-            if (canGoForward())
+            if (currentHistory < browserHistory.size())
                 browserHistory.erase(browserHistory.begin() + currentHistory, browserHistory.end());
 
             browserHistory.append(value);
@@ -89,20 +194,63 @@ void DVFolderListing::addBookmark(QString bookmark) {
     /* Don't add existing bookmarks, and don't add directories that don't exist. */
     if (!m_bookmarks.contains(bookmark) && dirExists(decodeURL(bookmark))) {
         m_bookmarks.append(bookmark);
-        bookmarksChanged(m_bookmarks);
         settings.setValue("Bookmarks", m_bookmarks);
+        bookmarksChanged();
     }
 }
 
 void DVFolderListing::deleteBookmark(QString bookmark) {
     /* Only emit signal and update setting if something was actually deleted. */
     if (m_bookmarks.removeAll(bookmark) != 0) {
-        bookmarksChanged(m_bookmarks);
         settings.setValue("Bookmarks", m_bookmarks);
+        bookmarksChanged();
     }
 }
 
 QStringList DVFolderListing::bookmarks() const {
     return m_bookmarks;
+}
+
+QHash<int, QByteArray> DVFolderListing::roleNames() const {
+    QHash<int, QByteArray> names;
+
+    names[FileNameRole] = "fileName";
+    names[FilePathRole] = "fileURL";
+    names[IsDirRole] = "fileIsDir";
+    names[IsImageRole] = "fileIsImage";
+    names[IsVideoRole] = "fileIsVideo";
+
+    return names;
+}
+
+QVariant DVFolderListing::data(const QModelIndex &index, int role) const {
+    QVariant data;
+
+    if (m_currentDir.count() > index.row()) {
+        QFileInfo info = m_currentDir.entryInfoList()[index.row()];
+
+        switch (role) {
+        case FileNameRole:
+            data = info.fileName();
+            break;
+        case FilePathRole:
+            data = QUrl::fromLocalFile(info.absoluteFilePath());
+            break;
+        case IsDirRole:
+            data = info.isDir();
+            break;
+        case IsImageRole:
+            data = !info.isDir() && (info.suffix() == "pns" || info.suffix() == "jps");
+            break;
+        case IsVideoRole:
+            data = !info.isDir() && (info.suffix() == "avi" || info.suffix() == "mp4" || info.suffix() == "m4v" || info.suffix() == "mkv");
+            break;
+        }
+    }
+    return data;
+}
+
+int DVFolderListing::rowCount(const QModelIndex &parent) const {
+    return m_currentDir.count();
 }
 

@@ -173,15 +173,8 @@ void DVQmlCommunication::doCommandLine() {
     if(parser.isSet("f"))
         setFullscreen(true);
 
-    if(parser.isSet("d")){
-        QUrl dir = QUrl::fromLocalFile(parser.value("d"));
-
-        if(!dir.isValid() || !QDir(dir.toLocalFile()).exists())
-            warning += tr("<p>Invalid directory \"%1\" passed to \"--startdir\" argument!</p>").arg(dir.toString());
-        else
-            /* TODO - How do we warn if this fails? Will it ever fail? */
-            startDir = dir;
-    }
+    if(parser.isSet("d") && !QDir::setCurrent(parser.value("d")))
+        warning += tr("<p>Invalid directory \"%1\" passed to \"--startdir\" argument!</p>").arg(parser.value("d"));
 
     if(parser.isSet("r")){
         const QString &renderer = parser.value("r");
