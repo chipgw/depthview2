@@ -8,14 +8,18 @@ Item {
 
     property real zoom: -1
 
-    function updateImage() {
-        /* Reset video settings. */
-        videoMode = SourceMode.Mono
-        seek(0);
+    Connections {
+        target: FolderListing
+
+        onCurrentFileChanged: {
+            /* Reset video settings. */
+            videoMode = SourceMode.Mono
+            seek(0);
+        }
     }
 
     function playPause() {
-        if (isVideo) {
+        if (FolderListing.currentFileIsVideo) {
             if (media.playbackState == MediaPlayer.PlayingState)
                 media.pause()
             else
@@ -30,35 +34,35 @@ Item {
                 + ":" + ("0" + Math.floor(ms / 1000) % 60).slice(-2) /* Always put a colon in between and pad with a zero. */
     }
 
-    property bool isPlaying: isVideo && media.playbackState == MediaPlayer.PlayingState
+    property bool isPlaying: FolderListing.currentFileIsVideo && media.playbackState == MediaPlayer.PlayingState
 
     property url source: FolderListing.currentURL
 
-    property bool isVideo: source.toString().match(/mp4$/) || source.toString().match(/avi$/) || source.toString().match(/m4v$/) || source.toString().match(/mkv$/)
     property alias videoPosition: media.position
     property alias videoDuration: media.duration
     property alias videoVolume: media.volume
 
-    property string mediaInfo: isVideo ? "<h1>Media Info:</h1>" + source +
-                                         "<br>Duration: " + timeString(media.metaData.duration)  +
-                                         "<h2>Video Info:</h2>" +
-                                         "Codec: " + media.metaData.videoCodec +
-                                         "<br>Frame Rate: " + media.metaData.videoFrameRate +
-                                         "<br>Bit Rate: " + media.metaData.videoBitRate +
-                                         "<br>Resolution: " + media.metaData.resolution.width + "x" + media.metaData.resolution.height +
-                                         "<br>Pixel Format: " + media.metaData.pixelFormat +
-                                         "<h2>Audio Info:</h2>" +
-                                         "Codec: " + media.metaData.audioCodec +
-                                         "<br>Bit Rate: " + media.metaData.audioBitRate +
-                                         "<hr>"
-                                       : "<h1>Media Info:</h1>" + source +
-                                         "<br>Resolution: " + image.width + "x" + image.height +
-                                         "<hr>"
+    property string mediaInfo: FolderListing.currentFileIsVideo ?
+                                   "<h1>Media Info:</h1>" + source +
+                                   "<br>Duration: " + timeString(media.metaData.duration)  +
+                                   "<h2>Video Info:</h2>" +
+                                   "Codec: " + media.metaData.videoCodec +
+                                   "<br>Frame Rate: " + media.metaData.videoFrameRate +
+                                   "<br>Bit Rate: " + media.metaData.videoBitRate +
+                                   "<br>Resolution: " + media.metaData.resolution.width + "x" + media.metaData.resolution.height +
+                                   "<br>Pixel Format: " + media.metaData.pixelFormat +
+                                   "<h2>Audio Info:</h2>" +
+                                   "Codec: " + media.metaData.audioCodec +
+                                   "<br>Bit Rate: " + media.metaData.audioBitRate +
+                                   "<hr>"
+                                 : "<h1>Media Info:</h1>" + source +
+                                   "<br>Resolution: " + image.width + "x" + image.height +
+                                   "<hr>"
 
     property int videoMode: SourceMode.Mono
 
     function seek(offset) {
-        if (isVideo)
+        if (FolderListing.currentFileIsVideo)
             media.seek(offset)
     }
 
@@ -138,7 +142,7 @@ Item {
                 anchors.centerIn: parent
                 id: image
 
-                source: isVideo ? "" : root.source
+                source: FolderListing.currentFileIsVideo ? "" : root.source
 
                 /* If zoom is negative we scale to fit, otherwise just use the value of zoom. */
                 scale: (zoom < 0) ? Math.min(root.width / image.width, root.height / image.height) : zoom
@@ -147,7 +151,7 @@ Item {
     }
 
     Item {
-        visible: isVideo
+        visible: FolderListing.currentFileIsVideo
 
         anchors.centerIn: parent
         clip: true
@@ -159,7 +163,7 @@ Item {
 
         MediaPlayer {
             id: media
-            source: isVideo ? root.source : ""
+            source: FolderListing.currentFileIsVideo ? root.source : ""
 
             autoPlay: true
         }
@@ -191,7 +195,7 @@ Item {
         onWheel: {
             /* Don't zoom or seek if covered. */
             if (!fileBrowser.visible) {
-                if (isVideo) {
+                if (FolderListing.currentFileIsVideo) {
                     if (wheel.angleDelta.y > 0)
                         media.seekForward()
                     else if (wheel.angleDelta.y < 0)
@@ -223,7 +227,7 @@ Item {
     PinchArea {
         anchors.fill: parent
 
-        enabled: !isVideo
+        enabled: !FolderListing.currentFileIsVideo
 
         property real startZoom
 

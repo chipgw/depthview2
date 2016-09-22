@@ -58,11 +58,11 @@ void DVFolderListing::openPrevious() {
     }
 }
 
-QString DVFolderListing::currentFile() {
+QString DVFolderListing::currentFile() const {
     return m_currentFile.fileName();
 }
 
-QUrl DVFolderListing::currentURL() {
+QUrl DVFolderListing::currentURL() const {
     /* The URL is always the absolute path of the file. */
     return encodeURL(m_currentFile.absoluteFilePath());
 }
@@ -74,7 +74,7 @@ void DVFolderListing::openFile(QFileInfo fileInfo) {
             setCurrentDir(fileInfo.absolutePath());
 
         m_currentFile = fileInfo;
-        emit currentFileChanged(m_currentFile.fileName());
+        emit currentFileChanged();
     }
 }
 
@@ -82,7 +82,7 @@ void DVFolderListing::openFile(QUrl url) {
     openFile(QFileInfo(decodeURL(url)));
 }
 
-QUrl DVFolderListing::currentDir() {
+QUrl DVFolderListing::currentDir() const {
     return encodeURL(m_currentDir.absolutePath());
 }
 
@@ -211,6 +211,20 @@ QStringList DVFolderListing::bookmarks() const {
     return m_bookmarks;
 }
 
+bool DVFolderListing::isCurrentFileImage() const {
+    return isFileImage(m_currentFile);
+}
+bool DVFolderListing::isCurrentFileVideo() const {
+    return isFileVideo(m_currentFile);
+}
+
+bool DVFolderListing::isFileImage(const QFileInfo& info) const {
+    return !info.isDir() && (info.suffix() == "pns" || info.suffix() == "jps");
+}
+bool DVFolderListing::isFileVideo(const QFileInfo& info) const {
+    return !info.isDir() && (info.suffix() == "avi" || info.suffix() == "mp4" || info.suffix() == "m4v" || info.suffix() == "mkv");
+}
+
 QHash<int, QByteArray> DVFolderListing::roleNames() const {
     QHash<int, QByteArray> names;
 
@@ -223,12 +237,13 @@ QHash<int, QByteArray> DVFolderListing::roleNames() const {
     return names;
 }
 
-QVariant DVFolderListing::data(const QModelIndex &index, int role) const {
+QVariant DVFolderListing::data(const QModelIndex& index, int role) const {
     QVariant data;
 
-    if (m_currentDir.count() > index.row()) {
+    if (int(m_currentDir.count()) > index.row()) {
         QFileInfo info = m_currentDir.entryInfoList()[index.row()];
 
+        /* Set the return value based on the role. */
         switch (role) {
         case FileNameRole:
             data = info.fileName();
@@ -240,17 +255,18 @@ QVariant DVFolderListing::data(const QModelIndex &index, int role) const {
             data = info.isDir();
             break;
         case IsImageRole:
-            data = !info.isDir() && (info.suffix() == "pns" || info.suffix() == "jps");
+            data = isFileImage(info);
             break;
         case IsVideoRole:
-            data = !info.isDir() && (info.suffix() == "avi" || info.suffix() == "mp4" || info.suffix() == "m4v" || info.suffix() == "mkv");
+            data = isFileVideo(info);
             break;
         }
     }
     return data;
 }
 
-int DVFolderListing::rowCount(const QModelIndex &parent) const {
+int DVFolderListing::rowCount(const QModelIndex& parent) const {
+    Q_UNUSED(parent)
     return m_currentDir.count();
 }
 

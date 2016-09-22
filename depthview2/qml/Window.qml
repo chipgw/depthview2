@@ -39,7 +39,7 @@ Rectangle {
 
             /* Visible when the mouse is close, when the screen was recently touched, when any of the menus are open, or when a video is paused. */
             state: fakeCursor.y < 128 || fileMenu.visible || viewMenu.visible || modeMenu.visible || helpMenu.visible ||
-                   touchTimer.running || (image.isVideo && !image.isPlaying) ? "" : "HIDDEN"
+                   touchTimer.running || (FolderListing.currentFileIsVideo && !image.isPlaying) ? "" : "HIDDEN"
 
             states: [
                 State {
@@ -244,7 +244,7 @@ Rectangle {
             }
 
             /* Visible when the mouse is close, when the screen was recently touched, when any of the menus are open, or when a video is paused. */
-            state: (root.height - fakeCursor.y) < 128 || sourceMode.visible || volumePopup.visible || touchTimer.running || (image.isVideo && !image.isPlaying)
+            state: (root.height - fakeCursor.y) < 128 || sourceMode.visible || volumePopup.visible || touchTimer.running || (FolderListing.currentFileIsVideo && !image.isPlaying)
                    ? "" : "HIDDEN"
 
             states: [
@@ -277,8 +277,8 @@ Rectangle {
                     }
 
                     /* Only show if currently on a video. */
-                    visible: image.isVideo
-                    enabled: image.isVideo
+                    visible: FolderListing.currentFileIsVideo
+                    enabled: FolderListing.currentFileIsVideo
 
                     Label {
                         /* Show the time elapsed. */
@@ -320,7 +320,7 @@ Rectangle {
                         anchors.left: parent.left
 
                         ToolButton {
-                            visible: image.isVideo
+                            visible: FolderListing.currentFileIsVideo
                             onClicked: sourceMode.open()
 
                             text: "Source Mode"
@@ -369,7 +369,7 @@ Rectangle {
                         }
 
                         ToolButton {
-                            visible: image.isVideo
+                            visible: FolderListing.currentFileIsVideo
 
                             text: image.isPlaying ? "Pause" : "Play"
 
@@ -391,7 +391,7 @@ Rectangle {
                             id: volumeButton
 
                             text: "Volume"
-                            visible: image.isVideo
+                            visible: FolderListing.currentFileIsVideo
 
                             /* It is only possible to click this when the popup is closed. */
                             onClicked: volumePopup.open()
@@ -572,7 +572,7 @@ Rectangle {
         sequence: "Space"
         context: Qt.ApplicationShortcut
 
-        enabled: image.isVideo
+        enabled: FolderListing.currentFileIsVideo
 
         onActivated: image.playPause()
     }
