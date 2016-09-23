@@ -17,12 +17,6 @@ Rectangle {
         anchors.fill: parent
 
         onZoomChanged: updateZoom()
-
-        /* Keep the video slider updated. */
-        onVideoPositionChanged: {
-            playbackSlider.videoPos = image.videoPosition
-            playbackSlider.value = playbackSlider.videoPos
-        }
     }
 
     Item {
@@ -285,21 +279,33 @@ Rectangle {
                         text: image.timeString(image.videoPosition)
 
                         /* When the video is loading the duration is -1, which just looks odd. */
-                        visible:  image.videoDuration > 0
+                        visible: image.videoDuration > 0
                     }
-                    Slider {
-                        id: playbackSlider
 
+                    ProgressBar {
                         Layout.fillWidth: true
 
                         to: image.videoDuration
+                        value: image.videoPosition
 
-                        /* Use this property to keep track of when value changes via binding. */
-                        property int videoPos
+                        /* When the video is loading the duration is -1, so show the indeterminate progressbar. */
+                        indeterminate: image.videoDuration <= 0
 
-                        /* If the value isn't the same as the tracked position then it changed by user input. */
-                        onValueChanged: if (value != videoPos) image.seek(value)
+                        MouseArea {
+                            anchors.fill: parent
+
+                            /* mouseX * this = the position of the video at the point under the cursor.
+                             * (mouseX is already relative to this object, which makes it easy.) */
+                            property real screenPosToTime: image.videoDuration / width
+
+                            /* When the mouse moves (only when pressed) or is clicked, seek to that position. */
+                            onMouseXChanged: image.seek(screenPosToTime * mouseX);
+                            onClicked: image.seek(screenPosToTime * mouseX);
+
+                            acceptedButtons: Qt.LeftButton
+                        }
                     }
+
                     Label {
                         /* The time remaining. */
                         text: "-" + image.timeString(image.videoDuration - image.videoPosition)
