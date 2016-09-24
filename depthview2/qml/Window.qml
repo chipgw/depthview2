@@ -7,6 +7,11 @@ Rectangle {
     id: root
     color: "black"
 
+    FontLoader {
+        id: googleMaterialFont
+        source: "qrc:/icons/MaterialIcons-Regular.ttf"
+    }
+
     function updateZoom() {
         zoomFitButton.checked = image.zoom == -1
         zoom100Button.checked = image.zoom == 1
@@ -54,7 +59,6 @@ Rectangle {
             ]
 
             RowLayout {
-
                 ToolButton {
                     text: "File"
                     onClicked: fileMenu.open()
@@ -369,7 +373,10 @@ Rectangle {
                         anchors.horizontalCenter: parent.horizontalCenter
 
                         ToolButton {
-                            text: "<"
+                            font.family: googleMaterialFont.name
+                            font.pixelSize: 32
+
+                            text: "skip_previous"
 
                             onClicked: FolderListing.openPrevious()
                         }
@@ -377,13 +384,18 @@ Rectangle {
                         ToolButton {
                             visible: FolderListing.currentFileIsVideo
 
-                            text: image.isPlaying ? "Pause" : "Play"
+                            font.family: googleMaterialFont.name
+                            font.pixelSize: 32
+                            text: image.isPlaying ? "pause" : "play_arrow"
 
                             onClicked: image.playPause()
                         }
 
                         ToolButton {
-                            text: ">"
+                            font.family: googleMaterialFont.name
+                            font.pixelSize: 32
+
+                            text: "skip_next"
 
                             onClicked: FolderListing.openNext()
                         }
@@ -396,7 +408,10 @@ Rectangle {
                         ToolButton {
                             id: volumeButton
 
-                            text: "Volume"
+                            font.family: googleMaterialFont.name
+                            font.pixelSize: 32
+
+                            text: image.videoVolume > 0.5 ? "volume_up" : image.videoVolume > 0.0 ? "volume_down" : "volume_off"
                             visible: FolderListing.currentFileIsVideo
 
                             /* It is only possible to click this when the popup is closed. */
