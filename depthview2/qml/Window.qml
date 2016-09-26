@@ -280,7 +280,7 @@ Rectangle {
 
                     Label {
                         /* Show the time elapsed. */
-                        text: image.timeString(image.videoPosition)
+                        text: "  " + image.timeString(image.videoPosition)
 
                         /* When the video is loading the duration is -1, which just looks odd. */
                         visible: image.videoDuration > 0
@@ -312,7 +312,7 @@ Rectangle {
 
                     Label {
                         /* The time remaining. */
-                        text: "-" + image.timeString(image.videoDuration - image.videoPosition)
+                        text: "-" + image.timeString(image.videoDuration - image.videoPosition) + "  "
 
                         /* When the video is loading the duration is -1, which just looks odd. */
                         visible:  image.videoDuration > 0
