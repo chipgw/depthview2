@@ -220,7 +220,7 @@ Popup {
                     }
                     text: "Add Bookmark"
 
-                    onClicked: FolderListing.addBookmark(root.model.folder)
+                    onClicked: FolderListing.addBookmark(FolderListing.currentDir)
 
                     /* Whenever the text width changes, make sure that the panel is large enough to fit. */
                     onImplicitWidthChanged: drivePanel.width = Math.max(drivePanel.width, implicitWidth)
