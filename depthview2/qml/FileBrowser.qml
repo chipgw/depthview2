@@ -257,8 +257,7 @@ Popup {
                 anchors.fill: parent
 
                 ToolButton {
-                    font.family: googleMaterialFont.name
-                    font.pixelSize: 32
+                    font: googleMaterialFont
                     text: "arrow_back"
                     
                     enabled: FolderListing.canGoBack
@@ -267,8 +266,7 @@ Popup {
                 }
                 
                 ToolButton {
-                    font.family: googleMaterialFont.name
-                    font.pixelSize: 32
+                    font: googleMaterialFont
                     text: "arrow_forward"
                     
                     enabled: FolderListing.canGoForward
@@ -277,8 +275,7 @@ Popup {
                 }
                 
                 ToolButton {
-                    font.family: googleMaterialFont.name
-                    font.pixelSize: 32
+                    font: googleMaterialFont
                     text: "arrow_upward"
                     
                     /* Don't go up if there is no up to go. */
@@ -304,8 +301,7 @@ Popup {
                 }
                 
                 ToolButton {
-                    font.family: googleMaterialFont.name
-                    font.pixelSize: 32
+                    font: googleMaterialFont
                     text: "cancel"
                     
                     onClicked: root.cancel()

@@ -8,9 +8,17 @@ Rectangle {
     color: "black"
 
     FontLoader {
-        id: googleMaterialFont
+        id: googleMaterialFontLoader
         source: "qrc:/icons/MaterialIcons-Regular.ttf"
     }
+
+    /* Default icon font settings. */
+    property font googleMaterialFont:
+        Qt.font({
+                    family: googleMaterialFontLoader.name,
+                    /* TODO - Perhaps there should be conditions where this is larger? */
+                    pixelSize: 32
+                });
 
     function updateZoom() {
         zoomFitButton.checked = image.zoom == -1
@@ -373,8 +381,7 @@ Rectangle {
                         anchors.horizontalCenter: parent.horizontalCenter
 
                         ToolButton {
-                            font.family: googleMaterialFont.name
-                            font.pixelSize: 32
+                            font: googleMaterialFont
 
                             text: "skip_previous"
 
@@ -384,16 +391,14 @@ Rectangle {
                         ToolButton {
                             visible: FolderListing.currentFileIsVideo
 
-                            font.family: googleMaterialFont.name
-                            font.pixelSize: 32
+                            font: googleMaterialFont
                             text: image.isPlaying ? "pause" : "play_arrow"
 
                             onClicked: image.playPause()
                         }
 
                         ToolButton {
-                            font.family: googleMaterialFont.name
-                            font.pixelSize: 32
+                            font: googleMaterialFont
 
                             text: "skip_next"
 
@@ -408,8 +413,7 @@ Rectangle {
                         ToolButton {
                             id: volumeButton
 
-                            font.family: googleMaterialFont.name
-                            font.pixelSize: 32
+                            font: googleMaterialFont
 
                             text: image.videoVolume > 0.5 ? "volume_up" : image.videoVolume > 0.0 ? "volume_down" : "volume_off"
                             visible: FolderListing.currentFileIsVideo
