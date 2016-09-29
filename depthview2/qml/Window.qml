@@ -2,6 +2,7 @@ import QtQuick 2.5
 import QtQuick.Layouts 1.2
 import DepthView 2.0
 import QtQuick.Controls 2.0
+import QtQuick.Window 2.2
 
 Rectangle {
     id: root
@@ -16,8 +17,9 @@ Rectangle {
     property font googleMaterialFont:
         Qt.font({
                     family: googleMaterialFontLoader.name,
-                    /* TODO - Perhaps there should be conditions where this is larger? */
-                    pixelSize: 32
+                    /* Use larger icons on screens with higher pixel density. */
+                    pixelSize: Screen.pixelDensity < 4 ? 24 :
+                              Screen.pixelDensity > 12 ? 96 : 32
                 });
 
     function updateZoom() {
