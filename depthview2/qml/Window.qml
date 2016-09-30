@@ -297,6 +297,9 @@ Rectangle {
                     }
 
                     ProgressBar {
+                        background.height: Screen.pixelDensity > 12 ? 32 : 12
+                        contentItem.implicitHeight: Screen.pixelDensity > 12 ? 24 : 8
+
                         Layout.fillWidth: true
 
                         to: image.videoDuration
