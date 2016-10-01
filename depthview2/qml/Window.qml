@@ -619,6 +619,35 @@ Rectangle {
         onActivated: DepthView.fullscreen = !DepthView.fullscreen
     }
 
+    MouseArea {
+        /* Popup close policy is borked with a touchscreen, so we do it ourselves. */
+        anchors.fill: parent
+
+        enabled: aboutBox.visible || mediaInfoBox.visible || volumePopup.visible || fileMenu.visible ||
+                 viewMenu.visible || greyFacPopup.visible || modeMenu.visible || helpMenu.visible || sourceMode.visible
+
+        onClicked:  {
+            if (aboutBox.visible)
+                aboutBox.close()
+            if (mediaInfoBox.visible)
+                mediaInfoBox.close()
+            if (volumePopup.visible)
+                volumePopup.close()
+            if (fileMenu.visible)
+                fileMenu.close()
+            if (viewMenu.visible)
+                viewMenu.close()
+            if (greyFacPopup.visible)
+                greyFacPopup.close()
+            if (modeMenu.visible)
+                modeMenu.close()
+            if (helpMenu.visible)
+                helpMenu.close()
+            if (sourceMode.visible)
+                sourceMode.close()
+        }
+    }
+
     /* The popup close policy escape shortcut isn't working, so take care of it here. */
     Shortcut {
         sequence: "Esc"
