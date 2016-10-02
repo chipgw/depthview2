@@ -21,6 +21,11 @@ Rectangle {
                     pixelSize: Screen.pixelDensity < 4 ? 24 :
                               Screen.pixelDensity > 12 ? 96 : 32
                 });
+    property font uiTextFont:
+        Qt.font({
+                    /* Use larger text on screens with higher pixel density. */
+                    pixelSize: Screen.pixelDensity > 12 ? 64 : 12
+                });
 
     function updateZoom() {
         zoomFitButton.checked = image.zoom == -1
@@ -71,6 +76,7 @@ Rectangle {
             RowLayout {
                 ToolButton {
                     text: "File"
+                    font: uiTextFont
                     onClicked: fileMenu.open()
 
                     Menu {
@@ -79,18 +85,21 @@ Rectangle {
 
                         MenuItem {
                             text: "Open..."
+                            font: uiTextFont
 
                             onTriggered: fileBrowser.visible = true
                         }
 
                         MenuItem {
                             text: "File Info"
+                            font: uiTextFont
 
                             onTriggered: mediaInfoBox.open()
                         }
 
                         MenuItem {
                             text: "Quit"
+                            font: uiTextFont
                             onTriggered: Qt.quit()
                         }
                     }
@@ -98,6 +107,7 @@ Rectangle {
 
                 ToolButton {
                     text: "View"
+                    font: uiTextFont
                     onClicked: viewMenu.open()
 
                     Menu {
@@ -109,6 +119,7 @@ Rectangle {
                             MenuItem {
                                 visible: DepthView.drawMode === DrawMode.Anaglyph
                                 text: "Grey Factor"
+                                font: uiTextFont
 
                                 onTriggered: greyFacPopup.open()
 
@@ -126,6 +137,7 @@ Rectangle {
                             MenuItem {
                                 visible: DepthView.drawMode === DrawMode.SidebySide || DepthView.drawMode === DrawMode.TopBottom
                                 text: "Anamorphic"
+                                font: uiTextFont
 
                                 checkable: true
                                 checked: DepthView.anamorphicDualView
@@ -136,6 +148,7 @@ Rectangle {
                             MenuItem {
                                 visible: DepthView.drawMode === DrawMode.SidebySide || DepthView.drawMode === DrawMode.TopBottom
                                 text: "Mirror Left"
+                                font: uiTextFont
 
                                 checkable: true
                                 checked: DepthView.mirrorLeft
@@ -146,6 +159,7 @@ Rectangle {
                             MenuItem {
                                 visible: DepthView.drawMode === DrawMode.SidebySide || DepthView.drawMode === DrawMode.TopBottom
                                 text: "Mirror Right"
+                                font: uiTextFont
 
                                 checkable: true
                                 checked: DepthView.mirrorRight
@@ -156,6 +170,7 @@ Rectangle {
                             MenuItem {
                                 id: fullscreenCheckBox
                                 text: "Fullscreen"
+                                font: uiTextFont
 
                                 checkable: true
                                 checked: DepthView.fullscreen
@@ -168,6 +183,7 @@ Rectangle {
 
                 ToolButton {
                     text: "Draw Mode"
+                    font: uiTextFont
                     onClicked: modeMenu.open()
 
                     Menu {
@@ -190,6 +206,7 @@ Rectangle {
                                 }
                                 MenuItem {
                                     text: model.text
+                                    font: uiTextFont
 
                                     checkable: true
                                     checked: DepthView.drawMode === model.mode
@@ -208,6 +225,7 @@ Rectangle {
                                 MenuItem {
                                     text: modelData
                                     checkable: true
+                                    font: uiTextFont
 
                                     checked: DepthView.drawMode === DrawMode.Plugin && DepthView.pluginMode === modelData
 
@@ -226,6 +244,7 @@ Rectangle {
 
                 ToolButton {
                     text: "Help"
+                    font: uiTextFont
                     onClicked: helpMenu.open()
 
                     Menu {
@@ -234,6 +253,7 @@ Rectangle {
 
                         MenuItem {
                             text: "About"
+                            font: uiTextFont
 
                             onClicked: aboutBox.open()
                         }
@@ -347,6 +367,7 @@ Rectangle {
                             onClicked: sourceMode.open()
 
                             text: "Source Mode"
+                            font: uiTextFont
 
                             Menu {
                                 id: sourceMode
@@ -368,6 +389,7 @@ Rectangle {
 
                                             checkable: true
                                             checked: image.videoMode === model.mode
+                                            font: uiTextFont
 
                                             onCheckedChanged:
                                                 if (checked) {
@@ -445,6 +467,7 @@ Rectangle {
                         ToolButton {
                             id: zoomFitButton
                             text: "Fit"
+                            font: uiTextFont
 
                             checkable: true
                             checked: image.zoom == -1
@@ -462,6 +485,7 @@ Rectangle {
                         ToolButton {
                             id: zoom100Button
                             text: "1:1"
+                            font: uiTextFont
 
                             checkable: true
                             checked: image.zoom == 1

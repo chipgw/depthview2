@@ -154,6 +154,7 @@ Popup {
                 Label {
                     padding: 8
                     text: "Drives:"
+                    font: uiTextFont
                 }
 
                 Repeater {
@@ -176,6 +177,7 @@ Popup {
                 Label {
                     padding: 8
                     text: "Bookmarks:"
+                    font: uiTextFont
                 }
 
                 Repeater {
@@ -286,7 +288,8 @@ Popup {
                 
                 TextField {
                     id: pathText
-                    
+
+                    font: uiTextFont
                     Layout.fillWidth: true
                     
                     onAccepted: {
