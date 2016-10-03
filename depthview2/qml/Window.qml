@@ -647,28 +647,11 @@ Rectangle {
         /* Popup close policy is borked with a touchscreen, so we do it ourselves. */
         anchors.fill: parent
 
-        enabled: aboutBox.visible || mediaInfoBox.visible || volumePopup.visible || fileMenu.visible ||
-                 viewMenu.visible || greyFacPopup.visible || modeMenu.visible || helpMenu.visible || sourceMode.visible
+        enabled: root.parent.children.length > 2
 
         onClicked:  {
-            if (aboutBox.visible)
-                aboutBox.close()
-            if (mediaInfoBox.visible)
-                mediaInfoBox.close()
-            if (volumePopup.visible)
-                volumePopup.close()
-            if (fileMenu.visible)
-                fileMenu.close()
-            if (viewMenu.visible)
-                viewMenu.close()
-            if (greyFacPopup.visible)
-                greyFacPopup.close()
-            if (modeMenu.visible)
-                modeMenu.close()
-            if (helpMenu.visible)
-                helpMenu.close()
-            if (sourceMode.visible)
-                sourceMode.close()
+            for (var i = 2; i < root.parent.children.length; ++i)
+                root.parent.children[i].visible = false
         }
     }
 
@@ -677,27 +660,8 @@ Rectangle {
         sequence: "Esc"
         context: Qt.ApplicationShortcut
         onActivated: {
-            /* TODO - There must be an easier way to do this... */
-            if (fileBrowser.visible)
-                fileBrowser.cancel()
-            if (aboutBox.visible)
-                aboutBox.close()
-            if (mediaInfoBox.visible)
-                mediaInfoBox.close()
-            if (volumePopup.visible)
-                volumePopup.close()
-            if (fileMenu.visible)
-                fileMenu.close()
-            if (viewMenu.visible)
-                viewMenu.close()
-            if (greyFacPopup.visible)
-                greyFacPopup.close()
-            if (modeMenu.visible)
-                modeMenu.close()
-            if (helpMenu.visible)
-                helpMenu.close()
-            if (sourceMode.visible)
-                sourceMode.close()
+            for (var i = 2; i < root.parent.children.length; ++i)
+                root.parent.children[i].visible = false
         }
     }
 }
