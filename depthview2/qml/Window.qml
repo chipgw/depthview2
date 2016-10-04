@@ -451,8 +451,6 @@ Rectangle {
                             Popup {
                                 id: volumePopup
 
-                                closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
-
                                 Slider {
                                     orientation: Qt.Vertical
 
@@ -512,8 +510,6 @@ Rectangle {
             x: (parent.width - width) / 2
             y: (parent.height - height) / 2
 
-            closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
-
             Label {
                 id: aboutLabel
 
@@ -536,8 +532,6 @@ Rectangle {
             /* No anchors for some reason... */
             x: (parent.width - width) / 2
             y: (parent.height - height) / 2
-
-            closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
 
             Label {
                 id: mediaInfoLabel
@@ -647,11 +641,31 @@ Rectangle {
         /* Popup close policy is borked with a touchscreen, so we do it ourselves. */
         anchors.fill: parent
 
-        enabled: root.parent.children.length > 2
+        /* This binding is more complicated, because root.parent isn't available at init. */
+        Binding on enabled {
+            when: root.parent != undefined
+            value: root.parent.children.length > 2
+        }
 
         onClicked:  {
-            for (var i = 2; i < root.parent.children.length; ++i)
-                root.parent.children[i].visible = false
+            if (aboutBox.visible)
+                aboutBox.close()
+            if (mediaInfoBox.visible)
+                mediaInfoBox.close()
+            if (volumePopup.visible)
+                volumePopup.close()
+            if (fileMenu.visible)
+                fileMenu.close()
+            if (viewMenu.visible)
+                viewMenu.close()
+            if (greyFacPopup.visible)
+                greyFacPopup.close()
+            if (modeMenu.visible)
+                modeMenu.close()
+            if (helpMenu.visible)
+                helpMenu.close()
+            if (sourceMode.visible)
+                sourceMode.close()
         }
     }
 
@@ -660,8 +674,26 @@ Rectangle {
         sequence: "Esc"
         context: Qt.ApplicationShortcut
         onActivated: {
-            for (var i = 2; i < root.parent.children.length; ++i)
-                root.parent.children[i].visible = false
+            if (fileBrowser.visible)
+                fileBrowser.cancel()
+            if (aboutBox.visible)
+                aboutBox.close()
+            if (mediaInfoBox.visible)
+                mediaInfoBox.close()
+            if (volumePopup.visible)
+                volumePopup.close()
+            if (fileMenu.visible)
+                fileMenu.close()
+            if (viewMenu.visible)
+                viewMenu.close()
+            if (greyFacPopup.visible)
+                greyFacPopup.close()
+            if (modeMenu.visible)
+                modeMenu.close()
+            if (helpMenu.visible)
+                helpMenu.close()
+            if (sourceMode.visible)
+                sourceMode.close()
         }
     }
 }
