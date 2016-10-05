@@ -450,6 +450,7 @@ Rectangle {
 
                             Popup {
                                 id: volumePopup
+                                y: -height
 
                                 Slider {
                                     orientation: Qt.Vertical
@@ -647,7 +648,7 @@ Rectangle {
             value: root.parent.children.length > 2
         }
 
-        onClicked:  {
+        onClicked: {
             if (aboutBox.visible)
                 aboutBox.close()
             if (mediaInfoBox.visible)
