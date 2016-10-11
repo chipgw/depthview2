@@ -325,9 +325,6 @@ Rectangle {
                         to: image.videoDuration
                         value: image.videoPosition
 
-                        /* When the video is loading the duration is -1, so show the indeterminate progressbar. */
-                        indeterminate: image.videoDuration <= 0
-
                         MouseArea {
                             anchors.fill: parent
 
