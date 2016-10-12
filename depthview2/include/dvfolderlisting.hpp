@@ -104,6 +104,7 @@ public:
         IsDirRole,
         IsImageRole,
         IsVideoRole,
+        FileSizeRole
     };
 
     bool isCurrentFileImage() const;

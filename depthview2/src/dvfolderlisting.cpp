@@ -233,6 +233,7 @@ QHash<int, QByteArray> DVFolderListing::roleNames() const {
     names[IsDirRole] = "fileIsDir";
     names[IsImageRole] = "fileIsImage";
     names[IsVideoRole] = "fileIsVideo";
+    names[FileSizeRole] = "fileSize";
 
     return names;
 }
@@ -260,6 +261,17 @@ QVariant DVFolderListing::data(const QModelIndex& index, int role) const {
         case IsVideoRole:
             data = isFileVideo(info);
             break;
+        case FileSizeRole: {
+            int unit;
+            const char* units[] = {" Bytes", " kB", " MB", " GB"};
+            /* Multiply by 10 to have one decimal point. */
+            quint64 size = info.size() * 10;
+
+            for (unit=-1; (++unit<3) && (size > 10239); size /= 1024);
+
+            data = QString::number(size * 0.1f, 'f', 1) + units[unit];
+            break;
+        }
         }
     }
     return data;

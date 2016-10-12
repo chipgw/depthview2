@@ -41,6 +41,7 @@ Popup {
                 border { color: "grey"; width: 4 }
 
                 MouseArea {
+                    id: mouseArea
                     anchors { fill: parent; margins: 4 }
 
                     onClicked: {
@@ -52,6 +53,16 @@ Popup {
                             FolderListing.openFile(fileURL)
                             close();
                         }
+                    }
+
+                    ToolTip {
+                        y: fakeCursor.height
+                        visible: mouseArea.containsMouse
+
+                        text: (fileIsDir ? "Folder " : (fileIsVideo ? "Video " : "Image ") + fileSize) +
+                              "<br>" + FolderListing.decodeURL(fileURL)
+
+                        parent: fakeCursor
                     }
 
                     hoverEnabled: true
