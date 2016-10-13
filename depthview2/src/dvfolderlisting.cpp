@@ -1,7 +1,7 @@
 #include "dvfolderlisting.hpp"
 #include <QStorageInfo>
 #include <QSettings>
-
+#include <QDateTime>
 
 DVFolderListing::DVFolderListing(QObject *parent, QSettings& s) : QAbstractListModel(parent), settings(s), currentHistory(-1), driveTimer(this) {
     if (settings.contains("Bookmarks"))
@@ -228,12 +228,13 @@ bool DVFolderListing::isFileVideo(const QFileInfo& info) const {
 QHash<int, QByteArray> DVFolderListing::roleNames() const {
     QHash<int, QByteArray> names;
 
-    names[FileNameRole] = "fileName";
-    names[FilePathRole] = "fileURL";
-    names[IsDirRole] = "fileIsDir";
-    names[IsImageRole] = "fileIsImage";
-    names[IsVideoRole] = "fileIsVideo";
-    names[FileSizeRole] = "fileSize";
+    names[FileNameRole]     = "fileName";
+    names[FilePathRole]     = "fileURL";
+    names[IsDirRole]        = "fileIsDir";
+    names[IsImageRole]      = "fileIsImage";
+    names[IsVideoRole]      = "fileIsVideo";
+    names[FileSizeRole]     = "fileSize";
+    names[FileCreatedRole]  = "fileCreated";
 
     return names;
 }
@@ -272,6 +273,9 @@ QVariant DVFolderListing::data(const QModelIndex& index, int role) const {
             data = QString::number(size * 0.1f, 'f', 1) + units[unit];
             break;
         }
+        case FileCreatedRole:
+            data = info.created().toString();
+            break;
         }
     }
     return data;
