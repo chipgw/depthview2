@@ -7,8 +7,7 @@ DVFolderListing::DVFolderListing(QObject *parent, QSettings& s) : QAbstractListM
     if (settings.contains("Bookmarks"))
         m_bookmarks = settings.value("Bookmarks").toStringList();
 
-    m_currentDir = QDir::current();
-    pushHistory();
+    initDir(QDir::currentPath());
 
     /* These extensions are the supported stereo image/video formats. */
     m_currentDir.setNameFilters(QStringList() << "*.jps" << "*.pns" <<
@@ -284,5 +283,18 @@ QVariant DVFolderListing::data(const QModelIndex& index, int role) const {
 int DVFolderListing::rowCount(const QModelIndex& parent) const {
     Q_UNUSED(parent)
     return m_currentDir.count();
+}
+
+bool DVFolderListing::initDir(const QString& dir) {
+    browserHistory.clear();
+
+    /* Return false if cd fails. */
+    if (!m_currentDir.cd(dir))
+        return false;
+
+    pushHistory();
+
+    /* It's all good. */
+    return true;
 }
 

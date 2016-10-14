@@ -1,4 +1,5 @@
 #include "dvqmlcommunication.hpp"
+#include "dvfolderlisting.hpp"
 #include "version.hpp"
 #include <QWindow>
 #include <QDir>
@@ -23,8 +24,6 @@ DVQmlCommunication::DVQmlCommunication(QWindow* parent, QSettings& s) : QObject(
 
     m_mirrorLeft = settings.contains("MirrorLeft") ? settings.value("MirrorLeft").toBool() : false;
     m_mirrorRight = settings.contains("MirrorRight") ? settings.value("MirrorRight").toBool() : false;
-
-    doCommandLine();
 }
 
 bool DVQmlCommunication::isLeft() const {
@@ -150,7 +149,7 @@ QStringList DVQmlCommunication::getModes() const {
                          << pluginModes;
 }
 
-void DVQmlCommunication::doCommandLine() {
+void DVQmlCommunication::doCommandLine(DVFolderListing *folderListing) {
     QCommandLineParser parser;
 
     /* TODO - More arguments. */
@@ -173,7 +172,7 @@ void DVQmlCommunication::doCommandLine() {
     if(parser.isSet("f"))
         setFullscreen(true);
 
-    if(parser.isSet("d") && !QDir::setCurrent(parser.value("d")))
+    if(parser.isSet("d") && !folderListing->initDir(parser.value("d")))
         warning += tr("<p>Invalid directory \"%1\" passed to \"--startdir\" argument!</p>").arg(parser.value("d"));
 
     if(parser.isSet("r")){
@@ -189,6 +188,16 @@ void DVQmlCommunication::doCommandLine() {
             m_drawMode = DVDrawMode::Plugin;
         } else {
             m_drawMode = DVDrawMode::Type(mode);
+        }
+    }
+
+    for (const QString& arg : parser.positionalArguments()) {
+        QFileInfo file(arg);
+
+        /* TODO - Check extension. */
+        if (file.exists()) {
+            folderListing->openFile(file);
+            break;
         }
     }
 

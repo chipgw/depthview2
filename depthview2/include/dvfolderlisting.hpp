@@ -119,7 +119,9 @@ public:
     QVariant data(const QModelIndex &index, int role) const;
 
     /* How many files are in the current dir? */
-    int rowCount(const QModelIndex &parent) const;
+    int rowCount(const QModelIndex& parent) const;
+
+    bool initDir(const QString& dir);
 
 signals:
     /* No argument because they are used as NOTIFY for multiple properties. */
