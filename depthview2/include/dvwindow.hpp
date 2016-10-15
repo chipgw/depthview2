@@ -21,6 +21,9 @@ public:
     DVWindow();
     ~DVWindow();
 
+    /* Parse command line arguments from QApplication. */
+    void doCommandLine(class QCommandLineParser& parser);
+
 public slots:
     void updateQmlSize();
 

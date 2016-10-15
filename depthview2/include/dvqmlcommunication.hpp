@@ -66,9 +66,6 @@ public:
     QStringList getPluginModes() const;
     QStringList getModes() const;
 
-    /* Parse command line arguments from QApplication. */
-    void doCommandLine(class DVFolderListing* folderListing);
-
     Q_INVOKABLE QString versionString();
     Q_INVOKABLE QString buildType();
     Q_INVOKABLE QString buildCompiler();

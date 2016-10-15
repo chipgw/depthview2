@@ -14,6 +14,8 @@
 #include <QOpenGLContext>
 #include <QOpenGLFunctions>
 #include <QPluginLoader>
+#include <QCommandLineParser>
+#include <QMessageBox>
 #include <QDir>
 
 /* Vertex attrib locations. */
@@ -44,8 +46,6 @@ public:
 DVWindow::DVWindow() : QOpenGLWindow(), settings(SETTINGS_ARGS), fboRight(nullptr), fboLeft(nullptr) {
     qmlCommunication = new DVQmlCommunication(this, settings);
     folderListing = new DVFolderListing(this, settings);
-
-    qmlCommunication->doCommandLine(folderListing);
 
     /* Use the class defined above. */
     qmlRenderControl = new RenderControl(this);
@@ -424,4 +424,46 @@ void DVWindow::unloadPlugins() {
 
     /* Clear the list. Not that it should be used anymore... */
     renderPlugins.clear();
+}
+
+void DVWindow::doCommandLine(QCommandLineParser& parser) {
+    /* We use one string to hold all warning messages, so we only have to show one dialog. */
+    QString warning;
+
+    if(parser.isSet("f"))
+        setWindowState(Qt::WindowFullScreen);
+
+    if(parser.isSet("d") && !folderListing->initDir(parser.value("d")))
+        warning += tr("<p>Invalid directory \"%1\" passed to \"--startdir\" argument!</p>").arg(parser.value("d"));
+
+    if(parser.isSet("r")){
+        const QString& renderer = parser.value("r");
+
+        int mode = qmlCommunication->getModes().indexOf(renderer);
+
+        if(mode == -1)
+            warning += tr("<p>Invalid renderer \"%1\" passed to \"--renderer\" argument!</p>").arg(renderer);
+
+        if (mode >= DVDrawMode::Plugin) {
+            qmlCommunication->setPluginMode(renderer);
+            qmlCommunication->setDrawMode(DVDrawMode::Plugin);
+        } else {
+            qmlCommunication->setDrawMode(DVDrawMode::Type(mode));
+        }
+    }
+
+    for (const QString& arg : parser.positionalArguments()) {
+        QFileInfo file(arg);
+
+        /* TODO - Check extension. */
+        if (file.exists()) {
+            folderListing->openFile(file);
+            break;
+        }
+    }
+
+    /* If there weren't any warnings we don't show the dialog. */
+    if(!warning.isEmpty())
+        /* TODO - Perhaps this should be done within QML? */
+        QMessageBox::warning(nullptr, tr("Invalid Command Line!"), warning);
 }

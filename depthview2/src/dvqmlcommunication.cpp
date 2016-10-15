@@ -5,7 +5,6 @@
 #include <QDir>
 #include <QApplication>
 #include <QMessageBox>
-#include <QCommandLineParser>
 #include <QSettings>
 
 DVQmlCommunication::DVQmlCommunication(QWindow* parent, QSettings& s) : QObject(parent), settings(s), owner(parent) {
@@ -147,64 +146,6 @@ QStringList DVQmlCommunication::getModes() const {
                          << "Mono Left"
                          << "Mono Right"
                          << pluginModes;
-}
-
-void DVQmlCommunication::doCommandLine(DVFolderListing *folderListing) {
-    QCommandLineParser parser;
-
-    /* TODO - More arguments. */
-    parser.addOptions({
-            { {"f", "fullscreen"},
-              QCoreApplication::translate("main", "")},
-            { {"d", "startdir"},
-              QCoreApplication::translate("main", ""),
-              QCoreApplication::translate("main", "directory")},
-            { {"r", "renderer"},
-              QCoreApplication::translate("main", ""),
-              QCoreApplication::translate("main", "renderer")},
-        });
-
-    parser.parse(QApplication::arguments());
-
-    /* We use one string to hold all warning messages, so we only have to show one dialog. */
-    QString warning;
-
-    if(parser.isSet("f"))
-        setFullscreen(true);
-
-    if(parser.isSet("d") && !folderListing->initDir(parser.value("d")))
-        warning += tr("<p>Invalid directory \"%1\" passed to \"--startdir\" argument!</p>").arg(parser.value("d"));
-
-    if(parser.isSet("r")){
-        const QString &renderer = parser.value("r");
-
-        int mode = getModes().indexOf(renderer);
-
-        if(mode == -1)
-            warning += tr("<p>Invalid renderer \"%1\" passed to \"--renderer\" argument!</p>").arg(renderer);
-
-        if (mode >= DVDrawMode::Plugin) {
-            m_pluginMode = renderer;
-            m_drawMode = DVDrawMode::Plugin;
-        } else {
-            m_drawMode = DVDrawMode::Type(mode);
-        }
-    }
-
-    for (const QString& arg : parser.positionalArguments()) {
-        QFileInfo file(arg);
-
-        /* TODO - Check extension. */
-        if (file.exists()) {
-            folderListing->openFile(file);
-            break;
-        }
-    }
-
-    /* If there weren't any warnings we don't show the dialog. */
-    if(!warning.isEmpty())
-        /* TODO - Perhaps this should be done within QML? */
-        QMessageBox::warning(nullptr, tr("Invalid Command Line!"), warning);
 }
 
 QString DVQmlCommunication::versionString() {
