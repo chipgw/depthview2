@@ -59,9 +59,10 @@ Popup {
                         y: fakeCursor.height
                         visible: mouseArea.containsMouse
 
-                        text: (fileIsDir ? "Folder " : (fileIsVideo ? "Video " : "Image ") + fileSize) +
-                              "<br>" + FolderListing.decodeURL(fileURL) +
-                              "<br>Created: " + fileCreated
+                        text: "Type: " + (fileIsDir ? "Folder" : (fileIsVideo ? "Video" : "Image") +
+                              "<br>Size: " + fileSize) +
+                              "<br>Created: " + fileCreated +
+                              "<br>" + FolderListing.decodeURL(fileURL)
 
                         parent: fakeCursor
                     }

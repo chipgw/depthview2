@@ -60,22 +60,23 @@ int main(int argc, char *argv[]) {
 #include <Windows.h>
 #pragma comment(lib, "advapi32")
 
-void addRegistryEntry(const QString& path, const QString& value, QString& error){
-    /* TODO - handle errors properly. */
+void addRegistryEntry(const QString& path, const QString& value, QString& error) {
     HKEY key;
 
     LSTATUS result = RegCreateKeyExA(HKEY_CURRENT_USER, LPCSTR(path.toLocal8Bit().constData()), 0, nullptr,
                                      REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, nullptr, &key, nullptr);
 
-    if (result == ERROR_SUCCESS) {
-        result = RegSetValueExA(key, nullptr, 0, REG_SZ, LPBYTE(value.toLocal8Bit().constData()), DWORD(value.size()));
-        if (result != ERROR_SUCCESS)
-            error += "<p>Error setting value for \"" + path + "\"!</p>";
-
-        RegCloseKey(key);
-    } else {
+    if (result != ERROR_SUCCESS) {
         error += "<p>Error creating key \"" + path + "\"!</p>";
+        return;
     }
+
+    result = RegSetValueExA(key, nullptr, 0, REG_SZ, LPBYTE(value.toLocal8Bit().constData()), DWORD(value.size()));
+
+    if (result != ERROR_SUCCESS)
+        error += "<p>Error setting value for \"" + path + "\"!</p>";
+
+    RegCloseKey(key);
 }
 #endif
 
