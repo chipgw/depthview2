@@ -98,7 +98,7 @@ void registerFileTypes() {
 
 #else
     /* TODO - make other platforms work. */
-    error = tr("File association is currently unsupported on your platform!");
+    error = QObject::tr("File association is currently unsupported on your platform!");
 #endif
 
     if (error.isNull())
