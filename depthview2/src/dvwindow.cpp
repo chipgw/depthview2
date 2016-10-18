@@ -69,6 +69,9 @@ DVWindow::DVWindow() : QOpenGLWindow(), settings(SETTINGS_ARGS), fboRight(nullpt
     connect(qmlCommunication, &DVQmlCommunication::drawModeChanged, this, &DVWindow::updateQmlSize);
     connect(qmlCommunication, &DVQmlCommunication::anamorphicDualViewChanged, this, &DVWindow::updateQmlSize);
 
+    /* Update window title whenever file changes. */
+    connect(folderListing, &DVFolderListing::currentFileChanged, [this](){setTitle(folderListing->currentFile() + " - DepthView");});
+
     /* We render a cursor inside QML so it is shown for both eyes. */
     setCursor(Qt::BlankCursor);
 
