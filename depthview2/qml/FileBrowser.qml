@@ -173,17 +173,33 @@ Popup {
                 Repeater {
                     model: FolderListing.storageDevicePaths
 
-                    delegate: Button {
+                    Item {
                         width: drivePanel.width
-                        text: data[1]
+                        height: button.implicitHeight
+                        Button {
+                            id: button
+                            anchors.fill: parent
+                            text: data[1]
 
-                        /* Drive info is provided as "<path>;<display name>". */
-                        property variant data: modelData.split(';')
+                            hoverEnabled: true
 
-                        onClicked: FolderListing.currentDir = FolderListing.encodeURL(data[0])
+                            /* Drive info is provided as "<path>;<display name>". */
+                            property variant data: modelData.split(';')
 
-                        /* Whenever the text width changes, make sure that the panel is large enough to fit. */
-                        onImplicitWidthChanged: drivePanel.width = Math.max(drivePanel.width, implicitWidth)
+                            onClicked: FolderListing.currentDir = FolderListing.encodeURL(data[0])
+
+                            /* Whenever the text width changes, make sure that the panel is large enough to fit. */
+                            onImplicitWidthChanged: drivePanel.width = Math.max(drivePanel.width, implicitWidth)
+                        }
+
+                        ToolTip {
+                            y: fakeCursor.height
+                            visible: button.hovered
+
+                            text: button.data[0]
+
+                            parent: fakeCursor
+                        }
                     }
                 }
 
@@ -196,17 +212,21 @@ Popup {
                 Repeater {
                     model: FolderListing.bookmarks
 
-                    delegate: Item {
+                    Item {
                         height: childrenRect.height
                         width: drivePanel.width
 
                         Button {
+                            id: bookmarkButton
+
                             /* Fit to the parent item minus space for the "X" button on the right. */
                             anchors {
                                 left: parent.left
                                 right: deleteButton.left
                             }
                             text: modelData.substr(modelData.lastIndexOf("/", modelData.length - 2) + 1)
+
+                            hoverEnabled: true
 
                             onClicked: FolderListing.currentDir = modelData
 
@@ -224,6 +244,14 @@ Popup {
 
                             /* TODO - Maybe this should confirm? IDK... */
                             onClicked: FolderListing.deleteBookmark(modelData)
+                        }
+                        ToolTip {
+                            y: fakeCursor.height
+                            visible: bookmarkButton.hovered
+
+                            text: FolderListing.decodeURL(modelData)
+
+                            parent: fakeCursor
                         }
                     }
                 }
