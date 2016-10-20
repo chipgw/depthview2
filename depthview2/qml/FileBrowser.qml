@@ -181,8 +181,6 @@ Popup {
                             anchors.fill: parent
                             text: data[1]
 
-                            hoverEnabled: true
-
                             /* Drive info is provided as "<path>;<display name>". */
                             property variant data: modelData.split(';')
 
@@ -194,7 +192,9 @@ Popup {
 
                         ToolTip {
                             y: fakeCursor.height
-                            visible: button.hovered
+
+                            /* Don't use button.hovered because it breaks when the file browser closes. */
+                            visible: button.contains(button.mapFromItem(null, fakeCursor.x, fakeCursor.y)) && root.visible
 
                             text: button.data[0]
 
@@ -226,8 +226,6 @@ Popup {
                             }
                             text: modelData.substr(modelData.lastIndexOf("/", modelData.length - 2) + 1)
 
-                            hoverEnabled: true
-
                             onClicked: FolderListing.currentDir = modelData
 
                             /* Whenever the text width changes, make sure that the panel is large enough to fit. */
@@ -247,7 +245,9 @@ Popup {
                         }
                         ToolTip {
                             y: fakeCursor.height
-                            visible: bookmarkButton.hovered
+
+                            /* Don't use button.hovered because it breaks when the file browser closes. */
+                            visible: bookmarkButton.contains(bookmarkButton.mapFromItem(null, fakeCursor.x, fakeCursor.y)) && root.visible
 
                             text: FolderListing.decodeURL(modelData)
 
