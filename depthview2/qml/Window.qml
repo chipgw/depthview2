@@ -360,7 +360,7 @@ Rectangle {
                         anchors.left: parent.left
 
                         ToolButton {
-                            visible: FolderListing.currentFileIsVideo
+                            visible: FolderListing.currentFileStereoMode == SourceMode.Mono
                             onClicked: sourceMode.open()
 
                             text: "Source Mode"
@@ -385,12 +385,12 @@ Rectangle {
                                             text: model.text
 
                                             checkable: true
-                                            checked: image.videoMode === model.mode
+                                            checked: image.stereoMode === model.mode
                                             font: uiTextFont
 
                                             onCheckedChanged:
                                                 if (checked) {
-                                                    image.videoMode = model.mode
+                                                    image.stereoMode = model.mode
                                                     sourceMode.close()
                                                 }
                                         }

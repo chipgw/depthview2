@@ -4,6 +4,7 @@
 #include <QTimer>
 #include <QUrl>
 #include <QAbstractListModel>
+#include <dvenums.hpp>
 
 class QSettings;
 
@@ -28,6 +29,7 @@ class DVFolderListing : public QAbstractListModel {
     /* Allow QML to easily know the type of the current file. */
     Q_PROPERTY(bool currentFileIsImage READ isCurrentFileImage NOTIFY currentFileChanged)
     Q_PROPERTY(bool currentFileIsVideo READ isCurrentFileVideo NOTIFY currentFileChanged)
+    Q_PROPERTY(DVSourceMode::Type currentFileStereoMode READ currentFileStereoMode NOTIFY currentFileChanged)
 
     Q_PROPERTY(QUrl currentDir READ currentDir WRITE setCurrentDir NOTIFY currentDirChanged)
 
@@ -105,13 +107,16 @@ public:
         IsImageRole,
         IsVideoRole,
         FileSizeRole,
-        FileCreatedRole
+        FileCreatedRole,
+        FileStereoModeRole
     };
 
     bool isCurrentFileImage() const;
     bool isCurrentFileVideo() const;
+    DVSourceMode::Type currentFileStereoMode() const;
     bool isFileImage(const QFileInfo& file) const;
     bool isFileVideo(const QFileInfo& file) const;
+    DVSourceMode::Type fileStereoMode(const QFileInfo& file) const;
 
     QHash<int, QByteArray> roleNames() const;
 

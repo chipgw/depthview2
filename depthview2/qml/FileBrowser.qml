@@ -96,6 +96,8 @@ Popup {
                                 StereoImage {
                                     anchors.centerIn: parent
 
+                                    imageMode: fileStereoMode
+
                                     /* If it is a directory use a thumbnail from qrc. Otherwise the file should be an image itself. */
                                     source: fileIsDir ? "qrc:/images/folder.pns" : fileURL
 
@@ -103,7 +105,8 @@ Popup {
                                     asynchronous: !fileIsDir;
 
                                     /* The image should only be stored at the needed size. */
-                                    sourceSize: Qt.size(parent.width * 2, parent.height)
+                                    sourceSize: Qt.size((imageMode == SourceMode.SidebySide) ? parent.width * 2 : parent.width,
+                                                        (imageMode == SourceMode.TopBottom) ? parent.height * 2 : parent.height)
                                 }
                             }
                         }

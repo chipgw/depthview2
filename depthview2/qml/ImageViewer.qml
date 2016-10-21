@@ -12,8 +12,9 @@ Item {
         target: FolderListing
 
         onCurrentFileChanged: {
+            /* Make sure the current mode is up to date. */
+            stereoMode = FolderListing.currentFileStereoMode
             /* Reset video settings. */
-            videoMode = SourceMode.Mono
             seek(0);
         }
     }
@@ -59,7 +60,7 @@ Item {
                                    "<br>Resolution: " + image.width + "x" + image.height +
                                    "<hr>"
 
-    property int videoMode: SourceMode.Mono
+    property int stereoMode: FolderListing.currentFileStereoMode
 
     function seek(offset) {
         if (FolderListing.currentFileIsVideo)
@@ -142,6 +143,8 @@ Item {
                 anchors.centerIn: parent
                 id: image
 
+                imageMode: stereoMode
+
                 source: FolderListing.currentFileIsVideo ? "" : root.source
 
                 /* If zoom is negative we scale to fit, otherwise just use the value of zoom. */
@@ -156,8 +159,8 @@ Item {
         anchors.centerIn: parent
         clip: true
 
-        width: (videoMode == SourceMode.SidebySide || videoMode == SourceMode.SidebySideAnamorphic) ? vid.width / 2 : vid.width
-        height: (videoMode == SourceMode.TopBottom || videoMode == SourceMode.TopBottomAnamorphic) ? vid.height / 2 : vid.height
+        width: (stereoMode == SourceMode.SidebySide || stereoMode == SourceMode.SidebySideAnamorphic) ? vid.width / 2 : vid.width
+        height: (stereoMode == SourceMode.TopBottom || stereoMode == SourceMode.TopBottomAnamorphic) ? vid.height / 2 : vid.height
 
         scale: (zoom < 0) ? Math.min(root.width / width, root.height / height) : zoom
 
@@ -172,15 +175,15 @@ Item {
             id: vid
             source: media
 
-            width: (videoMode == SourceMode.SidebySideAnamorphic) ? sourceRect.width * 2 : sourceRect.width
-            height: (videoMode == SourceMode.TopBottomAnamorphic) ? sourceRect.height * 2 : sourceRect.height
+            width: (stereoMode == SourceMode.SidebySideAnamorphic) ? sourceRect.width * 2 : sourceRect.width
+            height: (stereoMode == SourceMode.TopBottomAnamorphic) ? sourceRect.height * 2 : sourceRect.height
 
             /* Always stretch. We set the VideoOutput to the size we want. */
             fillMode: VideoOutput.Stretch
 
             /* Same thing as the StereoImage does. Show half for each eye. */
-            x: (!DepthView.isLeft && (videoMode == SourceMode.SidebySide || videoMode == SourceMode.SidebySideAnamorphic)) ? -width / 2 : 0
-            y: (!DepthView.isLeft && (videoMode == SourceMode.TopBottom || videoMode == SourceMode.TopBottomAnamorphic)) ? -height / 2 : 0
+            x: (!DepthView.isLeft && (stereoMode == SourceMode.SidebySide || stereoMode == SourceMode.SidebySideAnamorphic)) ? -width / 2 : 0
+            y: (!DepthView.isLeft && (stereoMode == SourceMode.TopBottom || stereoMode == SourceMode.TopBottomAnamorphic)) ? -height / 2 : 0
         }
     }
 

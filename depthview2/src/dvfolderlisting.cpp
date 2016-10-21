@@ -10,7 +10,7 @@ DVFolderListing::DVFolderListing(QObject *parent, QSettings& s) : QAbstractListM
     initDir(QDir::currentPath());
 
     /* These extensions are the supported stereo image/video formats. */
-    m_currentDir.setNameFilters(QStringList() << "*.jps" << "*.pns" <<
+    m_currentDir.setNameFilters(QStringList() << "*.jps" << "*.pns" << "*.jpg" << "*.jpeg" << "*.png" << "*.bmp" <<
                                 /* TODO - What other video types can we do? */
                                 "*.avi" << "*.mp4" << "*.m4v" << "*.mkv");
 
@@ -216,24 +216,37 @@ bool DVFolderListing::isCurrentFileImage() const {
 bool DVFolderListing::isCurrentFileVideo() const {
     return isFileVideo(m_currentFile);
 }
+DVSourceMode::Type DVFolderListing::currentFileStereoMode() const {
+    return fileStereoMode(m_currentFile);
+}
 
 bool DVFolderListing::isFileImage(const QFileInfo& info) const {
-    return !info.isDir() && (info.suffix() == "pns" || info.suffix() == "jps");
+    return !info.isDir() && (info.suffix() == "pns" || info.suffix() == "jps" ||
+                             info.suffix() == "jpg" || info.suffix() == "jpeg" || info.suffix() == "png" || info.suffix() == "bmp");
 }
 bool DVFolderListing::isFileVideo(const QFileInfo& info) const {
     return !info.isDir() && (info.suffix() == "avi" || info.suffix() == "mp4" || info.suffix() == "m4v" || info.suffix() == "mkv");
+}
+DVSourceMode::Type DVFolderListing::fileStereoMode(const QFileInfo& info) const {
+    /* Directories are side-by-side because of their thumbnail. */
+    if(info.isDir() || info.suffix() == "pns" || info.suffix() == "jps")
+        return DVSourceMode::SidebySide;
+
+    /* TODO - Try to find a way to detect the mode. */
+    return DVSourceMode::Mono;
 }
 
 QHash<int, QByteArray> DVFolderListing::roleNames() const {
     QHash<int, QByteArray> names;
 
-    names[FileNameRole]     = "fileName";
-    names[FilePathRole]     = "fileURL";
-    names[IsDirRole]        = "fileIsDir";
-    names[IsImageRole]      = "fileIsImage";
-    names[IsVideoRole]      = "fileIsVideo";
-    names[FileSizeRole]     = "fileSize";
-    names[FileCreatedRole]  = "fileCreated";
+    names[FileNameRole]         = "fileName";
+    names[FilePathRole]         = "fileURL";
+    names[IsDirRole]            = "fileIsDir";
+    names[IsImageRole]          = "fileIsImage";
+    names[IsVideoRole]          = "fileIsVideo";
+    names[FileSizeRole]         = "fileSize";
+    names[FileCreatedRole]      = "fileCreated";
+    names[FileStereoModeRole]   = "fileStereoMode";
 
     return names;
 }
@@ -274,6 +287,9 @@ QVariant DVFolderListing::data(const QModelIndex& index, int role) const {
         }
         case FileCreatedRole:
             data = info.created().toString();
+            break;
+        case FileStereoModeRole:
+            data = fileStereoMode(info);
             break;
         }
     }
