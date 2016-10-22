@@ -9,10 +9,20 @@ DVFolderListing::DVFolderListing(QObject *parent, QSettings& s) : QAbstractListM
 
     initDir(QDir::currentPath());
 
+    /* TODO - What other video types can we do? */
+    stereoImageSuffixes << "jps" << "pns";
+    imageSuffixes << "jpg" << "jpeg" << "png" << "bmp" << stereoImageSuffixes;
+    videoSuffixes << "avi" << "mp4" << "m4v" << "mkv" << "ogv" << "ogg" << "webm" << "flv" << "3gp" << "wmv" << "mpg";
+
+    QStringList nameFilters;
+
+    for (const QString& suffix : imageSuffixes)
+        nameFilters << "*." + suffix;
+    for (const QString& suffix : videoSuffixes)
+        nameFilters << "*." + suffix;
+
     /* These extensions are the supported stereo image/video formats. */
-    m_currentDir.setNameFilters(QStringList() << "*.jps" << "*.pns" << "*.jpg" << "*.jpeg" << "*.png" << "*.bmp" <<
-                                /* TODO - What other video types can we do? */
-                                "*.avi" << "*.mp4" << "*.m4v" << "*.mkv");
+    m_currentDir.setNameFilters(nameFilters);
 
     m_currentDir.setFilter(QDir::AllDirs | QDir::NoDotAndDotDot | QDir::Files);
     m_currentDir.setSorting(QDir::DirsFirst | QDir::Name | QDir::IgnoreCase);
@@ -221,15 +231,14 @@ DVSourceMode::Type DVFolderListing::currentFileStereoMode() const {
 }
 
 bool DVFolderListing::isFileImage(const QFileInfo& info) const {
-    return !info.isDir() && (info.suffix() == "pns" || info.suffix() == "jps" ||
-                             info.suffix() == "jpg" || info.suffix() == "jpeg" || info.suffix() == "png" || info.suffix() == "bmp");
+    return !info.isDir() && imageSuffixes.contains(info.suffix(), Qt::CaseInsensitive);
 }
 bool DVFolderListing::isFileVideo(const QFileInfo& info) const {
-    return !info.isDir() && (info.suffix() == "avi" || info.suffix() == "mp4" || info.suffix() == "m4v" || info.suffix() == "mkv");
+    return !info.isDir() && videoSuffixes.contains(info.suffix(), Qt::CaseInsensitive);
 }
 DVSourceMode::Type DVFolderListing::fileStereoMode(const QFileInfo& info) const {
     /* Directories are side-by-side because of their thumbnail. */
-    if(info.isDir() || info.suffix() == "pns" || info.suffix() == "jps")
+    if(info.isDir() || stereoImageSuffixes.contains(info.suffix(), Qt::CaseInsensitive))
         return DVSourceMode::SidebySide;
 
     /* TODO - Try to find a way to detect the mode. */

@@ -16,6 +16,10 @@ class DVFolderListing : public QAbstractListModel {
     QDir m_currentDir;
     QFileInfo m_currentFile;
 
+    QStringList stereoImageSuffixes;
+    QStringList imageSuffixes;
+    QStringList videoSuffixes;
+
     QStringList browserHistory;
     int currentHistory;
 
