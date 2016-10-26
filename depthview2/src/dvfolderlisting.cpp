@@ -67,6 +67,18 @@ void DVFolderListing::openPrevious() {
     }
 }
 
+QString DVFolderListing::bytesToString(qint64 bytes) {
+    int unit;
+    const char* units[] = {" Bytes", " kB", " MB", " GB"};
+
+    /* Multiply by 10 to have one decimal point. */
+    bytes *= 10;
+
+    for (unit=-1; (++unit<3) && (bytes > 10239); bytes /= 1024);
+
+    return QString::number(bytes * 0.1f, 'f', 1) + units[unit];
+}
+
 QString DVFolderListing::currentFile() const {
     return m_currentFile.fileName();
 }
@@ -229,6 +241,9 @@ bool DVFolderListing::isCurrentFileVideo() const {
 DVSourceMode::Type DVFolderListing::currentFileStereoMode() const {
     return fileStereoMode(m_currentFile);
 }
+qint64 DVFolderListing::currentFileSize() {
+    return m_currentFile.size();
+}
 
 bool DVFolderListing::isFileImage(const QFileInfo& info) const {
     return !info.isDir() && imageSuffixes.contains(info.suffix(), Qt::CaseInsensitive);
@@ -283,17 +298,9 @@ QVariant DVFolderListing::data(const QModelIndex& index, int role) const {
         case IsVideoRole:
             data = isFileVideo(info);
             break;
-        case FileSizeRole: {
-            int unit;
-            const char* units[] = {" Bytes", " kB", " MB", " GB"};
-            /* Multiply by 10 to have one decimal point. */
-            quint64 size = info.size() * 10;
-
-            for (unit=-1; (++unit<3) && (size > 10239); size /= 1024);
-
-            data = QString::number(size * 0.1f, 'f', 1) + units[unit];
+        case FileSizeRole:
+            data = info.size();
             break;
-        }
         case FileCreatedRole:
             data = info.created().toString();
             break;

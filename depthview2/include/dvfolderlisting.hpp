@@ -34,6 +34,7 @@ class DVFolderListing : public QAbstractListModel {
     Q_PROPERTY(bool currentFileIsImage READ isCurrentFileImage NOTIFY currentFileChanged)
     Q_PROPERTY(bool currentFileIsVideo READ isCurrentFileVideo NOTIFY currentFileChanged)
     Q_PROPERTY(DVSourceMode::Type currentFileStereoMode READ currentFileStereoMode NOTIFY currentFileChanged)
+    Q_PROPERTY(qint64 currentFileSize READ currentFileSize NOTIFY currentFileChanged)
 
     Q_PROPERTY(QUrl currentDir READ currentDir WRITE setCurrentDir NOTIFY currentDirChanged)
 
@@ -103,6 +104,8 @@ public:
     Q_INVOKABLE void openNext();
     Q_INVOKABLE void openPrevious();
 
+    Q_INVOKABLE QString bytesToString(qint64 bytes);
+
     /* Begin Model stuff... */
     enum Roles {
         FileNameRole = Qt::UserRole+1,
@@ -118,6 +121,8 @@ public:
     bool isCurrentFileImage() const;
     bool isCurrentFileVideo() const;
     DVSourceMode::Type currentFileStereoMode() const;
+    qint64 currentFileSize();
+
     bool isFileImage(const QFileInfo& file) const;
     bool isFileVideo(const QFileInfo& file) const;
     DVSourceMode::Type fileStereoMode(const QFileInfo& file) const;

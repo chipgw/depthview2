@@ -45,7 +45,8 @@ Item {
 
     property string mediaInfo: FolderListing.currentFileIsVideo ?
                                    "<h1>Media Info:</h1>" + source +
-                                   "<br>Duration: " + timeString(media.metaData.duration)  +
+                                   "<br>File Size: " + FolderListing.bytesToString(FolderListing.currentFileSize) +
+                                   "<br>Duration: " + timeString(media.metaData.duration) +
                                    "<h2>Video Info:</h2>" +
                                    "Codec: " + media.metaData.videoCodec +
                                    "<br>Frame Rate: " + media.metaData.videoFrameRate +
@@ -57,6 +58,7 @@ Item {
                                    "<br>Bit Rate: " + media.metaData.audioBitRate +
                                    "<hr>"
                                  : "<h1>Media Info:</h1>" + source +
+                                   "<br>File Size: " + FolderListing.bytesToString(FolderListing.currentFileSize) +
                                    "<br>Resolution: " + image.width + "x" + image.height +
                                    "<hr>"
 
