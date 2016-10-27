@@ -199,7 +199,7 @@ Popup {
                             /* Don't use button.hovered because it breaks when the file browser closes. */
                             visible: button.contains(button.mapFromItem(null, fakeCursor.x, fakeCursor.y)) && root.visible
 
-                            text: button.data[0]
+                            text: button.data[0] + "<br>" + FolderListing.bytesToString(button.data[2])
 
                             parent: fakeCursor
                         }

@@ -145,7 +145,7 @@ QStringList DVFolderListing::getStorageDevicePaths() const {
         /* In my experience anything that doesn't have "storage" or "sdcard" in it on Android is useless. */
         if (info.rootPath().contains("storage") || info.rootPath().contains("sdcard"))
 #endif
-        paths.append(info.rootPath() + ';' + info.displayName());
+        paths.append(info.rootPath() + ';' + info.displayName() + ";" + QString::number(info.bytesTotal()));
 
 
     return paths;
