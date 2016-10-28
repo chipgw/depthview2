@@ -24,23 +24,32 @@ int main(int argc, char *argv[]) {
 
     /* TODO - More arguments. */
     parser.addOptions({
+#ifdef Q_OS_WIN32
             {"register", QCoreApplication::translate("main", "")},
+#endif
             { {"f", "fullscreen"},
-              QCoreApplication::translate("main", "")},
+              QCoreApplication::translate("main", "Open the window in fullscreen mode.")},
             { {"d", "startdir"},
-              QCoreApplication::translate("main", ""),
+              QCoreApplication::translate("main", "Start the application in the specified directory. (Ignored if a file is opened)"),
               QCoreApplication::translate("main", "directory")},
             { {"r", "renderer"},
-              QCoreApplication::translate("main", ""),
+              /* TODO - List valid modes in help string. */
+              QCoreApplication::translate("main", "Set the render mode."),
               QCoreApplication::translate("main", "renderer")},
         });
 
-    parser.parse(app.arguments());
+    parser.addHelpOption();
+    parser.addVersionOption();
+    parser.addPositionalArgument("file", "A file to open.");
 
+    parser.process(app.arguments());
+
+#ifdef Q_OS_WIN32
     if(parser.isSet("register")){
         registerFileTypes();
         return 0;
     }
+#endif
 
     /* If not started in a specific directory default to the user's home path. */
     if(QDir::currentPath() == app.applicationDirPath())
@@ -53,9 +62,8 @@ int main(int argc, char *argv[]) {
     return app.exec();
 }
 
-/* File association code. */
-
-#if defined(Q_OS_WIN32)
+/* Windows file association code. */
+#ifdef Q_OS_WIN32
 /* Windows-specific code used for file association. */
 #include <Windows.h>
 #pragma comment(lib, "advapi32")
@@ -78,12 +86,10 @@ void addRegistryEntry(const QString& path, const QString& value, QString& error)
 
     RegCloseKey(key);
 }
-#endif
 
 void registerFileTypes() {
     QString error;
 
-#if defined(Q_OS_WIN32)
     QString progID = "chipgw.DepthView." + version::number.toString();
 
     addRegistryEntry("Software\\Classes\\.jps", progID, error);
@@ -96,13 +102,9 @@ void registerFileTypes() {
     QString command = "\"" + QDir::toNativeSeparators(QApplication::applicationFilePath()) + "\" \"%1\"";
     addRegistryEntry("Software\\Classes\\" + progID + "\\shell\\open\\command", command, error);
 
-#else
-    /* TODO - make other platforms work. */
-    error = QObject::tr("File association is currently unsupported on your platform!");
-#endif
-
     if (error.isNull())
         QMessageBox::information(nullptr, QObject::tr("Success!"), QObject::tr("Successfully associated .jps and .pns files with DepthView."));
     else
         QMessageBox::warning(nullptr, QObject::tr("Error setting file association!"), error);
 }
+#endif
