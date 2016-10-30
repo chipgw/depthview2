@@ -88,10 +88,10 @@ DVWindow::~DVWindow() {
     /* TODO - I'm pretty sure there is more that needs to be deleted here... */
 
     /* Save the window geometry so that it can be restored next run. */
-    qmlCommunication->settings.beginGroup("Window");
-    qmlCommunication->settings.setValue("Geometry", geometry());
-    qmlCommunication->settings.setValue("State", windowState());
-    qmlCommunication->settings.endGroup();
+    settings.beginGroup("Window");
+    settings.setValue("Geometry", geometry());
+    settings.setValue("State", windowState());
+    settings.endGroup();
 }
 
 void DVWindow::initializeGL() {
@@ -126,12 +126,12 @@ void DVWindow::initializeGL() {
 
     /* The setGeometry() and setState() calls may try to set the qmlRoot geometry,
      * which means this needs to be done after QML is all set up. */
-    if (qmlCommunication->settings.childGroups().contains("Window")) {
+    if (settings.childGroups().contains("Window")) {
         /* Restore window state from the stored geometry. */
-        qmlCommunication->settings.beginGroup("Window");
-        setGeometry(qmlCommunication->settings.value("Geometry").toRect());
-        setWindowState(Qt::WindowState(qmlCommunication->settings.value("State").toInt()));
-        qmlCommunication->settings.endGroup();
+        settings.beginGroup("Window");
+        setGeometry(settings.value("Geometry").toRect());
+        setWindowState(Qt::WindowState(settings.value("State").toInt()));
+        settings.endGroup();
     }
 }
 
