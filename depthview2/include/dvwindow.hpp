@@ -27,6 +27,8 @@ public:
 public slots:
     void updateQmlSize();
 
+    void onFrameSwapped();
+
 protected:
     void initializeGL();
     void paintGL();

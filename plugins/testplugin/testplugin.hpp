@@ -16,6 +16,8 @@ public:
 
     bool render(const QString& drawModeName, QOpenGLFunctions* f);
 
+    void frameSwapped(QOpenGLFunctions* f);
+
     QStringList drawModeNames();
 
 private:

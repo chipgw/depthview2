@@ -3,6 +3,8 @@
 #include <QOpenGLShaderProgram>
 
 bool TestPlugin::init(QOpenGLFunctions* f) {
+    Q_UNUSED(f)
+
     Q_INIT_RESOURCE(testplugin);
 
     shader = new QOpenGLShaderProgram;
@@ -34,6 +36,9 @@ bool TestPlugin::deinit() {
 }
 
 bool TestPlugin::render(const QString& drawModeName, QOpenGLFunctions* f) {
+    Q_UNUSED(drawModeName)
+    qDebug("Plugin rendering start.");
+
     /* This is just the default fullscreen quad from the built-in modes. */
     shader->bind();
 
@@ -60,7 +65,15 @@ bool TestPlugin::render(const QString& drawModeName, QOpenGLFunctions* f) {
 
     f->glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
+    qDebug("Plugin rendering end.");
+
     return true;
+}
+
+void TestPlugin::frameSwapped(QOpenGLFunctions* f) {
+    Q_UNUSED(f)
+
+    qDebug("Plugin frame swapped.");
 }
 
 QStringList TestPlugin::drawModeNames() {

@@ -72,6 +72,8 @@ DVWindow::DVWindow() : QOpenGLWindow(), settings(SETTINGS_ARGS), fboRight(nullpt
     /* Update window title whenever file changes. */
     connect(folderListing, &DVFolderListing::currentFileChanged, [this](){setTitle(folderListing->currentFile() + " - DepthView");});
 
+    connect(this, &DVWindow::frameSwapped, this, &DVWindow::onFrameSwapped);
+
     /* We render a cursor inside QML so it is shown for both eyes. */
     setCursor(Qt::BlankCursor);
 
@@ -95,6 +97,9 @@ DVWindow::~DVWindow() {
 }
 
 void DVWindow::initializeGL() {
+    QOpenGLFunctions* f = context()->functions();
+    qDebug("GL Vendor: \"%s\", Renderer: \"%s\".", f->glGetString(GL_VENDOR), f->glGetString(GL_RENDERER));
+
     loadShaders();
 
     loadPlugins();
@@ -216,7 +221,7 @@ void DVWindow::paintGL() {
         for (DVRenderPlugin* plugin : renderPlugins) {
             /* Find the first plugin that contains the mode we want. */
             if (plugin->drawModeNames().contains(qmlCommunication->pluginMode())) {
-                /* Let it do it's thing. */
+                /* Let it do its thing. */
                 plugin->render(qmlCommunication->pluginMode(), f);
 
                 /* Don't check any other plugins, return from here to avoid the default fullscreen quad.
@@ -252,9 +257,6 @@ void DVWindow::paintGL() {
     f->glVertexAttribPointer(uv,     2, GL_FLOAT, GL_FALSE, 0, quadUV);
 
     f->glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-    /* Set the next frame to display once the current one is done. */
-    update();
 }
 
 void DVWindow::updateQmlSize() {
@@ -275,6 +277,24 @@ void DVWindow::updateQmlSize() {
     qmlRoot->setSize(qmlSize);
 
     qmlWindow->setGeometry(QRect(QPoint(), qmlSize));
+}
+
+void DVWindow::onFrameSwapped() {
+    makeCurrent();
+    if (qmlCommunication->drawMode() == DVDrawMode::Plugin) {
+        for (DVRenderPlugin* plugin : renderPlugins) {
+            /* Find the first plugin that contains the mode we want. */
+            if (plugin->drawModeNames().contains(qmlCommunication->pluginMode())) {
+                /* Let it do its thing. */
+                plugin->frameSwapped(context()->functions());
+
+                /* Don't check any other plugins. */
+                break;
+            }
+        }
+    }
+
+    update();
 }
 
 void DVWindow::loadShaders() {
@@ -399,6 +419,12 @@ void DVWindow::loadPlugins() {
     /* Go into thhe "plugins" folder from there. */
     pluginsDir.cd("plugins");
 
+#if defined(Q_OS_WIN)
+    SetDllDirectory(pluginsDir.absolutePath().toStdWString().c_str());
+#endif
+
+    qDebug("Loading plugins from \"%s\"...", qPrintable(pluginsDir.absolutePath()));
+
     /* Try to load all files in the directory. */
     for (const QString& filename : pluginsDir.entryList(QDir::Files)) {
         QPluginLoader loader(pluginsDir.absoluteFilePath(filename));
@@ -416,8 +442,11 @@ void DVWindow::loadPlugins() {
             } else {
                 qDebug("Plugin: \"%s\" failed to init.", qPrintable(filename));
             }
+        } else {
+            qDebug("\"%s\" is not a plugin.", qPrintable(filename));
         }
     }
+    qDebug("Done loading plugins.");
 }
 
 void DVWindow::unloadPlugins() {

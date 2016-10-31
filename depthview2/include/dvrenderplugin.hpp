@@ -11,6 +11,7 @@ public:
     virtual bool init(QOpenGLFunctions* f) = 0;
     virtual bool deinit() = 0;
     virtual bool render(const QString& drawModeName, QOpenGLFunctions* f) = 0;
+    virtual void frameSwapped(QOpenGLFunctions* f) = 0;
 
     virtual QStringList drawModeNames() = 0;
 };
