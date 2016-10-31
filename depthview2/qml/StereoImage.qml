@@ -17,8 +17,8 @@ Item {
     property int imageMode: SourceMode.SidebySide
 
     Image {
-        x: (!DepthView.isLeft && (imageMode == SourceMode.SidebySide || imageMode == SourceMode.SidebySideAnamorphic)) ? -width / 2 : 0
-        y: (!DepthView.isLeft && (imageMode == SourceMode.TopBottom || imageMode == SourceMode.TopBottomAnamorphic)) ? -height / 2 : 0
+        x: (DepthView.isLeft && (imageMode == SourceMode.SidebySide || imageMode == SourceMode.SidebySideAnamorphic)) ? -width / 2 : 0
+        y: (DepthView.isLeft && (imageMode == SourceMode.TopBottom || imageMode == SourceMode.TopBottomAnamorphic)) ? -height / 2 : 0
 
         id: img
         source: parent.source
