@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>glsl/mirror.fsh</file>
+        <file>glsl/mirror.vsh</file>
+        <file>glsl/vrscene.fsh</file>
+        <file>glsl/vrscene.vsh</file>
+    </qresource>
+</RCC>
