@@ -4,5 +4,6 @@
         <file>glsl/mirror.vsh</file>
         <file>glsl/vrscene.fsh</file>
         <file>glsl/vrscene.vsh</file>
+        <file>Config.qml</file>
     </qresource>
 </RCC>

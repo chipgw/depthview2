@@ -7,6 +7,8 @@
 TARGET = dv2_openvrplugin
 TEMPLATE = lib
 
+QT += qml quick
+
 CONFIG += plugin C++11
 
 SOURCES += openvrplugin.cpp

@@ -435,9 +435,12 @@ void DVWindow::loadPlugins() {
         if (obj != nullptr && (plugin = qobject_cast<DVRenderPlugin*>(obj)) != nullptr) {
             qDebug("Found plugin: \"%s\"", qPrintable(filename));
 
-            if (plugin->init(context()->functions())) {
-                qmlCommunication->addPluginModes(plugin->drawModeNames());
+            if (plugin->init(context()->functions(), qmlEngine)) {
+                for (const QString& mode : plugin->drawModeNames())
+                    qmlCommunication->addPluginMode(mode, plugin->getConfigMenuObject());
+
                 renderPlugins.append(plugin);
+
                 qDebug("Loaded plugin: \"%s\"", qPrintable(filename));
             } else {
                 qDebug("Plugin: \"%s\" failed to init.", qPrintable(filename));

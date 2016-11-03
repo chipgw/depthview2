@@ -2,5 +2,6 @@
     <qresource prefix="/">
         <file>glsl/plugin.fsh</file>
         <file>glsl/plugin.vsh</file>
+        <file>Config.qml</file>
     </qresource>
 </RCC>

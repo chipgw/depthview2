@@ -2,9 +2,11 @@
 #include <QOpenGLFunctions>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLFramebufferObject>
+#include <QQmlComponent>
+#include <QQuickItem>
 #include <QDebug>
 
-bool OpenVRPlugin::init(QOpenGLFunctions* f) {
+bool OpenVRPlugin::init(QOpenGLFunctions* f, QQmlEngine* qmlEngine) {
     Q_UNUSED(f)
     Q_INIT_RESOURCE(openvrplugin);
 
@@ -12,12 +14,6 @@ bool OpenVRPlugin::init(QOpenGLFunctions* f) {
         qDebug("No HMD detected...");
         return false;
     }
-
-    /* TODO - Make this configurable somehow... */
-    screenHeight = 2.0f;
-    screenSize = 7.0f;
-    screenDistance = 8.0f;
-    curvedScreen = true;
 
     /* This wil be inited on first usage. */
     vrSystem = nullptr;
@@ -50,6 +46,30 @@ bool OpenVRPlugin::init(QOpenGLFunctions* f) {
     vrSceneShader->setUniformValue("textureL", 0);
     /* Right image is TEXTURE1. */
     vrSceneShader->setUniformValue("textureR", 1);
+
+    QQmlComponent component(qmlEngine);
+
+    component.loadUrl(QUrl(QStringLiteral("qrc:/Config.qml")));
+
+    /* Wait for it to load... */
+    while(component.isLoading());
+
+    /* The program can't run if there was an error. */
+    if (component.isError()) {
+        qDebug(qPrintable(component.errorString()));
+        return false;
+    }
+
+    configMenu = qobject_cast<QQuickItem*>(component.create());
+
+    /* Critical error! abort! abort! */
+    if (configMenu == nullptr)
+        return false;
+
+    screenDistanceProp = QQmlProperty(configMenu, "screenDistance");
+    screenHeightProp = QQmlProperty(configMenu, "screenHeight");
+    screenSizeProp = QQmlProperty(configMenu, "screenSize");
+    curvedScreen = QQmlProperty(configMenu, "curvedScreen");
 
     qDebug("OpenVR plugin base inited.");
 
@@ -113,8 +133,10 @@ bool OpenVRPlugin::render(const QString& drawModeName, QOpenGLFunctions* f) {
     if (vrSystem == nullptr && !initVR(f))
         return false;
 
-    /* TODO - Replace this with however the other options get set up to be configurable. */
-    curvedScreen = drawModeName == "OpenVR Curved Screen";
+    /* TODO - Use the signals of the properties to update. */
+    screenDistance = screenDistanceProp.read().toFloat();
+    screenHeight = screenHeightProp.read().toFloat();
+    screenSize = screenSizeProp.read().toFloat();
 
     vr::VRCompositor()->WaitGetPoses(trackedDevicePose, vr::k_unMaxTrackedDeviceCount, NULL, 0 );
 
@@ -176,7 +198,7 @@ bool OpenVRPlugin::render(const QString& drawModeName, QOpenGLFunctions* f) {
     QVector<QVector3D> screen;
     QVector<QVector2D> screenUV;
 
-    if (curvedScreen) {
+    if (curvedScreen.isValid() && curvedScreen.read().toBool()) {
         constexpr int halfSteps = 50;
         float theta = screenSize / screenDistance;
 
@@ -258,5 +280,9 @@ void OpenVRPlugin::frameSwapped(QOpenGLFunctions* f) {
 }
 
 QStringList OpenVRPlugin::drawModeNames() {
-    return QStringList({"OpenVR Flat Screen", "OpenVR Curved Screen"});
+    return QStringList({"OpenVR"});
+}
+
+QQuickItem* OpenVRPlugin::getConfigMenuObject() {
+    return configMenu;
 }

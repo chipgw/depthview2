@@ -127,13 +127,17 @@ void DVQmlCommunication::setPluginMode(QString mode) {
     }
 }
 
-void DVQmlCommunication::addPluginModes(const QStringList& modes) {
-    pluginModes.append(modes);
+void DVQmlCommunication::addPluginMode(const QString& mode, QQuickItem* config) {
+    pluginModes[mode] = config;
     emit pluginModesChanged();
 }
 
 QStringList DVQmlCommunication::getPluginModes() const {
-    return pluginModes;
+    return pluginModes.keys();
+}
+
+QQuickItem* DVQmlCommunication::getPluginConfigMenu() const {
+    return pluginModes.contains(m_pluginMode) ? pluginModes[m_pluginMode] : nullptr;
 }
 
 QStringList DVQmlCommunication::getModes() const {
@@ -145,7 +149,7 @@ QStringList DVQmlCommunication::getModes() const {
                          << "Checkerboard"
                          << "Mono Left"
                          << "Mono Right"
-                         << pluginModes;
+                         << pluginModes.keys();
 }
 
 QString DVQmlCommunication::versionString() {

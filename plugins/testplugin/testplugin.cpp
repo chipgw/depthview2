@@ -1,8 +1,10 @@
 #include "testplugin.hpp"
 #include <QOpenGLFunctions>
 #include <QOpenGLShaderProgram>
+#include <QQmlComponent>
+#include <QQuickItem>
 
-bool TestPlugin::init(QOpenGLFunctions* f) {
+bool TestPlugin::init(QOpenGLFunctions* f, QQmlEngine* qmlEngine) {
     Q_UNUSED(f)
 
     Q_INIT_RESOURCE(testplugin);
@@ -22,6 +24,29 @@ bool TestPlugin::init(QOpenGLFunctions* f) {
     /* Right image is TEXTURE1. */
     shader->setUniformValue("textureR", 1);
 
+    QQmlComponent component(qmlEngine);
+
+    component.loadUrl(QUrl(QStringLiteral("qrc:/Config.qml")));
+
+    /* Wait for it to load... */
+    while(component.isLoading());
+
+    /* The program can't run if there was an error. */
+    if (component.isError()) {
+        qDebug(qPrintable(component.errorString()));
+        return false;
+    }
+
+    configMenuObject = qobject_cast<QQuickItem*>(component.create());
+
+    /* Critical error! abort! abort! */
+    if (configMenuObject == nullptr)
+        return false;
+
+    logRenderStart = QQmlProperty(configMenuObject, "logRenderStart");
+    logRenderEnd = QQmlProperty(configMenuObject, "logRenderEnd");
+    logFrameSwap = QQmlProperty(configMenuObject, "logFrameSwap");
+
     qDebug("inited");
 
     return true;
@@ -37,7 +62,9 @@ bool TestPlugin::deinit() {
 
 bool TestPlugin::render(const QString& drawModeName, QOpenGLFunctions* f) {
     Q_UNUSED(drawModeName)
-    qDebug("Plugin rendering start.");
+
+    if (logRenderStart.isValid() && logRenderStart.read().toBool())
+        qDebug("Plugin rendering start.");
 
     /* This is just the default fullscreen quad from the built-in modes. */
     shader->bind();
@@ -65,7 +92,8 @@ bool TestPlugin::render(const QString& drawModeName, QOpenGLFunctions* f) {
 
     f->glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
-    qDebug("Plugin rendering end.");
+    if (logRenderEnd.isValid() && logRenderEnd.read().toBool())
+        qDebug("Plugin rendering end.");
 
     return true;
 }
@@ -73,9 +101,14 @@ bool TestPlugin::render(const QString& drawModeName, QOpenGLFunctions* f) {
 void TestPlugin::frameSwapped(QOpenGLFunctions* f) {
     Q_UNUSED(f)
 
-    qDebug("Plugin frame swapped.");
+    if (logFrameSwap.isValid() && logFrameSwap.read().toBool())
+        qDebug("Plugin frame swapped.");
 }
 
 QStringList TestPlugin::drawModeNames() {
     return QStringList("Test Plugin Mode");
+}
+
+QQuickItem* TestPlugin::getConfigMenuObject() {
+    return configMenuObject;
 }

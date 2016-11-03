@@ -2,6 +2,7 @@
 
 #include "dvrenderplugin.hpp"
 #include <QObject>
+#include <QQmlProperty>
 #include <openvr.h>
 
 class QOpenGLShaderProgram;
@@ -13,7 +14,7 @@ class OpenVRPlugin : public QObject, public DVRenderPlugin {
     Q_INTERFACES(DVRenderPlugin)
 
 public:
-    bool init(QOpenGLFunctions* f);
+    bool init(QOpenGLFunctions* f, QQmlEngine* qmlEngine);
     bool deinit();
     bool initVR(QOpenGLFunctions* f);
 
@@ -22,6 +23,8 @@ public:
     void frameSwapped(QOpenGLFunctions* f);
 
     QStringList drawModeNames();
+
+    QQuickItem* getConfigMenuObject();
 
 private:
     QOpenGLFramebufferObject* leftEyeRenderFBO;
@@ -38,9 +41,14 @@ private:
     QOpenGLShaderProgram* mirrorShader;
     QOpenGLShaderProgram* vrSceneShader;
 
+    QQuickItem* configMenu;
+
     /* Screen options */
     float screenSize;
     float screenDistance;
     float screenHeight;
-    bool curvedScreen;
+    QQmlProperty screenSizeProp;
+    QQmlProperty screenDistanceProp;
+    QQmlProperty screenHeightProp;
+    QQmlProperty curvedScreen;
 };

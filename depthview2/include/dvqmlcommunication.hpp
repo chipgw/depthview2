@@ -5,6 +5,7 @@
 
 class QWindow;
 class QSettings;
+class QQuickItem;
 
 class DVQmlCommunication : public QObject {
     Q_OBJECT
@@ -26,6 +27,8 @@ class DVQmlCommunication : public QObject {
     Q_PROPERTY(QString pluginMode READ pluginMode WRITE setPluginMode NOTIFY pluginModeChanged)
     Q_PROPERTY(QStringList pluginModes READ getPluginModes NOTIFY pluginModesChanged)
     Q_PROPERTY(QStringList modes READ getModes NOTIFY pluginModesChanged)
+
+    Q_PROPERTY(QQuickItem* pluginConfigMenu READ getPluginConfigMenu NOTIFY pluginModeChanged)
 
 public:
     /* Settings can be set from DVWindow. */
@@ -62,9 +65,10 @@ public:
     QString pluginMode() const;
     void setPluginMode(QString mode);
 
-    void addPluginModes(const QStringList& modes);
+    void addPluginMode(const QString& mode, QQuickItem* config);
     QStringList getPluginModes() const;
     QStringList getModes() const;
+    QQuickItem* getPluginConfigMenu() const;
 
     Q_INVOKABLE QString versionString();
     Q_INVOKABLE QString buildType();
@@ -108,5 +112,5 @@ private:
     QWindow* owner;
 
     QString m_pluginMode;
-    QStringList pluginModes;
+    QMap<QString, QQuickItem*> pluginModes;
 };

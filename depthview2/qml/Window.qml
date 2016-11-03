@@ -52,7 +52,7 @@ Rectangle {
             }
 
             /* Visible when the mouse is close, when the screen was recently touched, when any of the menus are open, or when a video is paused. */
-            state: fakeCursor.y < 128 || fileMenu.visible || viewMenu.visible || modeMenu.visible || helpMenu.visible ||
+            state: fakeCursor.y < 128 || fileMenu.visible || viewMenu.visible || modeMenu.visible || helpMenu.visible || pluginConfigMenu.visible ||
                    touchTimer.running || (FolderListing.currentFileIsVideo && !image.isPlaying) ? "" : "HIDDEN"
 
             states: [
@@ -239,6 +239,22 @@ Rectangle {
                                 }
                             }
                         }
+                    }
+                }
+
+                ToolButton {
+                    text: "Plugin Settings"
+                    font: uiTextFont
+
+                    onClicked: pluginConfigMenu.open()
+
+                    visible: DepthView.pluginConfigMenu && DepthView.drawMode === DrawMode.Plugin
+
+                    Menu {
+                        y: parent.height
+                        id: pluginConfigMenu
+
+                        contentItem: DepthView.pluginConfigMenu
                     }
                 }
 

@@ -7,6 +7,8 @@
 TARGET = dv2_testplugin
 TEMPLATE = lib
 
+QT += qml quick
+
 CONFIG += plugin C++11
 
 SOURCES += testplugin.cpp
