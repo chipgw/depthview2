@@ -25,6 +25,8 @@ public:
 
     QQuickItem* getConfigMenuObject();
 
+    bool shouldLockMouse();
+
 private:
     QOpenGLShaderProgram* shader;
 

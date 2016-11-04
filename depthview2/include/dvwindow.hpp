@@ -62,6 +62,8 @@ private:
     QOpenGLFramebufferObject* fboRight;
     QOpenGLFramebufferObject* fboLeft;
 
+    bool holdMouse;
+
     void loadShaders();
     void loadShader(QOpenGLShaderProgram& shader, const char* vshader, const char* fshader);
     void createFBOs();

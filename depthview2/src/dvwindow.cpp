@@ -280,7 +280,12 @@ void DVWindow::updateQmlSize() {
 }
 
 void DVWindow::onFrameSwapped() {
+    /* None of the built-in modes hold the mouse. */
+    holdMouse = false;
+
+    /* In case one of the plugins needs to do something OpenGL related. */
     makeCurrent();
+
     if (qmlCommunication->drawMode() == DVDrawMode::Plugin) {
         for (DVRenderPlugin* plugin : renderPlugins) {
             /* Find the first plugin that contains the mode we want. */
@@ -288,11 +293,15 @@ void DVWindow::onFrameSwapped() {
                 /* Let it do its thing. */
                 plugin->frameSwapped(context()->functions());
 
+                /* Do we hold the mouse? */
+                holdMouse = plugin->shouldLockMouse();
+
                 /* Don't check any other plugins. */
                 break;
             }
         }
     }
+    setMouseGrabEnabled(holdMouse);
 
     update();
 }
@@ -367,6 +376,19 @@ void DVWindow::resizeGL(int, int) {
 bool DVWindow::event(QEvent* e) {
     switch (e->type()) {
     case QEvent::MouseMove:
+        if (holdMouse && !geometry().contains(static_cast<QMouseEvent*>(e)->globalPos())) {
+            QPoint pos = static_cast<QMouseEvent*>(e)->pos();
+
+            /* Generate a new coordinate on screen. */
+            pos.setX(qBound(0, pos.x(), width()));
+            pos.setY(qBound(0, pos.y(), height()));
+
+            /* Will generate a new event. */
+            QCursor::setPos(mapToGlobal(pos));
+
+            /* Just let that new event do the work. */
+            return true;
+        }
         /* We also emit a special signal for this one so that the fake cursor
          * can be set to the right position without having a MouseArea that absorbs events. */
         emit qmlCommunication->mouseMoved(static_cast<QMouseEvent*>(e)->localPos());

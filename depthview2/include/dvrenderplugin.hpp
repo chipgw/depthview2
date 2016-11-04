@@ -27,6 +27,9 @@ public:
 
     /* Return a list of names that this plugin supports. */
     virtual QStringList drawModeNames() = 0;
+
+    /* Return true if the window should keep the mouse inside the window. */
+    virtual bool shouldLockMouse() = 0;
 };
 
 #define DVRenderPlugin_iid "com.chipgw.DepthView.RenderPlugin"

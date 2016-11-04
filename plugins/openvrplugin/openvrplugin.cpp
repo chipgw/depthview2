@@ -130,6 +130,7 @@ bool OpenVRPlugin::initVR(QOpenGLFunctions* f) {
 }
 
 bool OpenVRPlugin::render(const QString& drawModeName, QOpenGLFunctions* f) {
+    Q_UNUSED(drawModeName)
     if (vrSystem == nullptr && !initVR(f))
         return false;
 
@@ -285,4 +286,8 @@ QStringList OpenVRPlugin::drawModeNames() {
 
 QQuickItem* OpenVRPlugin::getConfigMenuObject() {
     return configMenu;
+}
+
+bool OpenVRPlugin::shouldLockMouse() {
+    return true;
 }

@@ -112,3 +112,8 @@ QStringList TestPlugin::drawModeNames() {
 QQuickItem* TestPlugin::getConfigMenuObject() {
     return configMenuObject;
 }
+
+bool TestPlugin::shouldLockMouse() {
+    return false;
+}
+

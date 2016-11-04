@@ -26,6 +26,8 @@ public:
 
     QQuickItem* getConfigMenuObject();
 
+    bool shouldLockMouse();
+
 private:
     QOpenGLFramebufferObject* leftEyeRenderFBO;
     QOpenGLFramebufferObject* leftEyeResolveFBO;
