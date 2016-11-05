@@ -512,11 +512,9 @@ void DVWindow::doCommandLine(QCommandLineParser& parser) {
     for (const QString& arg : parser.positionalArguments()) {
         QFileInfo file(arg);
 
-        /* TODO - Check extension. */
-        if (file.exists()) {
-            folderListing->openFile(file);
+        /* The file extension is checked by openFile(). */
+        if (file.exists() && folderListing->openFile(file))
             break;
-        }
     }
 
     /* If there weren't any warnings we don't show the dialog. */

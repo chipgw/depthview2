@@ -88,8 +88,12 @@ QUrl DVFolderListing::currentURL() const {
     return encodeURL(m_currentFile.absoluteFilePath());
 }
 
-void DVFolderListing::openFile(QFileInfo fileInfo) {
+bool DVFolderListing::openFile(QFileInfo fileInfo) {
     if (fileInfo != m_currentFile) {
+        if (!isFileImage(fileInfo) && !isFileVideo(fileInfo))
+            /* Not an image or a video, not something we can open. */
+            return false;
+
         /* Check to see if the file is in the current dir, and if it isn't update the dir. */
         if (fileInfo.absolutePath() != m_currentDir.absolutePath())
             setCurrentDir(fileInfo.absolutePath());
@@ -97,10 +101,12 @@ void DVFolderListing::openFile(QFileInfo fileInfo) {
         m_currentFile = fileInfo;
         emit currentFileChanged();
     }
+    /* If the file was already open or was opened, we're good. */
+    return true;
 }
 
-void DVFolderListing::openFile(QUrl url) {
-    openFile(QFileInfo(decodeURL(url)));
+bool DVFolderListing::openFile(QUrl url) {
+    return openFile(QFileInfo(decodeURL(url)));
 }
 
 QUrl DVFolderListing::currentDir() const {

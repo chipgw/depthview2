@@ -57,8 +57,8 @@ public:
     /* The absolute URl of the current file. */
     QUrl currentURL() const;
 
-    void openFile(QFileInfo fileInfo);
-    Q_INVOKABLE void openFile(QUrl url);
+    bool openFile(QFileInfo fileInfo);
+    Q_INVOKABLE bool openFile(QUrl url);
 
     /* Used by the property system. (Calls the QString overload with url.toLocalFile()) */
     void setCurrentDir(QUrl url);
