@@ -3,6 +3,9 @@
 #include "dvrenderplugin.hpp"
 #include <QObject>
 #include <QQmlProperty>
+#include <QVector>
+#include <QVector2D>
+#include <QVector3D>
 #include <openvr.h>
 
 class QOpenGLShaderProgram;
@@ -46,11 +49,17 @@ private:
     QQuickItem* configMenu;
 
     /* Screen options */
-    float screenSize;
-    float screenDistance;
-    float screenHeight;
-    QQmlProperty screenSizeProp;
-    QQmlProperty screenDistanceProp;
-    QQmlProperty screenHeightProp;
+    QQmlProperty screenSize;
+    QQmlProperty screenDistance;
+    QQmlProperty screenHeight;
     QQmlProperty curvedScreen;
+
+    /* We keep track of the window's aspect ratio and update the screen when it changes. */
+    float aspectRatio;
+
+    QVector<QVector3D> screen;
+    QVector<QVector2D> screenUV;
+
+public slots:
+    void updateScreen();
 };

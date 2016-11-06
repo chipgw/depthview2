@@ -66,10 +66,14 @@ bool OpenVRPlugin::init(QOpenGLFunctions* f, QQmlEngine* qmlEngine) {
     if (configMenu == nullptr)
         return false;
 
-    screenDistanceProp = QQmlProperty(configMenu, "screenDistance");
-    screenHeightProp = QQmlProperty(configMenu, "screenHeight");
-    screenSizeProp = QQmlProperty(configMenu, "screenSize");
+    screenDistance = QQmlProperty(configMenu, "screenDistance");
+    screenHeight = QQmlProperty(configMenu, "screenHeight");
+    screenSize = QQmlProperty(configMenu, "screenSize");
     curvedScreen = QQmlProperty(configMenu, "curvedScreen");
+    screenDistance.connectNotifySignal(this, SLOT(updateScreen()));
+    screenHeight.connectNotifySignal(this, SLOT(updateScreen()));
+    screenSize.connectNotifySignal(this, SLOT(updateScreen()));
+    curvedScreen.connectNotifySignal(this, SLOT(updateScreen()));
 
     qDebug("OpenVR plugin base inited.");
 
@@ -134,11 +138,6 @@ bool OpenVRPlugin::render(const QString& drawModeName, QOpenGLFunctions* f) {
     if (vrSystem == nullptr && !initVR(f))
         return false;
 
-    /* TODO - Use the signals of the properties to update. */
-    screenDistance = screenDistanceProp.read().toFloat();
-    screenHeight = screenHeightProp.read().toFloat();
-    screenSize = screenSizeProp.read().toFloat();
-
     vr::VRCompositor()->WaitGetPoses(trackedDevicePose, vr::k_unMaxTrackedDeviceCount, NULL, 0 );
 
     /* This is just the default fullscreen quad from the built-in modes. */
@@ -193,40 +192,10 @@ bool OpenVRPlugin::render(const QString& drawModeName, QOpenGLFunctions* f) {
     GLint viewport[4];
     f->glGetIntegerv(GL_VIEWPORT, viewport);
 
-    float height = (screenSize * viewport[3]) / viewport[2];
-
-    /* TODO - Store this and only update when it changes... */
-    QVector<QVector3D> screen;
-    QVector<QVector2D> screenUV;
-
-    if (curvedScreen.isValid() && curvedScreen.read().toBool()) {
-        constexpr int halfSteps = 50;
-        float theta = screenSize / screenDistance;
-
-        /* Theta is the angle of half the screen,so this is angle of each step.  */
-        float step = theta / halfSteps;
-
-        for (int current = -halfSteps; current < halfSteps; ++current) {
-            /* Calculate the coordinate of the vertex. */
-            screen += {{sin(current * step) * screenDistance, screenHeight - height, cos(current * step) * -screenDistance},
-                       {sin(current * step) * screenDistance, screenHeight + height, cos(current * step) * -screenDistance}};
-
-            /* Map current from [-halfStep, halfStep] to [0, 1]. */
-            float U = 0.5f * current / halfSteps + 0.5f;
-
-            screenUV += {{U, 0.0f}, {U, 1.0f}};
-        }
-    } else {
-        /* A simple rectangle... */
-        screen += {{-screenSize, screenHeight - height, -screenDistance},  /* 2--4 */
-                   {-screenSize, screenHeight + height, -screenDistance},  /* |\ | */
-                   { screenSize, screenHeight - height, -screenDistance},  /* | \| */
-                   { screenSize, screenHeight + height, -screenDistance}}; /* 1--3 */
-
-        screenUV += {{0.0f, 0.0f},
-                     {0.0f, 1.0f},
-                     {1.0f, 0.0f},
-                     {1.0f, 1.0f}};
+    /* Check to see if the aspect ratio is the same, if not, we update the screen. */
+    if (aspectRatio != float(viewport[3]) / float(viewport[2])) {
+        aspectRatio = float(viewport[3]) / float(viewport[2]);
+        updateScreen();
     }
 
     f->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, screen.data());
@@ -290,4 +259,47 @@ QQuickItem* OpenVRPlugin::getConfigMenuObject() {
 
 bool OpenVRPlugin::shouldLockMouse() {
     return true;
+}
+
+void OpenVRPlugin::updateScreen() {
+    /* Get the properties from QML. */
+    float distance = screenDistance.read().toFloat();
+    float z = screenHeight.read().toFloat();
+    float size = screenSize.read().toFloat();
+
+    float height = size * aspectRatio;
+
+    /* Get rid of any previous geometry. */
+    screen.clear();
+    screenUV.clear();
+
+    if (curvedScreen.read().toBool()) {
+        constexpr int halfSteps = 50;
+        float theta = size / distance;
+
+        /* Theta is the angle of half the screen,so this is angle of each step.  */
+        float step = theta / halfSteps;
+
+        for (int current = -halfSteps; current < halfSteps; ++current) {
+            /* Calculate the coordinate of the vertex. */
+            screen += {{sin(current * step) * distance, z - height, cos(current * step) * -distance},
+                       {sin(current * step) * distance, z + height, cos(current * step) * -distance}};
+
+            /* Map current from [-halfStep, halfStep] to [0, 1]. */
+            float U = 0.5f * current / halfSteps + 0.5f;
+
+            screenUV += {{U, 0.0f}, {U, 1.0f}};
+        }
+    } else {
+        /* A simple rectangle... */
+        screen += {{-size, z - height, -distance},  /* 2--4 */
+                   {-size, z + height, -distance},  /* |\ | */
+                   { size, z - height, -distance},  /* | \| */
+                   { size, z + height, -distance}}; /* 1--3 */
+
+        screenUV += {{0.0f, 0.0f},
+                     {0.0f, 1.0f},
+                     {1.0f, 0.0f},
+                     {1.0f, 1.0f}};
+    }
 }
