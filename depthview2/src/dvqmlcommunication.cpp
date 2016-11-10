@@ -153,7 +153,7 @@ QStringList DVQmlCommunication::getModes() const {
 }
 
 QString DVQmlCommunication::versionString() {
-    return version::number.toString();
+    return version::number.toString() + " Beta";
 }
 
 QString DVQmlCommunication::buildType() {
