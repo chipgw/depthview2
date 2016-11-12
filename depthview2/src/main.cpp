@@ -5,7 +5,10 @@
 #include "version.hpp"
 #include "dvwindow.hpp"
 
+#if defined(Q_OS_WIN32) && !defined(DV_PORTABLE)
 void registerFileTypes();
+#define DV_FILE_ASSOCIATION
+#endif
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
@@ -24,7 +27,7 @@ int main(int argc, char *argv[]) {
 
     /* TODO - More arguments. */
     parser.addOptions({
-#ifdef Q_OS_WIN32
+#ifdef DV_FILE_ASSOCIATION
             {"register", QCoreApplication::translate("main", "")},
 #endif
             { {"f", "fullscreen"},
@@ -44,7 +47,7 @@ int main(int argc, char *argv[]) {
 
     parser.process(app.arguments());
 
-#ifdef Q_OS_WIN32
+#ifdef DV_FILE_ASSOCIATION
     if(parser.isSet("register")){
         registerFileTypes();
         return 0;
@@ -63,7 +66,7 @@ int main(int argc, char *argv[]) {
 }
 
 /* Windows file association code. */
-#ifdef Q_OS_WIN32
+#ifdef DV_FILE_ASSOCIATION
 /* Windows-specific code used for file association. */
 #include <Windows.h>
 #pragma comment(lib, "advapi32")
@@ -95,7 +98,7 @@ void registerFileTypes() {
     addRegistryEntry("Software\\Classes\\.jps", progID, error);
     addRegistryEntry("Software\\Classes\\.pns", progID, error);
 
-    /* TODO - Add video formats. */
+    /* TODO - Add video and standard image formats in a way that doesn't override the main association. */
 
     addRegistryEntry("Software\\Classes\\" + progID, "Stereo 3D Image", error);
 
