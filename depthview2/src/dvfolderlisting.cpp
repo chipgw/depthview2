@@ -238,6 +238,9 @@ QStringList DVFolderListing::bookmarks() const {
     return m_bookmarks;
 }
 
+bool DVFolderListing::isCurrentFileStereoImage() const {
+    return isFileStereoImage(m_currentFile);
+}
 bool DVFolderListing::isCurrentFileImage() const {
     return isFileImage(m_currentFile);
 }
@@ -251,6 +254,9 @@ qint64 DVFolderListing::currentFileSize() {
     return m_currentFile.size();
 }
 
+bool DVFolderListing::isFileStereoImage(const QFileInfo& info) const {
+    return !info.isDir() && stereoImageSuffixes.contains(info.suffix(), Qt::CaseInsensitive);
+}
 bool DVFolderListing::isFileImage(const QFileInfo& info) const {
     return !info.isDir() && imageSuffixes.contains(info.suffix(), Qt::CaseInsensitive);
 }

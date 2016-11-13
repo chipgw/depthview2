@@ -376,7 +376,7 @@ Rectangle {
                         anchors.left: parent.left
 
                         ToolButton {
-                            visible: FolderListing.currentFileStereoMode == SourceMode.Mono
+                            visible: !FolderListing.currentFileIsStereoImage
                             onClicked: sourceMode.open()
 
                             text: "Source Mode"
