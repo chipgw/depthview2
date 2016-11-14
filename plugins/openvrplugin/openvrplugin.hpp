@@ -53,6 +53,7 @@ private:
     QQmlProperty screenDistance;
     QQmlProperty screenHeight;
     QQmlProperty curvedScreen;
+    QQmlProperty lockMouse;
 
     /* We keep track of the window's aspect ratio and update the screen when it changes. */
     float aspectRatio;

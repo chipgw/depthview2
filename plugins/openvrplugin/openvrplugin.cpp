@@ -70,6 +70,7 @@ bool OpenVRPlugin::init(QOpenGLFunctions* f, QQmlEngine* qmlEngine) {
     screenHeight = QQmlProperty(configMenu, "screenHeight");
     screenSize = QQmlProperty(configMenu, "screenSize");
     curvedScreen = QQmlProperty(configMenu, "curvedScreen");
+    lockMouse = QQmlProperty(configMenu, "lockMouse");
     screenDistance.connectNotifySignal(this, SLOT(updateScreen()));
     screenHeight.connectNotifySignal(this, SLOT(updateScreen()));
     screenSize.connectNotifySignal(this, SLOT(updateScreen()));
@@ -258,7 +259,7 @@ QQuickItem* OpenVRPlugin::getConfigMenuObject() {
 }
 
 bool OpenVRPlugin::shouldLockMouse() {
-    return true;
+    return lockMouse.read().toBool();
 }
 
 void OpenVRPlugin::updateScreen() {

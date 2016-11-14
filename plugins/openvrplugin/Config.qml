@@ -3,11 +3,17 @@ import QtQuick.Controls 2.0
 
 Column {
     /* Properties for C++ to read. */
+    property alias lockMouse: openVR_LockMouse.checked
     property alias curvedScreen: openVR_CurvedScreen.checked
     property alias screenSize: openVR_ScreenSize.value
     property alias screenDistance: openVR_ScreenDistance.value
     property alias screenHeight: openVR_ScreenHeight.value
 
+    MenuItem {
+        id: openVR_LockMouse
+        text: "Lock Mouse"
+        checkable: true
+    }
     MenuItem {
         id: openVR_CurvedScreen
         text: "Curved Screen"
