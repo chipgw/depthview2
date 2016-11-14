@@ -2,6 +2,7 @@
 #include <QOpenGLFunctions>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLFramebufferObject>
+#include <QOpenGLBuffer>
 #include <QQmlComponent>
 #include <QQuickItem>
 #include <QDebug>
@@ -47,6 +48,24 @@ bool OpenVRPlugin::init(QOpenGLFunctions* f, QQmlEngine* qmlEngine) {
     /* Right image is TEXTURE1. */
     vrSceneShader->setUniformValue("textureR", 1);
 
+    distortionShader = new QOpenGLShaderProgram;
+    distortionShader->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/glsl/distortion.vsh");
+    distortionShader->addShaderFromSourceFile(QOpenGLShader::Fragment, ":/glsl/distortion.fsh");
+
+    /* Make sure the attributes are bound correctly. */
+    distortionShader->bindAttributeLocation("position",     0);
+    distortionShader->bindAttributeLocation("uvRedIn",      1);
+    distortionShader->bindAttributeLocation("uvGreenIn",    2);
+    distortionShader->bindAttributeLocation("uvBlueIn",     3);
+
+    distortionShader->link();
+
+    /* Bind so we set the texture sampler uniform values. */
+    distortionShader->bind();
+
+    /* The source texture will be bound to TEXTURE0. */
+    distortionShader->setUniformValue("texture", 0);
+
     QQmlComponent component(qmlEngine);
 
     component.loadUrl(QUrl(QStringLiteral("qrc:/Config.qml")));
@@ -84,9 +103,12 @@ bool OpenVRPlugin::init(QOpenGLFunctions* f, QQmlEngine* qmlEngine) {
 bool OpenVRPlugin::deinit() {
     delete mirrorShader;
     delete vrSceneShader;
+    delete distortionShader;
 
     delete leftEyeRenderFBO;
     delete rightEyeRenderFBO;
+    delete leftEyeResolveFBO;
+    delete rightEyeResolveFBO;
 
     vr::VR_Shutdown();
 
@@ -126,8 +148,117 @@ bool OpenVRPlugin::initVR(QOpenGLFunctions* f) {
     vrSystem->GetRecommendedRenderTargetSize(&renderWidth, &renderHeight);
 
     /* Set up an FBO for each eye. */
-    leftEyeRenderFBO = new QOpenGLFramebufferObject(renderWidth, renderHeight, QOpenGLFramebufferObject::CombinedDepthStencil);
-    rightEyeRenderFBO = new QOpenGLFramebufferObject(renderWidth, renderHeight, QOpenGLFramebufferObject::CombinedDepthStencil);
+    leftEyeRenderFBO = new QOpenGLFramebufferObject(renderWidth, renderHeight);
+    rightEyeRenderFBO = new QOpenGLFramebufferObject(renderWidth, renderHeight);
+    leftEyeResolveFBO = new QOpenGLFramebufferObject(renderWidth, renderHeight);
+    rightEyeResolveFBO = new QOpenGLFramebufferObject(renderWidth, renderHeight);
+
+    /* How many verts in each direction. */
+    GLushort lensGridSegmentCountH = 43;
+    GLushort lensGridSegmentCountV = 43;
+
+    float w = 1.0f/(lensGridSegmentCountH-1);
+    float h = 1.0f/(lensGridSegmentCountV-1);
+
+    float u, v;
+
+    GLushort a,b,c,d;
+
+    QVector<QVector2D> verts;
+    QVector<GLushort> indexes;
+
+    /* Calculate the left eye's distortion verts. */
+    for (int y = 0; y < lensGridSegmentCountV; ++y) {
+        for (int x = 0; x < lensGridSegmentCountH; ++x) {
+            /* Calculate the undistorted UV coordinates for the vertex. */
+            u = x*w;
+            v = y*h;
+
+            /* Place a vertex, taking the UV and mapping from [0, 1] to [-1, 1]. */
+            verts.push_back(QVector2D(2.0f*u-1.0f, 2.0f*v-1.0f));
+
+            /* Get the distortion coordinates from OpenVR. Invert v because of how OpenGL handles textures. */
+            auto distorted = vrSystem->ComputeDistortion(vr::Eye_Left, u, 1.0f-v);
+
+            /* Put the distortion coordinate into the list, inverting v back into OpenGL land. */
+            verts.push_back(QVector2D(distorted.rfRed[0], 1.0f - distorted.rfRed[1]));
+            verts.push_back(QVector2D(distorted.rfGreen[0], 1.0f - distorted.rfGreen[1]));
+            verts.push_back(QVector2D(distorted.rfBlue[0], 1.0f - distorted.rfBlue[1]));
+
+            if (y == lensGridSegmentCountV-1 || x == lensGridSegmentCountH-1)
+                continue;
+
+            /* Calculate the indexes for a nice little quad. */
+            a = lensGridSegmentCountH*y+x;
+            b = lensGridSegmentCountH*y+x+1;
+            c = (y+1)*lensGridSegmentCountH+x+1;
+            d = (y+1)*lensGridSegmentCountH+x;
+
+            /* Add the quad as a pair of triangles. */
+            indexes.push_back(a);
+            indexes.push_back(b);
+            indexes.push_back(c);
+
+            indexes.push_back(a);
+            indexes.push_back(c);
+            indexes.push_back(d);
+        }
+    }
+
+    /* Indexes for the right eye must be offset by how many verts there were for the left eye. */
+    int offset = verts.size() / 4;
+
+    /* Calculate the right eye's distortion verts. */
+    for (int y = 0; y < lensGridSegmentCountV; ++y) {
+        for (int x = 0; x < lensGridSegmentCountH; ++x) {
+            /* Calculate the undistorted UV coordinates for the vertex. */
+            u = x*w;
+            v = y*h;
+
+            /* Place a vertex, taking the UV and mapping from [0, 1] to [-1, 1]. */
+            verts.push_back(QVector2D(2.0f*u-1.0f, 2.0f*v-1.0f));
+
+            /* Get the distortion coordinates from OpenVR. Invert v because of how OpenGL handles textures. */
+            auto distorted = vrSystem->ComputeDistortion(vr::Eye_Right, u, 1.0f-v);
+
+            /* Put the distortion coordinate into the list, inverting v back into OpenGL land. */
+            verts.push_back(QVector2D(distorted.rfRed[0], 1.0f - distorted.rfRed[1]));
+            verts.push_back(QVector2D(distorted.rfGreen[0], 1.0f - distorted.rfGreen[1]));
+            verts.push_back(QVector2D(distorted.rfBlue[0], 1.0f - distorted.rfBlue[1]));
+
+            if (y == lensGridSegmentCountV-1 || x == lensGridSegmentCountH-1)
+                continue;
+
+            /* Calculate the indexes for a nice little quad. */
+            a = lensGridSegmentCountH*y+x +offset;
+            b = lensGridSegmentCountH*y+x+1 +offset;
+            c = (y+1)*lensGridSegmentCountH+x+1 +offset;
+            d = (y+1)*lensGridSegmentCountH+x +offset;
+
+            /* Add the quad as a pair of triangles. */
+            indexes.push_back(a);
+            indexes.push_back(b);
+            indexes.push_back(c);
+
+            indexes.push_back(a);
+            indexes.push_back(c);
+            indexes.push_back(d);
+        }
+    }
+
+    /* Upload the distortion verts to the GPU. */
+    distortionVBO = new QOpenGLBuffer(QOpenGLBuffer::VertexBuffer);
+    distortionVBO->create();
+    distortionVBO->bind();
+    distortionVBO->allocate(verts.data(), verts.size() * sizeof(QVector2D));
+    /* Upload the distortion indexes to the GPU. */
+    distortionIBO = new QOpenGLBuffer(QOpenGLBuffer::IndexBuffer);
+    distortionIBO->create();
+    distortionIBO->bind();
+    distortionIBO->allocate(indexes.data(), indexes.size() * sizeof(GLushort));
+
+    /* Store the number of indexes for rendering. */
+    distortionNumIndexes = indexes.size();
 
     qDebug("OpenVR inited.");
 
@@ -136,6 +267,7 @@ bool OpenVRPlugin::initVR(QOpenGLFunctions* f) {
 
 bool OpenVRPlugin::render(const QString& drawModeName, QOpenGLFunctions* f) {
     Q_UNUSED(drawModeName)
+
     if (vrSystem == nullptr && !initVR(f))
         return false;
 
@@ -185,10 +317,6 @@ bool OpenVRPlugin::render(const QString& drawModeName, QOpenGLFunctions* f) {
     QMatrix4x4 leftEyeMat  = QMatrix4x4(*leftProj.m) *  QMatrix4x4(QMatrix4x3(*leftMatrix.m))  * head;
     QMatrix4x4 rightEyeMat = QMatrix4x4(*rightProj.m) * QMatrix4x4(QMatrix4x3(*rightMatrix.m)) * head;
 
-//    QVector4D testV(1.0, 1.0, 0.0, 1.0);
-//    testV = lEyeMat * testV;
-//    qDebug() << testV;
-
     /* Get the size of the window. */
     GLint viewport[4];
     f->glGetIntegerv(GL_VIEWPORT, viewport);
@@ -217,7 +345,6 @@ bool OpenVRPlugin::render(const QString& drawModeName, QOpenGLFunctions* f) {
     /* Draw left eye to VR FBO. */
     f->glDrawArrays(GL_TRIANGLE_STRIP, 0, screen.size());
 
-    f->glFinish();
     leftEyeRenderFBO->release();
 
     /* Setup for the right eye. */
@@ -229,17 +356,64 @@ bool OpenVRPlugin::render(const QString& drawModeName, QOpenGLFunctions* f) {
     /* Draw right eye to VR FBO. */
     f->glDrawArrays(GL_TRIANGLE_STRIP, 0, screen.size());
 
-    f->glFinish();
     rightEyeRenderFBO->release();
 
-    /* TODO - Handle distortion. */
+    /* Get ready to render distortion. */
+    distortionShader->bind();
+    distortionVBO->bind();
+    distortionIBO->bind();
+    f->glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
 
-    vr::Texture_t leftEyeTexture = { reinterpret_cast<void*>(static_cast<intptr_t>(leftEyeRenderFBO->texture())), vr::API_OpenGL, vr::ColorSpace_Gamma };
+    /* Set up vertex arrays. */
+    f->glEnableVertexAttribArray(0);
+    f->glEnableVertexAttribArray(1);
+    f->glEnableVertexAttribArray(2);
+    f->glEnableVertexAttribArray(3);
+    f->glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(QVector2D) * 4, (void*)(0));
+    f->glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(QVector2D) * 4, (void*)(sizeof(QVector2D)));
+    f->glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(QVector2D) * 4, (void*)(sizeof(QVector2D) * 2));
+    f->glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(QVector2D) * 4, (void*)(sizeof(QVector2D) * 3));
+
+    f->glDisable(GL_DEPTH_TEST);
+    f->glDisable(GL_CULL_FACE);
+    f->glActiveTexture(GL_TEXTURE0);
+
+    leftEyeResolveFBO->bind();
+    f->glClear(GL_COLOR_BUFFER_BIT);
+
+    /* Render left lens (first half of index array) */
+    f->glBindTexture(GL_TEXTURE_2D, leftEyeRenderFBO->texture());
+    f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    f->glDrawElements(GL_TRIANGLES, distortionNumIndexes/2, GL_UNSIGNED_SHORT, 0);
+
+    leftEyeResolveFBO->release();
+
+    rightEyeResolveFBO->bind();
+    f->glClear(GL_COLOR_BUFFER_BIT);
+
+    /* Render right lens (second half of index array) */
+    f->glBindTexture(GL_TEXTURE_2D, rightEyeRenderFBO->texture());
+    f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    f->glDrawElements(GL_TRIANGLES, distortionNumIndexes/2, GL_UNSIGNED_SHORT, (const void*)distortionNumIndexes);
+
+    rightEyeResolveFBO->release();
+
+    /* All done with distortion. */
+    distortionVBO->release();
+    distortionIBO->release();
+    f->glBindTexture(GL_TEXTURE_2D, 0);
+
+    vr::Texture_t leftEyeTexture = { reinterpret_cast<void*>(static_cast<intptr_t>(leftEyeResolveFBO->texture())), vr::API_OpenGL, vr::ColorSpace_Gamma };
     vr::VRCompositor()->Submit(vr::Eye_Left, &leftEyeTexture);
 
-    vr::Texture_t rightEyeTexture = { reinterpret_cast<void*>(static_cast<intptr_t>(rightEyeRenderFBO->texture())), vr::API_OpenGL, vr::ColorSpace_Gamma };
+    vr::Texture_t rightEyeTexture = { reinterpret_cast<void*>(static_cast<intptr_t>(rightEyeResolveFBO->texture())), vr::API_OpenGL, vr::ColorSpace_Gamma };
     vr::VRCompositor()->Submit(vr::Eye_Right, &rightEyeTexture);
 
+    /* All's well that ends well... */
     return true;
 }
 

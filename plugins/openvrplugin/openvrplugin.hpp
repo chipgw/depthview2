@@ -9,6 +9,7 @@
 #include <openvr.h>
 
 class QOpenGLShaderProgram;
+class QOpenGLBuffer;
 class QOpenGLFramebufferObject;
 
 class OpenVRPlugin : public QObject, public DVRenderPlugin {
@@ -37,6 +38,10 @@ private:
     QOpenGLFramebufferObject* rightEyeRenderFBO;
     QOpenGLFramebufferObject* rightEyeResolveFBO;
 
+    QOpenGLBuffer* distortionVBO;
+    QOpenGLBuffer* distortionIBO;
+    intptr_t distortionNumIndexes;
+
     vr::IVRSystem* vrSystem;
     vr::IVRRenderModels* renderModels;
     vr::TrackedDevicePose_t trackedDevicePose[vr::k_unMaxTrackedDeviceCount];
@@ -45,6 +50,7 @@ private:
 
     QOpenGLShaderProgram* mirrorShader;
     QOpenGLShaderProgram* vrSceneShader;
+    QOpenGLShaderProgram* distortionShader;
 
     QQuickItem* configMenu;
 
