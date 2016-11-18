@@ -1,5 +1,5 @@
 #include "openvrplugin.hpp"
-#include <QOpenGLFunctions>
+#include <QOpenGLExtraFunctions>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLFramebufferObject>
 #include <QOpenGLBuffer>
@@ -7,7 +7,7 @@
 #include <QQuickItem>
 #include <QDebug>
 
-bool OpenVRPlugin::init(QOpenGLFunctions* f, QQmlEngine* qmlEngine) {
+bool OpenVRPlugin::init(QOpenGLExtraFunctions* f, QQmlEngine* qmlEngine) {
     Q_UNUSED(f)
     Q_INIT_RESOURCE(openvrplugin);
 
@@ -117,7 +117,7 @@ bool OpenVRPlugin::deinit() {
     return true;
 }
 
-bool OpenVRPlugin::initVR(QOpenGLFunctions* f) {
+bool OpenVRPlugin::initVR(QOpenGLExtraFunctions* f) {
     Q_UNUSED(f)
 
     vr::EVRInitError eError = vr::VRInitError_None;
@@ -265,7 +265,7 @@ bool OpenVRPlugin::initVR(QOpenGLFunctions* f) {
     return true;
 }
 
-bool OpenVRPlugin::render(const QString& drawModeName, QOpenGLFunctions* f) {
+bool OpenVRPlugin::render(const QString& drawModeName, QOpenGLExtraFunctions* f) {
     Q_UNUSED(drawModeName)
 
     if (vrSystem == nullptr && !initVR(f))
@@ -417,7 +417,7 @@ bool OpenVRPlugin::render(const QString& drawModeName, QOpenGLFunctions* f) {
     return true;
 }
 
-void OpenVRPlugin::frameSwapped(QOpenGLFunctions* f) {
+void OpenVRPlugin::frameSwapped(QOpenGLExtraFunctions* f) {
     Q_UNUSED(f)
 
     if (vrSystem != nullptr)

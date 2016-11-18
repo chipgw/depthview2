@@ -14,5 +14,6 @@
         <file>qml/ImageViewer.qml</file>
         <file>glsl/interlaced.fsh</file>
         <file>icons/MaterialIcons-Regular.ttf</file>
+        <file>qml/StereoShader.qml</file>
     </qresource>
 </RCC>

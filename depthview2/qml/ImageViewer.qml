@@ -159,7 +159,6 @@ Item {
         visible: FolderListing.currentFileIsVideo
 
         anchors.centerIn: parent
-        clip: true
 
         width: (stereoMode == SourceMode.SidebySide || stereoMode == SourceMode.SidebySideAnamorphic) ? vid.width / 2 : vid.width
         height: (stereoMode == SourceMode.TopBottom || stereoMode == SourceMode.TopBottomAnamorphic) ? vid.height / 2 : vid.height
@@ -173,7 +172,7 @@ Item {
             autoPlay: true
         }
 
-        VideoOutput {
+        VideoOutput2 {
             id: vid
             source: media
 
@@ -183,9 +182,17 @@ Item {
             /* Always stretch. We set the VideoOutput to the size we want. */
             fillMode: VideoOutput.Stretch
 
-            /* Same thing as the StereoImage does. Show half for each eye. */
-            x: (!DepthView.isLeft && (stereoMode == SourceMode.SidebySide || stereoMode == SourceMode.SidebySideAnamorphic)) ? -width / 2 : 0
-            y: (!DepthView.isLeft && (stereoMode == SourceMode.TopBottom || stereoMode == SourceMode.TopBottomAnamorphic)) ? -height / 2 : 0
+            /* Hide the video, just use it as a source for the ShaderEffect. */
+            opacity: 0
+        }
+
+        StereoShader {
+            target: vid
+            stereoMode: root.stereoMode
+
+            /* Videos tend to be the other way around from images... */
+            /* TODO - Make it possible to control in the UI. */
+            swap: true
         }
     }
 

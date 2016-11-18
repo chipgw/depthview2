@@ -1,10 +1,10 @@
 #include "testplugin.hpp"
-#include <QOpenGLFunctions>
+#include <QOpenGLExtraFunctions>
 #include <QOpenGLShaderProgram>
 #include <QQmlComponent>
 #include <QQuickItem>
 
-bool TestPlugin::init(QOpenGLFunctions* f, QQmlEngine* qmlEngine) {
+bool TestPlugin::init(QOpenGLExtraFunctions* f, QQmlEngine* qmlEngine) {
     Q_UNUSED(f)
 
     Q_INIT_RESOURCE(testplugin);
@@ -60,7 +60,7 @@ bool TestPlugin::deinit() {
     return true;
 }
 
-bool TestPlugin::render(const QString& drawModeName, QOpenGLFunctions* f) {
+bool TestPlugin::render(const QString& drawModeName, QOpenGLExtraFunctions* f) {
     Q_UNUSED(drawModeName)
 
     if (logRenderStart.isValid() && logRenderStart.read().toBool())
@@ -98,7 +98,7 @@ bool TestPlugin::render(const QString& drawModeName, QOpenGLFunctions* f) {
     return true;
 }
 
-void TestPlugin::frameSwapped(QOpenGLFunctions* f) {
+void TestPlugin::frameSwapped(QOpenGLExtraFunctions* f) {
     Q_UNUSED(f)
 
     if (logFrameSwap.isValid() && logFrameSwap.read().toBool())

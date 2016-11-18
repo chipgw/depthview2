@@ -58,15 +58,14 @@ private:
     QOpenGLShaderProgram shaderInterlaced;
     QOpenGLShaderProgram shaderMono;
 
-    /* The FBOs that QML renders to. */
-    QOpenGLFramebufferObject* fboRight;
-    QOpenGLFramebufferObject* fboLeft;
+    /* The FBO that QML renders to. */
+    QOpenGLFramebufferObject* renderFBO;
 
     bool holdMouse;
 
     void loadShaders();
     void loadShader(QOpenGLShaderProgram& shader, const char* vshader, const char* fshader);
-    void createFBOs();
+    void createFBO();
 
     /* Any loaded plugins. */
     QList<DVRenderPlugin*> renderPlugins;

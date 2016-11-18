@@ -18,13 +18,13 @@ class OpenVRPlugin : public QObject, public DVRenderPlugin {
     Q_INTERFACES(DVRenderPlugin)
 
 public:
-    bool init(QOpenGLFunctions* f, QQmlEngine* qmlEngine);
+    bool init(QOpenGLExtraFunctions* f, QQmlEngine* qmlEngine);
     bool deinit();
-    bool initVR(QOpenGLFunctions* f);
+    bool initVR(QOpenGLExtraFunctions* f);
 
-    bool render(const QString& drawModeName, QOpenGLFunctions* f);
+    bool render(const QString& drawModeName, QOpenGLExtraFunctions* f);
 
-    void frameSwapped(QOpenGLFunctions* f);
+    void frameSwapped(QOpenGLExtraFunctions* f);
 
     QStringList drawModeNames();
 

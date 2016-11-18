@@ -12,7 +12,7 @@
 #include <QQmlComponent>
 #include <QOpenGLFramebufferObject>
 #include <QOpenGLContext>
-#include <QOpenGLFunctions>
+#include <QOpenGLExtraFunctions>
 #include <QPluginLoader>
 #include <QCommandLineParser>
 #include <QMessageBox>
@@ -43,7 +43,7 @@ public:
 #define SETTINGS_ARGS QSettings::IniFormat, QSettings::UserScope, QApplication::organizationName(), QApplication::applicationName()
 #endif
 
-DVWindow::DVWindow() : QOpenGLWindow(), settings(SETTINGS_ARGS), fboRight(nullptr), fboLeft(nullptr) {
+DVWindow::DVWindow() : QOpenGLWindow(), settings(SETTINGS_ARGS), renderFBO(nullptr) {
     qmlCommunication = new DVQmlCommunication(this, settings);
     folderListing = new DVFolderListing(this, settings);
 
@@ -84,8 +84,7 @@ DVWindow::DVWindow() : QOpenGLWindow(), settings(SETTINGS_ARGS), fboRight(nullpt
 DVWindow::~DVWindow() {
     unloadPlugins();
 
-    delete fboRight;
-    delete fboLeft;
+    delete renderFBO;
 
     /* TODO - I'm pretty sure there is more that needs to be deleted here... */
 
@@ -97,7 +96,7 @@ DVWindow::~DVWindow() {
 }
 
 void DVWindow::initializeGL() {
-    QOpenGLFunctions* f = context()->functions();
+    QOpenGLExtraFunctions* f = context()->extraFunctions();
     qDebug("GL Vendor: \"%s\", Renderer: \"%s\".", f->glGetString(GL_VENDOR), f->glGetString(GL_RENDERER));
 
     loadShaders();
@@ -144,16 +143,7 @@ void DVWindow::paintGL() {
     /* So QML doesn't freak out because of stuff we did last frame. */
     qmlWindow->resetOpenGLState();
 
-    /* Render the right eye view. */
-    qmlCommunication->rightImage();
-    qmlWindow->setRenderTarget(fboRight);
-    qmlRenderControl->polishItems();
-    qmlRenderControl->sync();
-    qmlRenderControl->render();
-
-    /* Render the left eye view. */
-    qmlCommunication->leftImage();
-    qmlWindow->setRenderTarget(fboLeft);
+    qmlWindow->setRenderTarget(renderFBO);
     qmlRenderControl->polishItems();
     qmlRenderControl->sync();
     qmlRenderControl->render();
@@ -161,16 +151,16 @@ void DVWindow::paintGL() {
     /* Now we don't want QML messing us up. */
     qmlWindow->resetOpenGLState();
 
-    QOpenGLFunctions* f = context()->functions();
+    QOpenGLExtraFunctions* f = context()->extraFunctions();
 
     /* Make sure the viewport is the correct size, QML may have changed it. */
     f->glViewport(0, 0, width(), height());
 
     f->glActiveTexture(GL_TEXTURE0);
-    f->glBindTexture(GL_TEXTURE_2D, fboLeft->texture());
+    f->glBindTexture(GL_TEXTURE_2D, renderFBO->textures()[0]);
 
     f->glActiveTexture(GL_TEXTURE1);
-    f->glBindTexture(GL_TEXTURE_2D, fboRight->texture());
+    f->glBindTexture(GL_TEXTURE_2D, renderFBO->textures()[1]);
 
     /* Bind the shader and set uniforms for the current draw mode. */
     switch (qmlCommunication->drawMode()) {
@@ -271,8 +261,8 @@ void DVWindow::updateQmlSize() {
         qmlSize.setHeight(qmlSize.height() / 2);
 
     /* Don't recreate fbo's unless they are null or size is wrong. */
-    if(fboLeft == nullptr || fboLeft->size() != qmlSize || fboRight == nullptr || fboRight->size() != qmlSize)
-        createFBOs();
+    if(renderFBO == nullptr || renderFBO->size() != qmlSize)
+        createFBO();
 
     qmlRoot->setSize(qmlSize);
 
@@ -291,7 +281,7 @@ void DVWindow::onFrameSwapped() {
             /* Find the first plugin that contains the mode we want. */
             if (plugin->drawModeNames().contains(qmlCommunication->pluginMode())) {
                 /* Let it do its thing. */
-                plugin->frameSwapped(context()->functions());
+                plugin->frameSwapped(context()->extraFunctions());
 
                 /* Do we hold the mouse? */
                 holdMouse = plugin->shouldLockMouse();
@@ -343,28 +333,30 @@ void DVWindow::loadShader(QOpenGLShaderProgram& shader, const char* vshader, con
     shader.setUniformValue("textureR", 1);
 }
 
-void DVWindow::createFBOs() {
+void DVWindow::createFBO() {
     makeCurrent();
 
-    /* Delete the old FBOs if they exsisted. */
-    if (fboRight != nullptr)
-        delete fboRight;
-    if (fboLeft != nullptr)
-        delete fboLeft;
+    /* Delete the old FBO if it exsists. */
+    if (renderFBO != nullptr)
+        delete renderFBO;
 
-    QOpenGLFunctions* f = context()->functions();
+    QOpenGLExtraFunctions* f = context()->extraFunctions();
 
     /* Create the FBOs with the calculated QML size. */
-    fboRight = new QOpenGLFramebufferObject(qmlSize, QOpenGLFramebufferObject::CombinedDepthStencil);
-    fboLeft = new QOpenGLFramebufferObject(qmlSize, QOpenGLFramebufferObject::CombinedDepthStencil);
+    renderFBO = new QOpenGLFramebufferObject(qmlSize, QOpenGLFramebufferObject::CombinedDepthStencil);
 
-    /* Use Linear filtering for nicer scaling/. */
-    f->glBindTexture(GL_TEXTURE_2D, fboRight->texture());
-    f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    f->glBindTexture(GL_TEXTURE_2D, fboLeft->texture());
-    f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    renderFBO->bind();
+    renderFBO->addColorAttachment(qmlSize);
+    
+    const GLenum buf[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+    f->glDrawBuffers(2, buf);
+
+    /* Use Linear filtering for nicer scaling. */
+    for (GLuint texture : renderFBO->textures()) {
+        f->glBindTexture(GL_TEXTURE_2D, texture);
+        f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    }
 }
 
 void DVWindow::resizeGL(int, int) {
@@ -457,7 +449,7 @@ void DVWindow::loadPlugins() {
         if (obj != nullptr && (plugin = qobject_cast<DVRenderPlugin*>(obj)) != nullptr) {
             qDebug("Found plugin: \"%s\"", qPrintable(filename));
 
-            if (plugin->init(context()->functions(), qmlEngine)) {
+            if (plugin->init(context()->extraFunctions(), qmlEngine)) {
                 for (const QString& mode : plugin->drawModeNames())
                     qmlCommunication->addPluginMode(mode, plugin->getConfigMenuObject());
 

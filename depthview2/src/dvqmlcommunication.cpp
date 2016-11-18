@@ -25,10 +25,6 @@ DVQmlCommunication::DVQmlCommunication(QWindow* parent, QSettings& s) : QObject(
     m_mirrorRight = settings.contains("MirrorRight") ? settings.value("MirrorRight").toBool() : false;
 }
 
-bool DVQmlCommunication::isLeft() const {
-    return m_isLeft;
-}
-
 DVDrawMode::Type DVQmlCommunication::drawMode() const {
     return m_drawMode;
 }

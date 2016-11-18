@@ -10,9 +10,6 @@ class QQuickItem;
 class DVQmlCommunication : public QObject {
     Q_OBJECT
 
-    /* Can only be read. */
-    Q_PROPERTY(bool isLeft READ isLeft NOTIFY isLeftChanged)
-
     /* Can be read, written, and notifies when changed. */
     Q_PROPERTY(DVDrawMode::Type drawMode MEMBER m_drawMode READ drawMode WRITE setDrawMode NOTIFY drawModeChanged)
     Q_PROPERTY(bool anamorphicDualView MEMBER m_anamorphicDualView READ anamorphicDualView WRITE setAnamorphicDualView NOTIFY anamorphicDualViewChanged)
@@ -35,13 +32,6 @@ public:
     QSettings& settings;
 
     explicit DVQmlCommunication(QWindow* parent, QSettings& s);
-
-    /* Where QML reads the value of the current eye. */
-    bool isLeft() const;
-
-    /* Set the current eye. */
-    void leftImage() { isLeftChanged(m_isLeft = true);  }
-    void rightImage() { isLeftChanged(m_isLeft = false); }
 
     /* The current draw mode. */
     DVDrawMode::Type drawMode() const;
@@ -105,7 +95,6 @@ private:
 
     qreal m_greyFac;
 
-    bool m_isLeft;
     DVDrawMode::Type m_drawMode;
     bool m_anamorphicDualView;
 

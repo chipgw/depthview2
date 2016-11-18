@@ -14,12 +14,12 @@ class TestPlugin : public QObject, public DVRenderPlugin {
     QQuickItem* configMenuObject;
 
 public:
-    bool init(QOpenGLFunctions* f, QQmlEngine* qmlEngine);
+    bool init(QOpenGLExtraFunctions* f, QQmlEngine* qmlEngine);
     bool deinit();
 
-    bool render(const QString& drawModeName, QOpenGLFunctions* f);
+    bool render(const QString& drawModeName, QOpenGLExtraFunctions* f);
 
-    void frameSwapped(QOpenGLFunctions* f);
+    void frameSwapped(QOpenGLExtraFunctions* f);
 
     QStringList drawModeNames();
 
