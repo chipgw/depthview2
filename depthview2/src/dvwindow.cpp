@@ -18,6 +18,17 @@
 #include <QMessageBox>
 #include <QDir>
 
+/* Android in particular may not have this defined. */
+#ifndef GL_COLOR_ATTACHMENT1
+/* If there's an EXT defined, use it. */
+#ifdef GL_COLOR_ATTACHMENT1_EXT
+#define GL_COLOR_ATTACHMENT1 GL_COLOR_ATTACHMENT1_EXT
+#else
+/* Otherwise resort to just using ATTACHMENT0 plus one. */
+#define GL_COLOR_ATTACHMENT1 GL_COLOR_ATTACHMENT0+1
+#endif
+#endif
+
 /* Vertex attrib locations. */
 const GLuint vertex = 0;
 const GLuint uv     = 1;
@@ -291,7 +302,9 @@ void DVWindow::onFrameSwapped() {
             }
         }
     }
+#ifndef Q_OS_ANDROID
     setMouseGrabEnabled(holdMouse);
+#endif
 
     update();
 }
