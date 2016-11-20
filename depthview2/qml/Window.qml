@@ -52,7 +52,7 @@ Rectangle {
             }
 
             /* Visible when the mouse is close, when the screen was recently touched, when any of the menus are open, or when a video is paused. */
-            state: fakeCursor.y < 128 || fileMenu.visible || viewMenu.visible || modeMenu.visible || helpMenu.visible || pluginConfigMenu.visible ||
+            state: fakeCursor.y < 128 || fileMenu.visible || viewMenu.visible || modeMenu.visible || pluginConfigMenu.visible ||
                    touchTimer.running || (FolderListing.currentFileIsVideo && !image.isPlaying) ? "" : "HIDDEN"
 
             states: [
@@ -74,6 +74,8 @@ Rectangle {
             ]
 
             RowLayout {
+                width: parent.width
+
                 ToolButton {
                     text: "File"
                     font: uiTextFont
@@ -258,22 +260,14 @@ Rectangle {
                     }
                 }
 
+                Item {
+                    Layout.fillWidth: true;
+                }
+
                 ToolButton {
-                    text: "Help"
-                    font: uiTextFont
-                    onClicked: helpMenu.open()
-
-                    Menu {
-                        id: helpMenu
-                        y: parent.height
-
-                        MenuItem {
-                            text: "About"
-                            font: uiTextFont
-
-                            onClicked: aboutBox.open()
-                        }
-                    }
+                    text: "help"
+                    font: googleMaterialFont
+                    onClicked: aboutBox.open()
                 }
             }
         }
@@ -379,8 +373,10 @@ Rectangle {
                             visible: !FolderListing.currentFileIsStereoImage
                             onClicked: sourceMode.open()
 
-                            text: "Source Mode"
-                            font: uiTextFont
+                            font: googleMaterialFont
+                            /* TODO - I'm not sure this icon is clear enough, but it's the best fit I found.
+                             * Perhaps I should make my own, and make icons for the modes themselves... */
+                            text: "settings_applications"
 
                             Menu {
                                 id: sourceMode
