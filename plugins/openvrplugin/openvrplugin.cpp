@@ -436,6 +436,10 @@ bool OpenVRPlugin::shouldLockMouse() {
     return lockMouse.read().toBool();
 }
 
+QSize OpenVRPlugin::getRenderSize(const QSize& windowSize) {
+    return windowSize;
+}
+
 void OpenVRPlugin::updateScreen() {
     /* Get the properties from QML. */
     float distance = screenDistance.read().toFloat();

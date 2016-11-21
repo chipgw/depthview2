@@ -27,6 +27,8 @@ public:
 
     bool shouldLockMouse();
 
+    QSize getRenderSize(const QSize& windowSize);
+
 private:
     QOpenGLShaderProgram* shader;
 

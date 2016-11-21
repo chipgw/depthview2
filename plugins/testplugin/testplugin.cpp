@@ -117,3 +117,7 @@ bool TestPlugin::shouldLockMouse() {
     return false;
 }
 
+QSize TestPlugin::getRenderSize(const QSize& windowSize) {
+    return windowSize;
+}
+

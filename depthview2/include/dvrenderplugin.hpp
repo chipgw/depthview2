@@ -30,6 +30,9 @@ public:
 
     /* Return true if the window should keep the mouse inside the window. */
     virtual bool shouldLockMouse() = 0;
+
+    /* Get the size the FBO shoud be for the given window size. */
+    virtual QSize getRenderSize(const QSize& windowSize) = 0;
 };
 
 #define DVRenderPlugin_iid "com.chipgw.DepthView.RenderPlugin"

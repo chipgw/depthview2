@@ -271,6 +271,19 @@ void DVWindow::updateQmlSize() {
     if(qmlCommunication->drawMode() == DVDrawMode::TopBottom && !qmlCommunication->anamorphicDualView())
         qmlSize.setHeight(qmlSize.height() / 2);
 
+
+    if (qmlCommunication->drawMode() == DVDrawMode::Plugin) {
+        for (DVRenderPlugin* plugin : renderPlugins) {
+            /* Find the first plugin that contains the mode we want. */
+            if (plugin->drawModeNames().contains(qmlCommunication->pluginMode())) {
+                qmlSize = plugin->getRenderSize(qmlSize);
+
+                /* Don't check any other plugins. */
+                break;
+            }
+        }
+    }
+
     /* Don't recreate fbo's unless they are null or size is wrong. */
     if(renderFBO == nullptr || renderFBO->size() != qmlSize)
         createFBO();

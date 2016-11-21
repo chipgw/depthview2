@@ -32,6 +32,8 @@ public:
 
     bool shouldLockMouse();
 
+    QSize getRenderSize(const QSize& windowSize);
+
 private:
     QOpenGLFramebufferObject* leftEyeRenderFBO;
     QOpenGLFramebufferObject* leftEyeResolveFBO;
