@@ -1,5 +1,5 @@
 <RCC>
-    <qresource prefix="/">
+    <qresource prefix="/TestPlugin">
         <file>glsl/plugin.fsh</file>
         <file>glsl/plugin.vsh</file>
         <file>Config.qml</file>

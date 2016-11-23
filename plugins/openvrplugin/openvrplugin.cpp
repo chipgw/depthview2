@@ -21,8 +21,8 @@ bool OpenVRPlugin::init(QOpenGLExtraFunctions* f, QQmlEngine* qmlEngine) {
 
     mirrorShader = new QOpenGLShaderProgram;
 
-    mirrorShader->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/glsl/mirror.vsh");
-    mirrorShader->addShaderFromSourceFile(QOpenGLShader::Fragment, ":/glsl/mirror.fsh");
+    mirrorShader->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/OpenVR/glsl/mirror.vsh");
+    mirrorShader->addShaderFromSourceFile(QOpenGLShader::Fragment, ":/OpenVR/glsl/mirror.fsh");
 
     mirrorShader->link();
 
@@ -35,8 +35,8 @@ bool OpenVRPlugin::init(QOpenGLExtraFunctions* f, QQmlEngine* qmlEngine) {
     mirrorShader->setUniformValue("textureR", 1);
 
     vrSceneShader = new QOpenGLShaderProgram;
-    vrSceneShader->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/glsl/vrscene.vsh");
-    vrSceneShader->addShaderFromSourceFile(QOpenGLShader::Fragment, ":/glsl/vrscene.fsh");
+    vrSceneShader->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/OpenVR/glsl/vrscene.vsh");
+    vrSceneShader->addShaderFromSourceFile(QOpenGLShader::Fragment, ":/OpenVR/glsl/vrscene.fsh");
 
     vrSceneShader->link();
 
@@ -49,8 +49,8 @@ bool OpenVRPlugin::init(QOpenGLExtraFunctions* f, QQmlEngine* qmlEngine) {
     vrSceneShader->setUniformValue("textureR", 1);
 
     distortionShader = new QOpenGLShaderProgram;
-    distortionShader->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/glsl/distortion.vsh");
-    distortionShader->addShaderFromSourceFile(QOpenGLShader::Fragment, ":/glsl/distortion.fsh");
+    distortionShader->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/OpenVR/glsl/distortion.vsh");
+    distortionShader->addShaderFromSourceFile(QOpenGLShader::Fragment, ":/OpenVR/glsl/distortion.fsh");
 
     /* Make sure the attributes are bound correctly. */
     distortionShader->bindAttributeLocation("position",     0);
@@ -68,7 +68,7 @@ bool OpenVRPlugin::init(QOpenGLExtraFunctions* f, QQmlEngine* qmlEngine) {
 
     QQmlComponent component(qmlEngine);
 
-    component.loadUrl(QUrl(QStringLiteral("qrc:/Config.qml")));
+    component.loadUrl(QUrl(QStringLiteral("qrc:/OpenVR/Config.qml")));
 
     /* Wait for it to load... */
     while(component.isLoading());

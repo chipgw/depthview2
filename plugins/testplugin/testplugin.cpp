@@ -26,7 +26,7 @@ bool TestPlugin::init(QOpenGLExtraFunctions* f, QQmlEngine* qmlEngine) {
 
     QQmlComponent component(qmlEngine);
 
-    component.loadUrl(QUrl(QStringLiteral("qrc:/Config.qml")));
+    component.loadUrl(QUrl(QStringLiteral("qrc:/TestPlugin/Config.qml")));
 
     /* Wait for it to load... */
     while(component.isLoading());
