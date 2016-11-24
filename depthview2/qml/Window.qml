@@ -672,8 +672,8 @@ Rectangle {
                 greyFacPopup.close()
             if (modeMenu.visible)
                 modeMenu.close()
-            if (helpMenu.visible)
-                helpMenu.close()
+            if (pluginConfigMenu.visible)
+                pluginConfigMenu.close()
             if (sourceMode.visible)
                 sourceMode.close()
         }
@@ -700,8 +700,8 @@ Rectangle {
                 greyFacPopup.close()
             if (modeMenu.visible)
                 modeMenu.close()
-            if (helpMenu.visible)
-                helpMenu.close()
+            if (pluginConfigMenu.visible)
+                pluginConfigMenu.close()
             if (sourceMode.visible)
                 sourceMode.close()
         }
