@@ -11,8 +11,8 @@ bool TestPlugin::init(QOpenGLExtraFunctions* f, QQmlEngine* qmlEngine) {
 
     shader = new QOpenGLShaderProgram;
 
-    shader->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/glsl/plugin.vsh");
-    shader->addShaderFromSourceFile(QOpenGLShader::Fragment, ":/glsl/plugin.fsh");
+    shader->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/TestPlugin/glsl/plugin.vsh");
+    shader->addShaderFromSourceFile(QOpenGLShader::Fragment, ":/TestPlugin/glsl/plugin.fsh");
 
     shader->link();
 
