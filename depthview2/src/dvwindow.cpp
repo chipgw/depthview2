@@ -460,6 +460,8 @@ void DVWindow::loadPlugins() {
     pluginsDir.cd("plugins");
 
 #if defined(Q_OS_WIN)
+    /* On Windows we can add the plugin dir to the DLL search path dynamically.
+     * On Linux LD_LIBRARY_PATH must be set before running the program to get the same effect. */
     SetDllDirectory(pluginsDir.absolutePath().toStdWString().c_str());
 #endif
 
@@ -469,7 +471,7 @@ void DVWindow::loadPlugins() {
     for (const QString& filename : pluginsDir.entryList(QDir::Files)) {
         QPluginLoader loader(pluginsDir.absoluteFilePath(filename));
         QObject *obj = loader.instance();
-        DVRenderPlugin* plugin;
+        DVRenderPlugin* plugin = nullptr;
 
         /* If it can't be cast to a DVRenderPlugin* it isn't a valid plugin. */
         if (obj != nullptr && (plugin = qobject_cast<DVRenderPlugin*>(obj)) != nullptr) {
@@ -486,7 +488,7 @@ void DVWindow::loadPlugins() {
                 qDebug("Plugin: \"%s\" failed to init.", qPrintable(filename));
             }
         } else {
-            qDebug("\"%s\" is not a plugin.", qPrintable(filename));
+            qDebug("\"%s\" is not a plugin. %s", qPrintable(filename), qPrintable(loader.errorString()));
         }
     }
     qDebug("Done loading plugins.");

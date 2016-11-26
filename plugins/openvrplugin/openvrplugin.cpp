@@ -6,6 +6,7 @@
 #include <QQmlComponent>
 #include <QQuickItem>
 #include <QDebug>
+#include <cmath>
 
 bool OpenVRPlugin::init(QOpenGLExtraFunctions* f, QQmlEngine* qmlEngine) {
     Q_UNUSED(f)
@@ -461,8 +462,8 @@ void OpenVRPlugin::updateScreen() {
 
         for (int current = -halfSteps; current < halfSteps; ++current) {
             /* Calculate the coordinate of the vertex. */
-            screen += {{sin(current * step) * distance, z - height, cos(current * step) * -distance},
-                       {sin(current * step) * distance, z + height, cos(current * step) * -distance}};
+            screen += {{std::sin(current * step) * distance, z - height, std::cos(current * step) * -distance},
+                       {std::sin(current * step) * distance, z + height, std::cos(current * step) * -distance}};
 
             /* Map current from [-halfStep, halfStep] to [0, 1]. */
             float U = 0.5f * current / halfSteps + 0.5f;

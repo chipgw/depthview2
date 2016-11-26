@@ -23,7 +23,11 @@ INCLUDEPATH += ../../depthview2/include
 
 RESOURCES += openvrplugin.qrc
 
-unix|win32: LIBS += -L$$PWD/../../../openvr/lib/win64/ -lopenvr_api
+# Adding this gets it to build on Linux, but I haven't been able to get it running, even with just the null driver.
+# That's probably because to my knowledge Valve hasn't properly updated Linux SteamVR in a while...
+linux-g++: DEFINES += COMPILER_GCC
+
+LIBS += -L$$PWD/../../../openvr/lib/win32/ -L$$PWD/../../../openvr/lib/win64/ -L$$PWD/../../../openvr/lib/linux32/ -L$$PWD/../../../openvr/lib/linux64/ -lopenvr_api
 
 INCLUDEPATH += $$PWD/../../../openvr/headers
 DEPENDPATH += $$PWD/../../../openvr/headers
