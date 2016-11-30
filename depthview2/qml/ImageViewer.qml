@@ -64,6 +64,8 @@ Item {
 
     property int stereoMode: FolderListing.currentFileStereoMode
 
+    property bool swapEyes: false
+
     function seek(offset) {
         if (FolderListing.currentFileIsVideo)
             media.seek(offset)
@@ -149,6 +151,8 @@ Item {
 
                 source: FolderListing.currentFileIsVideo ? "" : root.source
 
+                swapEyes: root.swapEyes
+
                 /* If zoom is negative we scale to fit, otherwise just use the value of zoom. */
                 scale: (zoom < 0) ? Math.min(root.width / image.width, root.height / image.height) : zoom
             }
@@ -191,8 +195,7 @@ Item {
             stereoMode: root.stereoMode
 
             /* Videos tend to be the other way around from images... */
-            /* TODO - Make it possible to control in the UI. */
-            swap: true
+            swap: !swapEyes;
         }
     }
 

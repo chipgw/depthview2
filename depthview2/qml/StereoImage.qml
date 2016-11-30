@@ -12,6 +12,7 @@ Item {
     property bool asynchronous: true
     property size sourceSize
     property int imageMode: SourceMode.SidebySide
+    property alias swapEyes: shader.swap
 
     Image {
         id: img
@@ -26,6 +27,7 @@ Item {
         opacity: 0
     }
     StereoShader {
+        id: shader
         target: img
         stereoMode: imageMode
     }

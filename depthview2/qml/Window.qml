@@ -170,6 +170,13 @@ Rectangle {
                             }
 
                             MenuItem {
+                                text: "Swap Eyes"
+                                checkable: true
+
+                                onCheckedChanged: image.swapEyes = checked
+                            }
+
+                            MenuItem {
                                 id: fullscreenCheckBox
                                 text: "Fullscreen"
                                 font: uiTextFont
