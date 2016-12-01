@@ -1,0 +1,37 @@
+#include <windows.h>
+
+// IDI_ICON1     ICON    DISCARDABLE     ""
+
+#define VER_FILEVERSION             2,0,0,0
+#define VER_FILEVERSION_STR         "2.0 (Beta)"
+
+
+VS_VERSION_INFO VERSIONINFO
+  FILEVERSION       VER_FILEVERSION
+  PRODUCTVERSION    VER_FILEVERSION
+  FILEFLAGSMASK     VS_FFI_FILEFLAGSMASK
+#ifdef NDEBUG
+  FILEFLAGS 0
+#else
+  FILEFLAGS VS_FF_DEBUG
+#endif
+  FILEOS VOS_NT_WINDOWS32
+  FILETYPE VFT_APP
+  BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+      BLOCK "04090000"
+      BEGIN
+        VALUE "FileDescription", "3D Image and Video Player."
+        VALUE "FileVersion", VER_FILEVERSION_STR
+        VALUE "LegalCopyright", "© 2015-2016 chipgw, released under the MIT license"
+        VALUE "OriginalFilename", "depthview2.exe"
+        VALUE "ProductName", "DepthView"
+        VALUE "ProductVersion", VER_FILEVERSION_STR
+      END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+      VALUE "Translation", 0x409, 1200
+    END
+  END

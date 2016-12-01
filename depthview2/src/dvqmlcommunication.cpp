@@ -90,7 +90,6 @@ void DVQmlCommunication::setFullscreen(bool fullscreen) {
 }
 
 void DVQmlCommunication::ownerWindowStateChanged(Qt::WindowState windowState) {
-    /* TODO - Somehow maybe this should only emit the signal if fullscreen is what changed? */
     emit fullscreenChanged(windowState == Qt::WindowFullScreen);
 }
 

@@ -83,7 +83,6 @@ signals:
     void mouseMoved(const QPointF& pos);
 
     /* Used to show/hide ui based on touchscreen input. */
-    /* TODO - Maybe some args would be useful? */
     void touchEvent();
 
 public slots:
