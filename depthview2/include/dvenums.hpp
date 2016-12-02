@@ -31,8 +31,7 @@ DV_ENUM(DVDrawMode,
         InterlacedV,
         InterlacedH,
         Checkerboard,
-        MonoLeft,
-        MonoRight,
+        Mono,
         Plugin);
 
 DV_ENUM(DVSourceMode,

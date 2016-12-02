@@ -173,7 +173,7 @@ Rectangle {
                                 text: "Swap Eyes"
                                 checkable: true
 
-                                onCheckedChanged: image.swapEyes = checked
+                                onCheckedChanged: DepthView.swapEyes = checked
                             }
 
                             MenuItem {
@@ -210,8 +210,7 @@ Rectangle {
                                     ListElement { text: "Interlaced Horizontal"; mode: DrawMode.InterlacedH }
                                     ListElement { text: "Interlaced Vertical"; mode: DrawMode.InterlacedV }
                                     ListElement { text: "Checkerboard"; mode: DrawMode.Checkerboard }
-                                    ListElement { text: "Mono Left"; mode: DrawMode.MonoLeft }
-                                    ListElement { text: "Mono Right"; mode: DrawMode.MonoRight }
+                                    ListElement { text: "Mono"; mode: DrawMode.Mono }
                                 }
                                 MenuItem {
                                     text: model.text

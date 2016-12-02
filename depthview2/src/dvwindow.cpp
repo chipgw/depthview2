@@ -210,13 +210,9 @@ void DVWindow::paintGL() {
         shaderInterlaced.setUniformValue("horizontal", true);
         shaderInterlaced.setUniformValue("vertical", true);
         break;
-    case DVDrawMode::MonoLeft:
+    case DVDrawMode::Mono:
         shaderMono.bind();
         shaderMono.setUniformValue("left", true);
-        break;
-    case DVDrawMode::MonoRight:
-        shaderMono.bind();
-        shaderMono.setUniformValue("left", false);
         break;
     case DVDrawMode::Plugin:
         for (DVRenderPlugin* plugin : renderPlugins) {

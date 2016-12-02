@@ -142,9 +142,18 @@ QStringList DVQmlCommunication::getModes() const {
                          << "Interlaced Horizontal"
                          << "Interlaced Vertical"
                          << "Checkerboard"
-                         << "Mono Left"
-                         << "Mono Right"
+                         << "Mono"
                          << pluginModes.keys();
+}
+
+bool DVQmlCommunication::swapEyes() const {
+    return m_swapEyes;
+}
+void DVQmlCommunication::setSwapEyes(bool swap) {
+    if (swap != m_swapEyes) {
+        m_swapEyes = swap;
+        emit swapEyesChanged();
+    }
 }
 
 QString DVQmlCommunication::versionString() {

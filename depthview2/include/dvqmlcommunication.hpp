@@ -27,6 +27,8 @@ class DVQmlCommunication : public QObject {
 
     Q_PROPERTY(QQuickItem* pluginConfigMenu READ getPluginConfigMenu NOTIFY pluginModeChanged)
 
+    Q_PROPERTY(bool swapEyes READ swapEyes WRITE setSwapEyes NOTIFY swapEyesChanged)
+
 public:
     /* Settings can be set from DVWindow. */
     QSettings& settings;
@@ -60,6 +62,9 @@ public:
     QStringList getModes() const;
     QQuickItem* getPluginConfigMenu() const;
 
+    bool swapEyes() const;
+    void setSwapEyes(bool swap);
+
     Q_INVOKABLE QString versionString();
     Q_INVOKABLE QString buildType();
     Q_INVOKABLE QString buildCompiler();
@@ -78,6 +83,8 @@ signals:
 
     void pluginModeChanged(QString mode);
     void pluginModesChanged();
+
+    void swapEyesChanged();
 
     /* Used for setting the cursor position. */
     void mouseMoved(const QPointF& pos);
@@ -101,4 +108,6 @@ private:
 
     QString m_pluginMode;
     QMap<QString, QQuickItem*> pluginModes;
+
+    bool m_swapEyes;
 };
