@@ -17,7 +17,7 @@ Popup {
     function cancel() {
         /* Reset to the folder that was active when the browser was first shown. */
         FolderListing.currentDir = startingFolder
-        close()
+        DepthView.fileBrowserOpen = false;
     }
 
     onOpened:
@@ -51,7 +51,7 @@ Popup {
                             FolderListing.currentDir = fileURL
                         else {
                             FolderListing.openFile(fileURL)
-                            close();
+                            DepthView.fileBrowserOpen = false;
                         }
                     }
 

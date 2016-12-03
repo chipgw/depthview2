@@ -29,6 +29,8 @@ class DVQmlCommunication : public QObject {
 
     Q_PROPERTY(bool swapEyes READ swapEyes WRITE setSwapEyes NOTIFY swapEyesChanged)
 
+    Q_PROPERTY(bool fileBrowserOpen READ fileBrowserOpen WRITE setFileBrowserOpen NOTIFY fileBrowserOpenChanged)
+
 public:
     /* Settings can be set from DVWindow. */
     QSettings& settings;
@@ -69,6 +71,9 @@ public:
     Q_INVOKABLE QString buildType();
     Q_INVOKABLE QString buildCompiler();
 
+    bool fileBrowserOpen() const;
+    void setFileBrowserOpen(bool open);
+
 signals:
     void isLeftChanged(bool isLeft);
     void drawModeChanged(DVDrawMode::Type mode);
@@ -85,6 +90,8 @@ signals:
     void pluginModesChanged();
 
     void swapEyesChanged();
+
+    void fileBrowserOpenChanged();
 
     /* Used for setting the cursor position. */
     void mouseMoved(const QPointF& pos);
@@ -110,4 +117,6 @@ private:
     QMap<QString, QQuickItem*> pluginModes;
 
     bool m_swapEyes;
+
+    bool m_fileBrowserOpen;
 };
