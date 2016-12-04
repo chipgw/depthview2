@@ -26,9 +26,11 @@ HEADERS += \
     include/dvwindow.hpp \
     include/dvenums.hpp \
     include/dvqmlcommunication.hpp \
+    include/dvinputplugin.hpp \
     include/dvrenderplugin.hpp \
     include/version.hpp \
-    include/dvfolderlisting.hpp
+    include/dvfolderlisting.hpp \
+    include/dvinputinterface.hpp
 
 INCLUDEPATH += include
 

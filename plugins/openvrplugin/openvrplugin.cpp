@@ -483,3 +483,9 @@ void OpenVRPlugin::updateScreen() {
                      {1.0f, 1.0f}};
     }
 }
+
+bool OpenVRPlugin::pollInput(DVInputInterface* inputInterface) {
+    Q_UNUSED(inputInterface)
+    /* TODO - Use tracked motion controllers... */
+    return false;
+}

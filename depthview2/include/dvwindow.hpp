@@ -3,10 +3,12 @@
 #include <QOpenGLWindow>
 #include <QOpenGLShaderProgram>
 #include <QSettings>
+#include "dvinputinterface.hpp"
 
 /* DepthView forward declarations. */
 class DVQmlCommunication;
 class DVFolderListing;
+class DVInputPlugin;
 class DVRenderPlugin;
 
 /* Qt forward declarations. */
@@ -16,13 +18,58 @@ class QQuickItem;
 class QQmlEngine;
 class QOpenGLFramebufferObject;
 
-class DVWindow : public QOpenGLWindow {
+class DVWindow : public QOpenGLWindow, public DVInputInterface {
 public:
     DVWindow();
     ~DVWindow();
 
     /* Parse command line arguments from QApplication. */
     void doCommandLine(class QCommandLineParser& parser);
+
+    /* -------------------------------- *
+     * Begin DVInputInterface functions *
+     * -------------------------------- */
+
+    /* Get the current input mode. */
+    const DVInputMode::Type inputMode() const;
+
+    /* Navigation controls, used primarily in the file browser. */
+    void left();
+    void right();
+    void up();
+    void down();
+
+    /* Accept the currently highlighted item. */
+    void accept();
+    /* Closes any and all popups, basically the same as pressing the escape key. */
+    void cancel();
+
+    /* Directly open the file browser. */
+    void openFileBrowser();
+
+    /* Navigation for file browser. */
+    void goBack();
+    void goForward();
+    void goUp();
+
+    /* Show the file info popup. */
+    void fileInfo();
+
+    /* Open the next/previous file in the current directory. */
+    void nextFile();
+    void previousFile();
+
+    /* Video controls. */
+    void playVideo();
+    void pauseVideo();
+    void playPauseVideo();
+    void seekBack();
+    void seekForward();
+    void seekAmount(int msec);
+
+    /* ------------------------------ *
+     * End DVInputInterface functions *
+     * ------------------------------ */
 
 public slots:
     void updateQmlSize();
@@ -69,6 +116,7 @@ private:
 
     /* Any loaded plugins. */
     QList<DVRenderPlugin*> renderPlugins;
+    QList<DVInputPlugin*> inputPlugins;
 
     /* Load static and dynamic plugins and init them. */
     void loadPlugins();
@@ -80,4 +128,5 @@ private:
     bool doPluginRender();
     void getPluginSize();
     void pluginOnFrameSwapped();
+    void doPluginInput();
 };

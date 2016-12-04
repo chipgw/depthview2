@@ -40,3 +40,8 @@ DV_ENUM(DVSourceMode,
         TopBottom,
         TopBottomAnamorphic,
         Mono);
+
+DV_ENUM(DVInputMode,
+        ImageViewer,
+        VideoPlayer,
+        FileBrowser);

@@ -5,6 +5,7 @@
 class QOpenGLExtraFunctions;
 class QQmlEngine;
 class QQuickItem;
+class DVInputInterface;
 
 class DVRenderPlugin {
 public:
@@ -33,6 +34,9 @@ public:
 
     /* Get the size the FBO shoud be for the given window size. */
     virtual QSize getRenderSize(const QSize& windowSize) = 0;
+
+    /* Poll any input devices tied to this plugin for input. */
+    virtual bool pollInput(DVInputInterface* inputInterface) = 0;
 };
 
 #define DVRenderPlugin_iid "com.chipgw.DepthView.RenderPlugin"

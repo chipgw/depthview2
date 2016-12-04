@@ -29,6 +29,8 @@ public:
 
     QSize getRenderSize(const QSize& windowSize);
 
+    bool pollInput(DVInputInterface* inputInterface);
+
 private:
     QOpenGLShaderProgram* shader;
 

@@ -20,40 +20,40 @@ Popup {
         DepthView.fileBrowserOpen = false;
     }
 
-    onOpened:
-        startingFolder = FolderListing.currentDir
+    onOpened: startingFolder = FolderListing.currentDir
 
     Component {
         id: fileComponent
 
         /* Item to have the rectangle padded inside. */
         Item {
+            id: wrapper
             /* So that it is the same as the GridView. */
             width: root.cellWidth
             height: root.cellHeight
+
+            function accept() {
+                if (fileIsDir)
+                    FolderListing.currentDir = fileURL
+                else {
+                    FolderListing.openFile(fileURL)
+                    DepthView.fileBrowserOpen = false;
+                }
+            }
 
             /* Border/highlight rectangle. */
             Rectangle {
                 id: fileRect
                 anchors { fill: parent; margins: 8 }
                 radius: 4
-                color: "transparent"
+                color: (wrapper.GridView.isCurrentItem || mouseArea.containsMouse) ? "#44444488" : "transparent"
                 border { color: "grey"; width: 4 }
 
                 MouseArea {
                     id: mouseArea
                     anchors { fill: parent; margins: 4 }
 
-                    onClicked: {
-                        /* For the short time it's still visible, highlight the clicked item. */
-                        fileRect.color = "#888844"
-                        if (fileIsDir)
-                            FolderListing.currentDir = fileURL
-                        else {
-                            FolderListing.openFile(fileURL)
-                            DepthView.fileBrowserOpen = false;
-                        }
-                    }
+                    onClicked: accept()
 
                     ToolTip {
                         y: fakeCursor.height
@@ -68,10 +68,6 @@ Popup {
                     }
 
                     hoverEnabled: true
-
-                    /* Highlight on mouseover. */
-                    onEntered: fileRect.color = "#44444488"
-                    onExited: fileRect.color = "transparent"
 
                     /* Item to center the thumbnail inside. */
                     Item {
@@ -285,6 +281,7 @@ Popup {
             Layout.fillWidth: true
 
             GridView {
+                id: grid
                 anchors.fill: parent
                 model: FolderListing
                 delegate: fileComponent
@@ -383,6 +380,16 @@ Popup {
         enabled: parent.visible && FolderListing.canGoForward
         context: Qt.ApplicationShortcut
         onActivated: FolderListing.goForward()
+    }
+
+    Connections {
+        target: DepthView
+
+        onAccept: grid.currentItem.accept();
+        onUp: grid.moveCurrentIndexUp()
+        onDown: grid.moveCurrentIndexDown()
+        onLeft: grid.moveCurrentIndexLeft()
+        onRight: grid.moveCurrentIndexRight()
     }
 }
 

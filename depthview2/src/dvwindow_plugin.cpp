@@ -1,7 +1,12 @@
 #include "version.hpp"
 #include "dvwindow.hpp"
 #include "dvqmlcommunication.hpp"
+#include "dvinputplugin.hpp"
 #include "dvrenderplugin.hpp"
+#include "dvfolderlisting.hpp"
+#include "dvqmlcommunication.hpp"
+#include <QQuickItem>
+#include <QMetaObject>
 #include <QApplication>
 #include <QOpenGLContext>
 #include <QPluginLoader>
@@ -24,7 +29,7 @@ void DVWindow::loadPlugins() {
     }
 #endif
 
-    /* Go into thhe "plugins" folder from there. */
+    /* Go into the "plugins" folder from there. */
     pluginsDir.cd("plugins");
 
 #if defined(Q_OS_WIN)
@@ -39,24 +44,39 @@ void DVWindow::loadPlugins() {
     for (const QString& filename : pluginsDir.entryList(QDir::Files)) {
         QPluginLoader loader(pluginsDir.absoluteFilePath(filename));
         QObject *obj = loader.instance();
-        DVRenderPlugin* plugin = nullptr;
 
-        /* If it can't be cast to a DVRenderPlugin* it isn't a valid plugin. */
-        if (obj != nullptr && (plugin = qobject_cast<DVRenderPlugin*>(obj)) != nullptr) {
-            qDebug("Found plugin: \"%s\"", qPrintable(filename));
+        if (obj == nullptr) {
+            qDebug("\"%s\" is not a plugin. %s", qPrintable(filename), qPrintable(loader.errorString()));
+            continue;
+        }
 
-            if (plugin->init(context()->extraFunctions(), qmlEngine)) {
-                for (const QString& mode : plugin->drawModeNames())
-                    qmlCommunication->addPluginMode(mode, plugin->getConfigMenuObject());
+        /* If it can be cast to the plugin type it is a valid plugin, otherwise it will be null. */
+        DVRenderPlugin* renderPlugin = qobject_cast<DVRenderPlugin*>(obj);
+        DVInputPlugin* inputPlugin = qobject_cast<DVInputPlugin*>(obj);
 
-                renderPlugins.append(plugin);
+        if (renderPlugin != nullptr) {
+            qDebug("Found render plugin: \"%s\"", qPrintable(filename));
+
+            if (renderPlugin->init(context()->extraFunctions(), qmlEngine)) {
+                for (const QString& mode : renderPlugin->drawModeNames())
+                    qmlCommunication->addPluginMode(mode, renderPlugin->getConfigMenuObject());
+
+                renderPlugins.append(renderPlugin);
 
                 qDebug("Loaded plugin: \"%s\"", qPrintable(filename));
             } else {
                 qDebug("Plugin: \"%s\" failed to init.", qPrintable(filename));
             }
-        } else {
-            qDebug("\"%s\" is not a plugin. %s", qPrintable(filename), qPrintable(loader.errorString()));
+        } else if (inputPlugin != nullptr) {
+            qDebug("Found input plugin: \"%s\"", qPrintable(filename));
+
+            if (inputPlugin->init(qmlEngine)) {
+                inputPlugins.append(inputPlugin);
+
+                qDebug("Loaded plugin: \"%s\"", qPrintable(filename));
+            } else {
+                qDebug("Plugin: \"%s\" failed to init.", qPrintable(filename));
+            }
         }
     }
     qDebug("Done loading plugins.");
@@ -66,9 +86,12 @@ void DVWindow::unloadPlugins() {
     /* Deinit any/all loaded plugins. */
     for (DVRenderPlugin* plugin : renderPlugins)
         plugin->deinit();
+    for (DVInputPlugin* plugin : inputPlugins)
+        plugin->deinit();
 
     /* Clear the list. Not that it should be used anymore... */
     renderPlugins.clear();
+    inputPlugins.clear();
 }
 
 DVRenderPlugin* DVWindow::getCurrentRenderPlugin() {
@@ -104,4 +127,103 @@ void DVWindow::pluginOnFrameSwapped() {
         /* Do we hold the mouse? */
         holdMouse = plugin->shouldLockMouse();
     }
+}
+
+void DVWindow::doPluginInput() {
+    /* Get input from ALL input plugins. */
+    /* TODO - Maybe make a settings dialog where they can be disabled? */
+    for (DVInputPlugin* plugin : inputPlugins)
+        plugin->pollInput(this);
+
+    /* Only get input from the current render plugin. */
+    DVRenderPlugin* plugin = getCurrentRenderPlugin();
+
+    if (plugin != nullptr)
+        plugin->pollInput(this);
+}
+
+const DVInputMode::Type DVWindow::inputMode() const {
+    return qmlCommunication->fileBrowserOpen() ? DVInputMode::FileBrowser : folderListing->isCurrentFileVideo() ? DVInputMode::VideoPlayer : DVInputMode::ImageViewer;
+}
+
+void DVWindow::up() {
+    emit qmlCommunication->up();
+}
+void DVWindow::down() {
+    emit qmlCommunication->down();
+}
+void DVWindow::left() {
+    emit qmlCommunication->left();
+}
+void DVWindow::right() {
+    emit qmlCommunication->right();
+}
+
+void DVWindow::accept() {
+    emit qmlCommunication->accept();
+}
+
+void DVWindow::cancel() {
+    QMetaObject::invokeMethod(qmlRoot, "closePopups");
+}
+
+void DVWindow::openFileBrowser() {
+    qmlCommunication->setFileBrowserOpen(true);
+}
+
+void DVWindow::goBack() {
+    if (qmlCommunication->fileBrowserOpen() && folderListing->canGoBack())
+        folderListing->goBack();
+}
+
+void DVWindow::goForward() {
+    if (qmlCommunication->fileBrowserOpen() && folderListing->canGoForward())
+        folderListing->goForward();
+}
+
+void DVWindow::goUp() {
+    if (qmlCommunication->fileBrowserOpen() && folderListing->canGoUp())
+        folderListing->goUp();
+}
+
+void DVWindow::fileInfo() {
+    emit qmlCommunication->fileInfo();
+}
+
+void DVWindow::nextFile() {
+    folderListing->openNext();
+}
+
+void DVWindow::previousFile() {
+    folderListing->openPrevious();
+}
+
+//void DVWindow::setMousePosition(QPoint pos, bool relative = false) {
+//}
+
+//void DVWindow::sendMouseClick(Qt::MouseButton button) {
+//}
+
+void DVWindow::playVideo() {
+    emit qmlCommunication->playVideo();
+}
+
+void DVWindow::pauseVideo() {
+    emit qmlCommunication->pauseVideo();
+}
+
+void DVWindow::playPauseVideo() {
+    emit qmlCommunication->playPauseVideo();
+}
+
+void DVWindow::seekBack() {
+    emit qmlCommunication->seekBack();
+}
+
+void DVWindow::seekForward() {
+    emit qmlCommunication->seekForward();
+}
+
+void DVWindow::seekAmount(int msec) {
+    emit qmlCommunication->seekAmount(msec);
 }

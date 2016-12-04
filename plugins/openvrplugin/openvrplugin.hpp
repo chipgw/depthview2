@@ -34,6 +34,8 @@ public:
 
     QSize getRenderSize(const QSize& windowSize);
 
+    bool pollInput(DVInputInterface* inputInterface);
+
 private:
     QOpenGLFramebufferObject* leftEyeRenderFBO;
     QOpenGLFramebufferObject* leftEyeResolveFBO;

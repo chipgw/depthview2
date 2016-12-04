@@ -592,23 +592,25 @@ Rectangle {
             interval: 2000
         }
 
-        Connections {
-            target: DepthView
-
-            onMouseMoved: {
-                fakeCursor.x = pos.x
-                fakeCursor.y = pos.y
-
-                mouseTimer.restart()
-            }
-
-            onTouchEvent: touchTimer.restart()
-        }
-
         /* Popups create their item as a child of the window's contentItem, which is the parent of the root item.
          * Thus, in order to appear above them the cursor must be parented to the same item AND have a higher z. */
         parent: root.parent
         z: 12000
+    }
+
+    Connections {
+        target: DepthView
+
+        onMouseMoved: {
+            fakeCursor.x = pos.x
+            fakeCursor.y = pos.y
+
+            mouseTimer.restart()
+        }
+
+        onTouchEvent: touchTimer.restart()
+
+        onFileInfo: mediaInfoBox.open()
     }
 
     Shortcut {
@@ -655,6 +657,29 @@ Rectangle {
         onActivated: DepthView.fullscreen = !DepthView.fullscreen
     }
 
+    function closePopups() {
+        if (DepthView.fileBrowserOpen)
+            fileBrowser.cancel()
+        if (aboutBox.visible)
+            aboutBox.close()
+        if (mediaInfoBox.visible)
+            mediaInfoBox.close()
+        if (volumePopup.visible)
+            volumePopup.close()
+        if (fileMenu.visible)
+            fileMenu.close()
+        if (viewMenu.visible)
+            viewMenu.close()
+        if (greyFacPopup.visible)
+            greyFacPopup.close()
+        if (modeMenu.visible)
+            modeMenu.close()
+        if (pluginConfigMenu.visible)
+            pluginConfigMenu.close()
+        if (sourceMode.visible)
+            sourceMode.close()
+    }
+
     MouseArea {
         /* Popup close policy is borked with a touchscreen, so we do it ourselves. */
         anchors.fill: parent
@@ -665,53 +690,13 @@ Rectangle {
             value: root.parent.children.length > 2
         }
 
-        onClicked: {
-            if (aboutBox.visible)
-                aboutBox.close()
-            if (mediaInfoBox.visible)
-                mediaInfoBox.close()
-            if (volumePopup.visible)
-                volumePopup.close()
-            if (fileMenu.visible)
-                fileMenu.close()
-            if (viewMenu.visible)
-                viewMenu.close()
-            if (greyFacPopup.visible)
-                greyFacPopup.close()
-            if (modeMenu.visible)
-                modeMenu.close()
-            if (pluginConfigMenu.visible)
-                pluginConfigMenu.close()
-            if (sourceMode.visible)
-                sourceMode.close()
-        }
+        onClicked: closePopups()
     }
 
     /* The popup close policy escape shortcut isn't working, so take care of it here. */
     Shortcut {
         sequence: "Esc"
         context: Qt.ApplicationShortcut
-        onActivated: {
-            if (DepthView.fileBrowserOpen)
-                fileBrowser.cancel()
-            if (aboutBox.visible)
-                aboutBox.close()
-            if (mediaInfoBox.visible)
-                mediaInfoBox.close()
-            if (volumePopup.visible)
-                volumePopup.close()
-            if (fileMenu.visible)
-                fileMenu.close()
-            if (viewMenu.visible)
-                viewMenu.close()
-            if (greyFacPopup.visible)
-                greyFacPopup.close()
-            if (modeMenu.visible)
-                modeMenu.close()
-            if (pluginConfigMenu.visible)
-                pluginConfigMenu.close()
-            if (sourceMode.visible)
-                sourceMode.close()
-        }
+        onActivated: closePopups()
     }
 }

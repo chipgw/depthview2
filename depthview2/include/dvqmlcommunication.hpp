@@ -99,6 +99,35 @@ signals:
     /* Used to show/hide ui based on touchscreen input. */
     void touchEvent();
 
+    /* --------------------------------------------- *
+     * Begin signals for DVInputInterface functions. *
+     * (Only the ones that need to be used in QML.)  *
+     * --------------------------------------------- */
+
+    /* Navigation controls, used primarily in the file browser. */
+    void left();
+    void right();
+    void up();
+    void down();
+
+    /* Accept the currently highlighted item. */
+    void accept();
+
+    /* Show the file info popup. */
+    void fileInfo();
+
+    /* Video controls. */
+    void playVideo();
+    void pauseVideo();
+    void playPauseVideo();
+    void seekBack();
+    void seekForward();
+    void seekAmount(int msec);
+
+    /* ------------------------------------------- *
+     * End signals for DVInputInterface functions. *
+     * ------------------------------------------- */
+
 public slots:
     void ownerWindowStateChanged(Qt::WindowState windowState);
 

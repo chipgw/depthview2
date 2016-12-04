@@ -148,6 +148,9 @@ void DVWindow::initializeGL() {
 }
 
 void DVWindow::paintGL() {
+    /* Get input from the plugins. */
+    doPluginInput();
+
     /* So QML doesn't freak out because of stuff we did last frame. */
     qmlWindow->resetOpenGLState();
 

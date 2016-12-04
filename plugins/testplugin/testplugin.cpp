@@ -121,3 +121,8 @@ QSize TestPlugin::getRenderSize(const QSize& windowSize) {
     return windowSize;
 }
 
+bool TestPlugin::pollInput(DVInputInterface* inputInterface) {
+    Q_UNUSED(inputInterface)
+    return false;
+}
+

@@ -44,7 +44,7 @@ Item {
     property alias videoVolume: media.volume
 
     property string mediaInfo: FolderListing.currentFileIsVideo ?
-                                   "<h1>Media Info:</h1>" + source +
+                                   "<h1>Media Info:</h1>" + FolderListing.decodeURL(source) +
                                    "<br>File Size: " + FolderListing.bytesToString(FolderListing.currentFileSize) +
                                    "<br>Duration: " + timeString(media.metaData.duration) +
                                    "<h2>Video Info:</h2>" +
@@ -57,7 +57,7 @@ Item {
                                    "Codec: " + media.metaData.audioCodec +
                                    "<br>Bit Rate: " + media.metaData.audioBitRate +
                                    "<hr>"
-                                 : "<h1>Media Info:</h1>" + source +
+                                 : "<h1>Media Info:</h1>" + FolderListing.decodeURL(source) +
                                    "<br>File Size: " + FolderListing.bytesToString(FolderListing.currentFileSize) +
                                    "<br>Resolution: " + image.width + "x" + image.height +
                                    "<hr>"
@@ -256,6 +256,17 @@ Item {
 
             /* TODO - Use the pinch center. */
         }
+    }
+
+    Connections {
+        target: DepthView
+
+        onPlayVideo: media.play()
+        onPauseVideo: media.pause()
+        onPlayPauseVideo: playPause()
+        onSeekBack: media.seekBackward()
+        onSeekForward: media.seekForward()
+        onSeekAmount: media.seek(msec)
     }
 }
 
