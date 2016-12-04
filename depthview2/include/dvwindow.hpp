@@ -74,4 +74,10 @@ private:
     void loadPlugins();
     /* Call deinit() of all loaded plugins, so as to garbage collect anything they created. */
     void unloadPlugins();
+
+    /* Functions that get the current plugin and interface with it. */
+    DVRenderPlugin* getCurrentRenderPlugin();
+    bool doPluginRender();
+    void getPluginSize();
+    void pluginOnFrameSwapped();
 };

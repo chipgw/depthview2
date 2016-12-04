@@ -6,6 +6,7 @@ lessThan(QT_MAJOR_VERSION, 5) || lessThan(QT_MINOR_VERSION, 7): error("This prog
 
 SOURCES += src/main.cpp \
     src/dvwindow.cpp \
+    src/dvwindow_plugin.cpp \
     src/dvqmlcommunication.cpp \
     src/version.cpp \
     src/dvfolderlisting.cpp
