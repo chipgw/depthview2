@@ -31,7 +31,7 @@ public:
      * -------------------------------- */
 
     /* Get the current input mode. */
-    const DVInputMode::Type inputMode() const;
+    DVInputMode::Type inputMode() const;
 
     /* Navigation controls, used primarily in the file browser. */
     void left();

@@ -142,7 +142,7 @@ void DVWindow::doPluginInput() {
         plugin->pollInput(this);
 }
 
-const DVInputMode::Type DVWindow::inputMode() const {
+DVInputMode::Type DVWindow::inputMode() const {
     return qmlCommunication->fileBrowserOpen() ? DVInputMode::FileBrowser : folderListing->isCurrentFileVideo() ? DVInputMode::VideoPlayer : DVInputMode::ImageViewer;
 }
 

@@ -6,7 +6,7 @@
 class DVInputInterface {
 public:
     /* Get the current input mode. */
-    virtual const DVInputMode::Type inputMode() const = 0;
+    virtual DVInputMode::Type inputMode() const = 0;
 
     /* Navigation controls, used primarily in the file browser. */
     virtual void left() = 0;

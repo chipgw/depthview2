@@ -62,7 +62,14 @@ bool GamepadPlugin::init(QQmlEngine* qmlEngine) {
     buttonXJustChanged = false;
     buttonYJustChanged = false;
 
-    qDebug("Gamepad plugin inited");
+    /* Get the list of connected gamepads. */
+    auto gamepads = QGamepadManager::instance()->connectedGamepads();
+
+    /* If there are any connected, use the first. */
+    if (!gamepads.isEmpty())
+        gamepad.setDeviceId(gamepads.first());
+
+    qDebug("Gamepad plugin inited, controller%sfound.", gamepad.isConnected() ? " " : " not ");
 
     return true;
 }
@@ -81,8 +88,8 @@ QQuickItem* GamepadPlugin::getConfigMenuObject() {
     return configMenuObject;
 }
 
-#define JUST_RELEASED(X) (!gamepad.##X() && X##JustChanged)
-#define JUST_PRESSED(X) (gamepad.##X() && X##JustChanged)
+#define JUST_RELEASED(X) (!gamepad.X() && X##JustChanged)
+#define JUST_PRESSED(X) (gamepad.X() && X##JustChanged)
 
 bool GamepadPlugin::pollInput(DVInputInterface* inputInterface) {
     DVInputMode::Type mode = inputInterface->inputMode();
