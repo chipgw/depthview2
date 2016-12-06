@@ -391,5 +391,10 @@ Popup {
         onLeft: grid.moveCurrentIndexLeft()
         onRight: grid.moveCurrentIndexRight()
     }
+    Connections {
+        target: FolderListing
+
+        onCurrentDirChanged: grid.currentIndex = -1
+    }
 }
 
