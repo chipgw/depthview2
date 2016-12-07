@@ -164,7 +164,7 @@ void DVWindow::accept() {
 }
 
 void DVWindow::cancel() {
-    QMetaObject::invokeMethod(qmlRoot, "closePopups");
+    emit qmlCommunication->cancel();
 }
 
 void DVWindow::openFileBrowser() {

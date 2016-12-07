@@ -113,6 +113,9 @@ signals:
     /* Accept the currently highlighted item. */
     void accept();
 
+    /* Closes any and all popups, basically the same as pressing the escape key. */
+    void cancel();
+
     /* Show the file info popup. */
     void fileInfo();
 

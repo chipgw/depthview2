@@ -611,6 +611,8 @@ Rectangle {
         onTouchEvent: touchTimer.restart()
 
         onFileInfo: mediaInfoBox.open()
+
+        onCancel: closePopups()
     }
 
     Shortcut {
