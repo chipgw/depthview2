@@ -53,7 +53,7 @@ Rectangle {
 
             /* Visible when the mouse is close, when the screen was recently touched, when any of the menus are open, or when a video is paused. */
             state: fakeCursor.y < 128 || fileMenu.visible || viewMenu.visible || modeMenu.visible || pluginConfigMenu.visible ||
-                   touchTimer.running || (FolderListing.currentFileIsVideo && !image.isPlaying) ? "" : "HIDDEN"
+                   touchTimer.running || FolderListing.currentFile.length < 1 || (FolderListing.currentFileIsVideo && !image.isPlaying) ? "" : "HIDDEN"
 
             states: [
                 State {
@@ -288,8 +288,8 @@ Rectangle {
             }
 
             /* Visible when the mouse is close, when the screen was recently touched, when any of the menus are open, or when a video is paused. */
-            state: (root.height - fakeCursor.y) < 128 || sourceMode.visible || volumePopup.visible || touchTimer.running || (FolderListing.currentFileIsVideo && !image.isPlaying)
-                   ? "" : "HIDDEN"
+            state: (root.height - fakeCursor.y) < 128 || sourceMode.visible || volumePopup.visible || touchTimer.running ||
+                   FolderListing.currentFile.length < 1 || (FolderListing.currentFileIsVideo && !image.isPlaying) ? "" : "HIDDEN"
 
             states: [
                 State {
