@@ -94,8 +94,9 @@ bool DVFolderListing::openFile(QFileInfo fileInfo) {
             /* Not an image or a video, not something we can open. */
             return false;
 
-        /* Check to see if the file is in the current dir, and if it isn't update the dir. */
-        if (fileInfo.absolutePath() != m_currentDir.absolutePath())
+        /* Check to see if the file is in the current dir, and if it isn't update the dir. Use a new QDir because
+         * filters are part of QDir comparisons, and sometimes the QString path has variations that will break things. */
+        if (fileInfo.dir() != QDir(m_currentDir.path()))
             setCurrentDir(fileInfo.absolutePath());
 
         m_currentFile = fileInfo;
