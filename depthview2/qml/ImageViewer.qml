@@ -43,9 +43,7 @@ Item {
     property alias videoDuration: media.duration
     property alias videoVolume: media.volume
 
-    property string mediaInfo: FolderListing.currentFileIsVideo ?
-                                   "<h1>Media Info:</h1>" + FolderListing.decodeURL(source) +
-                                   "<br>File Size: " + FolderListing.bytesToString(FolderListing.currentFileSize) +
+    property string mediaInfo: FolderListing.currentFileInfo + (FolderListing.currentFileIsVideo ?
                                    "<br>Duration: " + timeString(media.metaData.duration) +
                                    "<h2>Video Info:</h2>" +
                                    "Codec: " + media.metaData.videoCodec +
@@ -55,12 +53,9 @@ Item {
                                    "<br>Pixel Format: " + media.metaData.pixelFormat +
                                    "<h2>Audio Info:</h2>" +
                                    "Codec: " + media.metaData.audioCodec +
-                                   "<br>Bit Rate: " + media.metaData.audioBitRate +
-                                   "<hr>"
-                                 : "<h1>Media Info:</h1>" + FolderListing.decodeURL(source) +
-                                   "<br>File Size: " + FolderListing.bytesToString(FolderListing.currentFileSize) +
-                                   "<br>Resolution: " + image.width + "x" + image.height +
-                                   "<hr>"
+                                   "<br>Bit Rate: " + media.metaData.audioBitRate
+                                 : "<br>Resolution: " + image.width + "x" + image.height)
+                                 + "<hr>"
 
     property int stereoMode: FolderListing.currentFileStereoMode
 

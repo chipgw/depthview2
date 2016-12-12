@@ -254,6 +254,19 @@ DVSourceMode::Type DVFolderListing::currentFileStereoMode() const {
 qint64 DVFolderListing::currentFileSize() {
     return m_currentFile.size();
 }
+QString DVFolderListing::currentFileInfo() {
+    QString info = "<h1>Media Info:</h1>" + m_currentFile.absoluteFilePath() +
+            "<br>Type: " + (isCurrentFileStereoImage() ? "Stereo Image" :
+                            isCurrentFileVideo() ? "Video" : "Image") +
+            "<br>File Size: " + bytesToString(m_currentFile.size()) +
+            "<br>Date Created: " + m_currentFile.created().toString();
+
+    QString owner = m_currentFile.owner();
+    if (!owner.isEmpty())
+        info += "<br>Owner: " + owner;
+
+    return info;
+}
 
 bool DVFolderListing::isFileStereoImage(const QFileInfo& info) const {
     return !info.isDir() && stereoImageSuffixes.contains(info.suffix(), Qt::CaseInsensitive);

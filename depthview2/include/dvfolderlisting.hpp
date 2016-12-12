@@ -36,6 +36,7 @@ class DVFolderListing : public QAbstractListModel {
     Q_PROPERTY(bool currentFileIsVideo READ isCurrentFileVideo NOTIFY currentFileChanged)
     Q_PROPERTY(DVSourceMode::Type currentFileStereoMode READ currentFileStereoMode NOTIFY currentFileChanged)
     Q_PROPERTY(qint64 currentFileSize READ currentFileSize NOTIFY currentFileChanged)
+    Q_PROPERTY(QString currentFileInfo READ currentFileInfo NOTIFY currentFileChanged)
 
     Q_PROPERTY(QUrl currentDir READ currentDir WRITE setCurrentDir NOTIFY currentDirChanged)
 
@@ -124,6 +125,7 @@ public:
     bool isCurrentFileVideo() const;
     DVSourceMode::Type currentFileStereoMode() const;
     qint64 currentFileSize();
+    QString currentFileInfo();
 
     bool isFileStereoImage(const QFileInfo& file) const;
     bool isFileImage(const QFileInfo& file) const;
