@@ -349,10 +349,19 @@ Rectangle {
                             property real screenPosToTime: image.videoDuration / width
 
                             /* When the mouse moves (only when pressed) or is clicked, seek to that position. */
-                            onMouseXChanged: image.seek(screenPosToTime * mouseX);
+                            onMouseXChanged: if (containsPress) image.seek(screenPosToTime * mouseX);
                             onClicked: image.seek(screenPosToTime * mouseX);
 
                             acceptedButtons: Qt.LeftButton
+
+                            hoverEnabled: true
+
+                            ToolTip {
+                                x: parent.mouseX - implicitWidth / 2
+                                visible: parent.containsMouse
+
+                                text: image.timeString(parent.screenPosToTime * parent.mouseX)
+                            }
                         }
                     }
 
@@ -686,11 +695,8 @@ Rectangle {
         /* Popup close policy is borked with a touchscreen, so we do it ourselves. */
         anchors.fill: parent
 
-        /* This binding is more complicated, because root.parent isn't available at init. */
-        Binding on enabled {
-            when: root.parent != undefined
-            value: root.parent.children.length > 2
-        }
+        enabled: aboutBox.visible || mediaInfoBox.visible || volumePopup.visible || fileMenu.visible || viewMenu.visible ||
+                 greyFacPopup.visible || modeMenu.visible || pluginConfigMenu.visible || sourceMode.visible
 
         onClicked: closePopups()
     }

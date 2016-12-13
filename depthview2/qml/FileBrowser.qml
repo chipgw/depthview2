@@ -354,7 +354,7 @@ Popup {
         }
     }
 
-    /* A mouseArea covering everything to capture back/forward buttons. */
+    /* A MouseArea covering everything to capture back/forward buttons. */
     MouseArea {
         anchors.fill: parent
 
