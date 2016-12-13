@@ -49,7 +49,7 @@ Item {
                                    "Codec: " + media.metaData.videoCodec +
                                    "<br>Frame Rate: " + media.metaData.videoFrameRate +
                                    "<br>Bit Rate: " + media.metaData.videoBitRate +
-                                   "<br>Resolution: " + media.metaData.resolution.width + "x" + media.metaData.resolution.height +
+                                   (media.metaData.resolution ? "<br>Resolution: " + media.metaData.resolution.width + "x" + media.metaData.resolution.height : "") +
                                    "<br>Pixel Format: " + media.metaData.pixelFormat +
                                    "<h2>Audio Info:</h2>" +
                                    "Codec: " + media.metaData.audioCodec +

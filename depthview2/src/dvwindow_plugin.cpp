@@ -42,6 +42,9 @@ void DVWindow::loadPlugins() {
 
     /* Try to load all files in the directory. */
     for (const QString& filename : pluginsDir.entryList(QDir::Files)) {
+        /* If the file isn't a valid library for this platform, don't bother. */
+        if (!QLibrary::isLibrary(filename)) continue;
+
         QPluginLoader loader(pluginsDir.absoluteFilePath(filename));
         QObject *obj = loader.instance();
 

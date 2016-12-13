@@ -342,7 +342,7 @@ Rectangle {
                         value: image.videoPosition
 
                         MouseArea {
-                            anchors.fill: parent
+                            anchors.fill: parent.background
 
                             /* mouseX * this = the position of the video at the point under the cursor.
                              * (mouseX is already relative to this object, which makes it easy.) */
