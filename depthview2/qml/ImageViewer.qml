@@ -252,16 +252,5 @@ Item {
             /* TODO - Use the pinch center. */
         }
     }
-
-    Connections {
-        target: DepthView
-
-        onPlayVideo: media.play()
-        onPauseVideo: media.pause()
-        onPlayPauseVideo: playPause()
-        onSeekBack: media.seekBackward()
-        onSeekForward: media.seekForward()
-        onSeekAmount: media.seek(msec)
-    }
 }
 

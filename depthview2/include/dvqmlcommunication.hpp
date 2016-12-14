@@ -119,14 +119,6 @@ signals:
     /* Show the file info popup. */
     void fileInfo();
 
-    /* Video controls. */
-    void playVideo();
-    void pauseVideo();
-    void playPauseVideo();
-    void seekBack();
-    void seekForward();
-    void seekAmount(int msec);
-
     /* ------------------------------------------- *
      * End signals for DVInputInterface functions. *
      * ------------------------------------------- */

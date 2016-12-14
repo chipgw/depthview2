@@ -46,5 +46,5 @@ public:
     virtual void playPauseVideo() = 0;
     virtual void seekBack() = 0;
     virtual void seekForward() = 0;
-    virtual void seekAmount(int msec) = 0;
+    virtual void seekAmount(qint64 msec) = 0;
 };

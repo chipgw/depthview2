@@ -14,6 +14,7 @@
 #include <QOpenGLExtraFunctions>
 #include <QCommandLineParser>
 #include <QMessageBox>
+#include <AVPlayer.h>
 
 /* Android in particular may not have this defined. */
 #ifndef GL_COLOR_ATTACHMENT1
@@ -119,19 +120,21 @@ void DVWindow::initializeGL() {
     while(rootComponent.isLoading());
 
     /* The program can't run if there was an error. */
-    if (rootComponent.isError()) {
-        qDebug(qPrintable(rootComponent.errorString()));
-        abort();
-    }
+    if (rootComponent.isError())
+        qFatal(qPrintable(rootComponent.errorString()));
 
     qmlRoot = qobject_cast<QQuickItem*>(rootComponent.create());
 
     /* Critical error! abort! abort! */
     if (qmlRoot == nullptr)
-        abort();
+        qFatal(qPrintable(rootComponent.errorString()));
 
     /* This is the root item, make it so. */
     qmlRoot->setParentItem(qmlWindow->contentItem());
+
+    player = qmlRoot->findChild<QtAV::AVPlayer*>();
+    if (player == nullptr)
+        qFatal("Unable to find AVPlayer!");
 
     /* Init to this window's OpenGL context. */
     qmlRenderControl->initialize(context());

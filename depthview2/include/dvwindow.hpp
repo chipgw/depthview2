@@ -18,6 +18,11 @@ class QQuickItem;
 class QQmlEngine;
 class QOpenGLFramebufferObject;
 
+/* QtAV forward declarations. */
+namespace QtAV {
+class AVPlayer;
+}
+
 class DVWindow : public QOpenGLWindow, public DVInputInterface {
 public:
     DVWindow();
@@ -65,7 +70,7 @@ public:
     void playPauseVideo();
     void seekBack();
     void seekForward();
-    void seekAmount(int msec);
+    void seekAmount(qint64 msec);
 
     /* ------------------------------ *
      * End DVInputInterface functions *
@@ -95,6 +100,7 @@ private:
 
     DVQmlCommunication* qmlCommunication;
     DVFolderListing* folderListing;
+    QtAV::AVPlayer* player;
 
     QSettings settings;
 

@@ -11,6 +11,7 @@
 #include <QOpenGLContext>
 #include <QPluginLoader>
 #include <QDir>
+#include <AVPlayer.h>
 
 void DVWindow::loadPlugins() {
     /* Start with the path the application is in. */
@@ -208,25 +209,25 @@ void DVWindow::previousFile() {
 //}
 
 void DVWindow::playVideo() {
-    emit qmlCommunication->playVideo();
+    player->play();
 }
 
 void DVWindow::pauseVideo() {
-    emit qmlCommunication->pauseVideo();
+    player->pause();
 }
 
 void DVWindow::playPauseVideo() {
-    emit qmlCommunication->playPauseVideo();
+    player->togglePause();
 }
 
 void DVWindow::seekBack() {
-    emit qmlCommunication->seekBack();
+    player->seekBackward();
 }
 
 void DVWindow::seekForward() {
-    emit qmlCommunication->seekForward();
+    player->seekForward();
 }
 
-void DVWindow::seekAmount(int msec) {
-    emit qmlCommunication->seekAmount(msec);
+void DVWindow::seekAmount(qint64 msec) {
+    player->seek(msec);
 }
