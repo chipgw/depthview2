@@ -1,5 +1,6 @@
 import QtQuick 2.5
 import DepthView 2.0
+import QtQuick.Controls 2.0
 
 Item {
     width: (imageMode == SourceMode.SidebySide || imageMode == SourceMode.SidebySideAnamorphic) ? img.width / 2 : img.width
@@ -8,21 +9,23 @@ Item {
     scale: 1.0
 
     /* Wrap properties for the image. */
-    property url source: "qrc:/images/test.pns"
-    property bool asynchronous: true
-    property size sourceSize
+    property alias source: img.source
+    property alias asynchronous: img.asynchronous
+    property alias sourceSize: img.sourceSize
     property int imageMode: SourceMode.SidebySide
 
+    BusyIndicator {
+        anchors.centerIn: parent
+        running: img.status === Image.Loading
+    }
     Image {
         id: img
-        source: parent.source
-        asynchronous: parent.asynchronous
-        sourceSize: parent.sourceSize
+        asynchronous: true
 
         width: (imageMode == SourceMode.SidebySideAnamorphic) ? implicitWidth * 2 : implicitWidth
         height: (imageMode == SourceMode.TopBottomAnamorphic) ? implicitHeight * 2 : implicitHeight
 
-        /* Hide the image, it is just used as a source for the ShaderEffect. */
+        /* Hide the image, it's just used as a source for the ShaderEffect. */
         opacity: 0
     }
     StereoShader {
