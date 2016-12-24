@@ -6,8 +6,8 @@ ShaderEffect {
     property variant target
     property int stereoMode
     property bool swap: false
-    property bool isSBS: stereoMode == SourceMode.SidebySide || stereoMode == SourceMode.SidebySideAnamorphic
-    property bool isTB: stereoMode == SourceMode.TopBottom || stereoMode == SourceMode.TopBottomAnamorphic
+    readonly property bool isSBS: stereoMode == SourceMode.SidebySide || stereoMode == SourceMode.SidebySideAnamorphic
+    readonly property bool isTB: stereoMode == SourceMode.TopBottom || stereoMode == SourceMode.TopBottomAnamorphic
 
     vertexShader: "
         uniform highp mat4 qt_Matrix;

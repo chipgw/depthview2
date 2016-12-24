@@ -12,7 +12,7 @@ Item {
     property alias source: img.source
     property alias asynchronous: img.asynchronous
     property alias sourceSize: img.sourceSize
-    property int imageMode: SourceMode.SidebySide
+    property alias imageMode: shader.stereoMode
 
     BusyIndicator {
         anchors.centerIn: parent
@@ -31,7 +31,7 @@ Item {
     StereoShader {
         id: shader
         target: img
-        stereoMode: imageMode
+        stereoMode: SourceMode.SidebySide
         swap: DepthView.swapEyes
     }
 }
