@@ -2,6 +2,7 @@
 #include "dvwindow.hpp"
 #include "dvqmlcommunication.hpp"
 #include "dvfolderlisting.hpp"
+#include "dvthumbnailprovider.hpp"
 #include <QApplication>
 #include <QQuickRenderControl>
 #include <QQuickWindow>
@@ -70,6 +71,8 @@ DVWindow::DVWindow() : QOpenGLWindow(), settings(SETTINGS_ARGS), renderFBO(nullp
 
     /* When the Qt.quit() function is called in QML, close this window. */
     connect(qmlEngine, &QQmlEngine::quit, this, &DVWindow::close);
+
+    qmlEngine->addImageProvider("video", new DVThumbnailProvider);
 
     qmlRegisterUncreatableType<DVDrawMode>(DV_URI_VERSION, "DrawMode", "Only for enum values.");
     qmlRegisterUncreatableType<DVSourceMode>(DV_URI_VERSION, "SourceMode", "Only for enum values.");

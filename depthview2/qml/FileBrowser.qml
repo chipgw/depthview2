@@ -79,48 +79,29 @@ Popup {
                             bottom: fileNameText.top
                         }
 
-                        Loader {
-                            anchors.fill: parent
-                            sourceComponent: fileIsVideo ? videoThumbComponent : imageThumbComponent
+                        BusyIndicator {
+                            anchors.centerIn: parent
+                            running: thumb.status === Image.Loading
                         }
 
-                        Component {
-                            id: imageThumbComponent
+                        /* 3D thumbnails! */
+                        StereoImage {
+                            id: thumb
 
-                            Item {
-                                /* 3D thumbnails! */
-                                StereoImage {
-                                    anchors.centerIn: parent
+                            anchors.centerIn: parent
 
-                                    imageMode: fileStereoMode
+                            imageMode: fileStereoMode
 
-                                    /* If it is a directory use a thumbnail from qrc. Otherwise the file should be an image itself. */
-                                    source: fileIsDir ? "qrc:/images/folder.pns" : fileURL
+                            /* If it is a directory use a thumbnail from qrc. Otherwise the file should be an image itself. */
+                            source: fileIsDir ? "qrc:/images/folder.pns" :
+                                    fileIsVideo ? "image://video/" + FolderListing.decodeURL(fileURL) : fileURL
 
-                                    /* Images on the filesystem should be loaded asynchronously. */
-                                    asynchronous: !fileIsDir;
+                            /* Images on the filesystem should be loaded asynchronously. */
+                            asynchronous: !fileIsDir;
 
-                                    /* The image should only be stored at the needed size. */
-                                    sourceSize: Qt.size((imageMode == SourceMode.SidebySide) ? parent.width * 2 : parent.width,
-                                                        (imageMode == SourceMode.TopBottom) ? parent.height * 2 : parent.height)
-                                }
-                            }
-                        }
-
-                        Component {
-                            id: videoThumbComponent
-
-                            /* Video thumbnails! */
-                            /* TODO - Set up a system to detect if a video is 3D... */
-                            VideoPreview {
-                                file: fileURL
-
-                                /* Set timestamp to one minute in. */
-                                Component.onCompleted: timestamp = 60000
-
-                                /* This doesn't work because it doesn't send the signal to the thing that gets the frame. */
-                                /*timestamp: 60000*/
-                            }
+                            /* The image should only be stored at the needed size. */
+                            sourceSize: Qt.size((imageMode == SourceMode.SidebySide) ? parent.width * 2 : parent.width,
+                                                (imageMode == SourceMode.TopBottom) ? parent.height * 2 : parent.height)
                         }
                     }
 

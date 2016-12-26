@@ -13,11 +13,8 @@ Item {
     property alias asynchronous: img.asynchronous
     property alias sourceSize: img.sourceSize
     property alias imageMode: shader.stereoMode
+    property alias status: img.status
 
-    BusyIndicator {
-        anchors.centerIn: parent
-        running: img.status === Image.Loading
-    }
     Image {
         id: img
         asynchronous: true
