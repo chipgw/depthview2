@@ -189,6 +189,10 @@ Item {
             swap: !DepthView.swapEyes;
         }
     }
+    BusyIndicator {
+        anchors.centerIn: parent
+        running: image.status === Image.Loading || media.status === MediaPlayer.Loading || media.status === MediaPlayer.Buffering
+    }
 
     MouseArea {
         anchors.fill: parent
