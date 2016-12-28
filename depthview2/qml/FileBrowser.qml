@@ -100,8 +100,8 @@ Popup {
                             asynchronous: !fileIsDir;
 
                             /* The image should only be stored at the needed size. */
-                            sourceSize: Qt.size((imageMode == SourceMode.SidebySide) ? parent.width * 2 : parent.width,
-                                                (imageMode == SourceMode.TopBottom) ? parent.height * 2 : parent.height)
+                            sourceSize: Qt.size((imageMode === SourceMode.SidebySide) ? parent.width * 2 : parent.width,
+                                                (imageMode === SourceMode.TopBottom) ? parent.height * 2 : parent.height)
                         }
                     }
 
@@ -320,7 +320,7 @@ Popup {
                     }
                     
                     /* Android has some major issues with text input ATM, best to just leave read-only. */
-                    readOnly: Qt.platform.os == "android"
+                    readOnly: Qt.platform.os === "android"
                     
                     text: FolderListing.decodeURL(FolderListing.currentDir)
                 }
@@ -342,9 +342,9 @@ Popup {
         acceptedButtons: Qt.ForwardButton | Qt.BackButton
 
         onClicked: {
-            if (mouse.button == Qt.BackButton && FolderListing.canGoBack)
+            if (mouse.button === Qt.BackButton && FolderListing.canGoBack)
                 FolderListing.goBack()
-            if (mouse.button == Qt.ForwardButton && FolderListing.canGoForward)
+            if (mouse.button === Qt.ForwardButton && FolderListing.canGoForward)
                 FolderListing.goForward()
         }
     }

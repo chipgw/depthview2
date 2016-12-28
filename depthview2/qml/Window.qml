@@ -28,8 +28,8 @@ Rectangle {
                 });
 
     function updateZoom() {
-        zoomFitButton.checked = image.zoom == -1
-        zoom100Button.checked = image.zoom == 1
+        zoomFitButton.checked = image.zoom === -1
+        zoom100Button.checked = image.zoom === 1
     }
 
     ImageViewer {
@@ -493,7 +493,7 @@ Rectangle {
                             font: uiTextFont
 
                             checkable: true
-                            checked: image.zoom == -1
+                            checked: image.zoom === -1
 
                             onCheckedChanged: {
                                 /* If this button was checked, set the zoom value to -1. */
@@ -511,7 +511,7 @@ Rectangle {
                             font: uiTextFont
 
                             checkable: true
-                            checked: image.zoom == 1
+                            checked: image.zoom === 1
 
                             onCheckedChanged: {
                                 /* If this button was checked, set the zoom value to 1. */
@@ -588,7 +588,7 @@ Rectangle {
         source: "qrc:/images/cursor.png"
 
         /* Visible when the timer is running or when the UI is visible. */
-        visible: mouseTimer.running || DepthView.fileBrowserOpen || topMenu.state == "" || bottomMenu.state == ""
+        visible: mouseTimer.running || DepthView.fileBrowserOpen || topMenu.state === "" || bottomMenu.state === ""
 
         Timer {
             id: mouseTimer

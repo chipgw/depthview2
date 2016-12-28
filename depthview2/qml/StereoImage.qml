@@ -3,8 +3,8 @@ import DepthView 2.0
 import QtQuick.Controls 2.0
 
 Item {
-    width: (imageMode == SourceMode.SidebySide || imageMode == SourceMode.SidebySideAnamorphic) ? img.width / 2 : img.width
-    height: (imageMode == SourceMode.TopBottom || imageMode == SourceMode.TopBottomAnamorphic) ? img.height / 2 : img.height
+    width: (imageMode === SourceMode.SidebySide || imageMode === SourceMode.SidebySideAnamorphic) ? img.width / 2 : img.width
+    height: (imageMode === SourceMode.TopBottom || imageMode === SourceMode.TopBottomAnamorphic) ? img.height / 2 : img.height
 
     scale: 1.0
 
@@ -19,8 +19,8 @@ Item {
         id: img
         asynchronous: true
 
-        width: (imageMode == SourceMode.SidebySideAnamorphic) ? implicitWidth * 2 : implicitWidth
-        height: (imageMode == SourceMode.TopBottomAnamorphic) ? implicitHeight * 2 : implicitHeight
+        width: (imageMode === SourceMode.SidebySideAnamorphic) ? implicitWidth * 2 : implicitWidth
+        height: (imageMode === SourceMode.TopBottomAnamorphic) ? implicitHeight * 2 : implicitHeight
 
         /* Hide the image, it's just used as a source for the ShaderEffect. */
         opacity: 0

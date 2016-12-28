@@ -21,7 +21,7 @@ Item {
 
     function playPause() {
         if (FolderListing.currentFileIsVideo) {
-            if (media.playbackState == MediaPlayer.PlayingState)
+            if (media.playbackState === MediaPlayer.PlayingState)
                 media.pause()
             else
                 media.play()
@@ -35,7 +35,7 @@ Item {
                 + ":" + ("0" + Math.floor(ms / 1000) % 60).slice(-2) /* Always put a colon in between and pad with a zero. */
     }
 
-    property bool isPlaying: FolderListing.currentFileIsVideo && media.playbackState == MediaPlayer.PlayingState
+    property bool isPlaying: FolderListing.currentFileIsVideo && media.playbackState === MediaPlayer.PlayingState
 
     property url source: FolderListing.currentURL
 
@@ -85,7 +85,7 @@ Item {
 
         visibleArea.onHeightRatioChanged: {
             /* Only run if visible area has actually changed and height is valid. */
-            if (oldVisibleArea.height != visibleArea.heightRatio && height > 0) {
+            if (oldVisibleArea.height !== visibleArea.heightRatio && height > 0) {
                 /* Find the maximum possible contentY. */
                 var hidden = contentHeight - height
 
@@ -96,7 +96,7 @@ Item {
                 contentY = Math.max(0, Math.min(hidden * 0.5 + center, hidden))
 
                 /* When contentY is zero the center isn't updated automatically. */
-                if (contentY == 0)
+                if (contentY === 0)
                     onContentYChanged()
 
                 /* Store the values for next time. */
@@ -109,7 +109,7 @@ Item {
 
         visibleArea.onWidthRatioChanged: {
             /* Only run if visible area has actually changed and width is valid. */
-            if (oldVisibleArea.width != visibleArea.widthRatio && width > 0) {
+            if (oldVisibleArea.width !== visibleArea.widthRatio && width > 0) {
                 /* Find the maximum possible contentX. */
                 var hidden = contentWidth - width
 
@@ -120,7 +120,7 @@ Item {
                 contentX = Math.max(0, Math.min(hidden * 0.5 + center, hidden))
 
                 /* When contentX is zero the center isn't updated automatically. */
-                if (contentX == 0)
+                if (contentX === 0)
                     onContentXChanged()
 
                 /* Store the values for next time. */
@@ -155,8 +155,8 @@ Item {
 
         anchors.centerIn: parent
 
-        width: (stereoMode == SourceMode.SidebySide || stereoMode == SourceMode.SidebySideAnamorphic) ? vid.width / 2 : vid.width
-        height: (stereoMode == SourceMode.TopBottom || stereoMode == SourceMode.TopBottomAnamorphic) ? vid.height / 2 : vid.height
+        width: (stereoMode === SourceMode.SidebySide || stereoMode === SourceMode.SidebySideAnamorphic) ? vid.width / 2 : vid.width
+        height: (stereoMode === SourceMode.TopBottom || stereoMode === SourceMode.TopBottomAnamorphic) ? vid.height / 2 : vid.height
 
         scale: (zoom < 0) ? Math.min(root.width / width, root.height / height) : zoom
 
@@ -171,8 +171,8 @@ Item {
             id: vid
             source: media
 
-            width: (stereoMode == SourceMode.SidebySideAnamorphic) ? sourceRect.width * 2 : sourceRect.width
-            height: (stereoMode == SourceMode.TopBottomAnamorphic) ? sourceRect.height * 2 : sourceRect.height
+            width: (stereoMode === SourceMode.SidebySideAnamorphic) ? sourceRect.width * 2 : sourceRect.width
+            height: (stereoMode === SourceMode.TopBottomAnamorphic) ? sourceRect.height * 2 : sourceRect.height
 
             /* Always stretch. We set the VideoOutput to the size we want. */
             fillMode: VideoOutput.Stretch
@@ -200,7 +200,7 @@ Item {
         acceptedButtons: Qt.MiddleButton | Qt.ForwardButton | Qt.BackButton
 
         /* Reset zoom on wheel double-click. */
-        onDoubleClicked: if (mouse.button == Qt.MiddleButton) zoom = (zoom == -1) ? 1 : -1;
+        onDoubleClicked: if (mouse.button === Qt.MiddleButton) zoom = (zoom === -1) ? 1 : -1;
 
         onWheel: {
             /* Don't zoom or seek if covered. */
@@ -227,9 +227,9 @@ Item {
             }
         }
         onClicked: {
-            if (mouse.button == Qt.BackButton)
+            if (mouse.button === Qt.BackButton)
                 FolderListing.openPrevious()
-            if (mouse.button == Qt.ForwardButton)
+            if (mouse.button === Qt.ForwardButton)
                 FolderListing.openNext()
         }
     }
