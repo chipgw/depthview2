@@ -186,7 +186,7 @@ Item {
             stereoMode: root.stereoMode
 
             /* Videos tend to be the other way around from images... */
-            swap: !DepthView.swapEyes;
+            swap: true
         }
     }
     BusyIndicator {

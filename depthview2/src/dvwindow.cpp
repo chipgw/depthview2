@@ -174,10 +174,10 @@ void DVWindow::paintGL() {
     f->glViewport(0, 0, width(), height());
 
     f->glActiveTexture(GL_TEXTURE0);
-    f->glBindTexture(GL_TEXTURE_2D, renderFBO->textures()[0]);
+    f->glBindTexture(GL_TEXTURE_2D, renderFBO->textures()[qmlCommunication->swapEyes() ? 1 : 0]);
 
     f->glActiveTexture(GL_TEXTURE1);
-    f->glBindTexture(GL_TEXTURE_2D, renderFBO->textures()[1]);
+    f->glBindTexture(GL_TEXTURE_2D, renderFBO->textures()[qmlCommunication->swapEyes() ? 0 : 1]);
 
     /* Bind the shader and set uniforms for the current draw mode. */
     switch (qmlCommunication->drawMode()) {

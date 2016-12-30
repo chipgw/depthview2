@@ -29,7 +29,6 @@ Item {
         id: shader
         target: img
         stereoMode: SourceMode.SidebySide
-        swap: DepthView.swapEyes
     }
 }
 
