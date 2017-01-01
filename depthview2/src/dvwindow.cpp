@@ -268,7 +268,7 @@ void DVWindow::updateQmlSize() {
     if (qmlCommunication->drawMode() == DVDrawMode::Plugin)
         getPluginSize();
 
-    /* Don't recreate fbo's unless they are null or size is wrong. */
+    /* Don't recreate fbo unless it's null or its size is wrong. */
     if(renderFBO == nullptr || renderFBO->size() != qmlSize)
         createFBO();
 

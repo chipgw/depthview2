@@ -113,7 +113,7 @@ QString DVQmlCommunication::pluginMode() const {
     return m_pluginMode;
 }
 
-void DVQmlCommunication::setPluginMode(QString mode) {
+void DVQmlCommunication::setPluginMode(const QString& mode) {
     /* Only set if valid. */
     if (mode != m_pluginMode && pluginModes.contains(mode)) {
         m_pluginMode = mode;

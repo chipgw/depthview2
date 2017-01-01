@@ -57,7 +57,7 @@ public:
     void setFullscreen(bool fullscreen);
 
     QString pluginMode() const;
-    void setPluginMode(QString mode);
+    void setPluginMode(const QString& mode);
 
     void addPluginMode(const QString& mode, QQuickItem* config);
     QStringList getPluginModes() const;

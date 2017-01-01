@@ -240,8 +240,8 @@ Rectangle {
                                     onCheckedChanged:
                                         /* When checked we set the mode to Plugin and use the button text as the plugin mode. */
                                         if (checked) {
-                                            DepthView.drawMode = DrawMode.Plugin
                                             DepthView.pluginMode = modelData
+                                            DepthView.drawMode = DrawMode.Plugin
                                             modeMenu.close()
                                         }
                                 }
