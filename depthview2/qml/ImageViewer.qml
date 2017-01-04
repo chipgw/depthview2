@@ -21,6 +21,8 @@ Item {
 
     function playPause() {
         if (FolderListing.currentFileIsVideo) {
+            /* Reset speed. */
+            media.playbackRate = 1.0;
             if (media.playbackState === MediaPlayer.PlayingState)
                 media.pause()
             else
@@ -33,6 +35,11 @@ Item {
         return (ms > 3600000 ? (Math.floor(ms / 3600000) + ":") : "") /* Don't show hours if there are none. */
                 + ("0" + Math.floor(ms / 60000) % 60).slice(-2) /* Always pad minutes with a zero. */
                 + ":" + ("0" + Math.floor(ms / 1000) % 60).slice(-2) /* Always put a colon in between and pad with a zero. */
+    }
+
+    function fastForward() {
+        media.play()
+        media.playbackRate = Math.min(media.playbackRate * 2.0, 8.0);
     }
 
     property bool isPlaying: FolderListing.currentFileIsVideo && media.playbackState === MediaPlayer.PlayingState

@@ -447,6 +447,14 @@ Rectangle {
 
                             onClicked: image.playPause()
                         }
+                        ToolButton {
+                            visible: FolderListing.currentFileIsVideo
+
+                            font: googleMaterialFont
+                            text: "fast_forward"
+
+                            onClicked: image.fastForward()
+                        }
 
                         ToolButton {
                             font: googleMaterialFont
