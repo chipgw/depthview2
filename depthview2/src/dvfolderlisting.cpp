@@ -106,6 +106,9 @@ bool DVFolderListing::openFile(QFileInfo fileInfo) {
         if (fileInfo.dir() != QDir(m_currentDir.path()))
             setCurrentDir(fileInfo.absolutePath());
 
+        /* Close the file browser if it was open. */
+        setFileBrowserOpen(false);
+
         m_currentFile = fileInfo;
         emit currentFileChanged();
     }

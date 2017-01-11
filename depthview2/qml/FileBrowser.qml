@@ -34,10 +34,8 @@ Popup {
             function accept() {
                 if (fileIsDir)
                     FolderListing.currentDir = fileURL
-                else {
+                else
                     FolderListing.openFile(fileURL)
-                    FolderListing.fileBrowserOpen = false;
-                }
             }
 
             /* Border/highlight rectangle. */
