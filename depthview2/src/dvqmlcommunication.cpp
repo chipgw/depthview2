@@ -13,10 +13,6 @@ DVQmlCommunication::DVQmlCommunication(QWindow* parent, QSettings& s) : QObject(
 
     m_drawMode = settings.contains("DrawMode") ? DVDrawMode::fromString(settings.value("DrawMode").toByteArray()) : DVDrawMode::Anaglyph;
 
-    /* TODO - We can't check if it's valid from here, as the plugins are not inited yet, but it should check somehow... */
-    if (settings.contains("PluginMode"))
-        m_pluginMode = settings.value("PluginMode").toString();
-
     m_greyFac = settings.contains("GreyFac") ? settings.value("GreyFac").toReal() : 0.0;
 
     m_anamorphicDualView = settings.contains("Anamorphic") ? settings.value("Anamorphic").toBool() : false;
@@ -25,7 +21,16 @@ DVQmlCommunication::DVQmlCommunication(QWindow* parent, QSettings& s) : QObject(
     m_mirrorRight = settings.contains("MirrorRight") ? settings.value("MirrorRight").toBool() : false;
 }
 
-void DVQmlCommunication::postQmlInit() { }
+void DVQmlCommunication::postQmlInit() {
+    if (settings.contains("PluginMode")) {
+        /* Check to make sure the plugin mode is a valid loaded plugin before setting. */
+        QString mode = settings.value("PluginMode").toString();
+        if (pluginModes.contains(mode))
+            m_pluginMode = mode;
+        else
+            qWarning("Invalid plugin mode \"%s\" set in settings file!", qPrintable(mode));
+    }
+}
 
 DVDrawMode::Type DVQmlCommunication::drawMode() const {
     return m_drawMode;
