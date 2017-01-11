@@ -25,6 +25,11 @@ DVQmlCommunication::DVQmlCommunication(QWindow* parent, QSettings& s) : QObject(
     m_mirrorRight = settings.contains("MirrorRight") ? settings.value("MirrorRight").toBool() : false;
 }
 
+void DVQmlCommunication::postQmlInit() {
+    /* Must be done after QML is all set up so that the file browser popup gets the signal. */
+    setFileBrowserOpen(startupFileBrowser());
+}
+
 DVDrawMode::Type DVQmlCommunication::drawMode() const {
     return m_drawMode;
 }
@@ -177,4 +182,29 @@ void DVQmlCommunication::setFileBrowserOpen(bool open) {
         m_fileBrowserOpen = open;
         emit fileBrowserOpenChanged();
     }
+}
+
+bool DVQmlCommunication::saveWindowState() const {
+    /* Default value if it isn't set is true. */
+    return settings.contains("SaveWindowState") ? settings.value("SaveWindowState").toBool() : true;
+}
+
+void DVQmlCommunication::setSaveWindowState(bool save) {
+    if (!settings.contains("SaveWindowState") || settings.value("SaveWindowState").toBool() != save) {
+        settings.setValue("SaveWindowState", save);
+        emit saveWindowStateChanged();
+    }
+}
+
+bool DVQmlCommunication::startupFileBrowser() const {
+    /* Default value if it isn't set is false. */
+    return settings.contains("StartupFileBrowser") ? settings.value("StartupFileBrowser").toBool() : false;
+}
+
+void DVQmlCommunication::setStartupFileBrowser(bool open) {
+    if (!settings.contains("StartupFileBrowser") || settings.value("StartupFileBrowser").toBool() != open) {
+        settings.setValue("StartupFileBrowser", open);
+        emit startupFileBrowserChanged();
+    }
+
 }

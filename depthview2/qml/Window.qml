@@ -271,6 +271,12 @@ Rectangle {
                 }
 
                 ToolButton {
+                    text: "settings"
+                    font: googleMaterialFont
+                    onClicked: settingsPopup.open()
+                }
+
+                ToolButton {
                     text: "help"
                     font: googleMaterialFont
                     onClicked: aboutBox.open()
@@ -586,6 +592,16 @@ Rectangle {
         /* Ensure video is paused when file browser is opened. */
         onOpened: if (image.isPlaying) image.playPause()
     }
+
+    SettingsWindow {
+        id: settingsPopup
+
+        width:  root.width / 2
+        height:  root.height / 2
+        x:  root.width / 4
+        y:  root.height / 4
+    }
+
 
     Image {
         /* Start out off-screen so if the position doesn't get set it won't show up in the corner. */

@@ -100,11 +100,13 @@ DVWindow::~DVWindow() {
 
     /* TODO - I'm pretty sure there is more that needs to be deleted here... */
 
-    /* Save the window geometry so that it can be restored next run. */
-    settings.beginGroup("Window");
-    settings.setValue("Geometry", geometry());
-    settings.setValue("State", windowState());
-    settings.endGroup();
+    if (qmlCommunication->saveWindowState()) {
+        /* Save the window geometry so that it can be restored next run. */
+        settings.beginGroup("Window");
+        settings.setValue("Geometry", geometry());
+        settings.setValue("State", windowState());
+        settings.endGroup();
+    }
 }
 
 void DVWindow::initializeGL() {
@@ -141,6 +143,8 @@ void DVWindow::initializeGL() {
 
     /* Init to this window's OpenGL context. */
     qmlRenderControl->initialize(context());
+
+    qmlCommunication->postQmlInit();
 
     /* The setGeometry() and setState() calls may try to set the qmlRoot geometry,
      * which means this needs to be done after QML is all set up. */
