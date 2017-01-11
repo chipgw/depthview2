@@ -7,7 +7,7 @@
 #include <QMessageBox>
 #include <QSettings>
 
-DVQmlCommunication::DVQmlCommunication(QWindow* parent, QSettings& s) : QObject(parent), settings(s), owner(parent), m_swapEyes(false), m_fileBrowserOpen(false) {
+DVQmlCommunication::DVQmlCommunication(QWindow* parent, QSettings& s) : QObject(parent), settings(s), owner(parent), m_swapEyes(false) {
     /* We need to detect when the window state changes sowe can updatethe fullscreen property accordingly. */
     connect(owner, &QWindow::windowStateChanged, this, &DVQmlCommunication::ownerWindowStateChanged);
 
@@ -25,10 +25,7 @@ DVQmlCommunication::DVQmlCommunication(QWindow* parent, QSettings& s) : QObject(
     m_mirrorRight = settings.contains("MirrorRight") ? settings.value("MirrorRight").toBool() : false;
 }
 
-void DVQmlCommunication::postQmlInit() {
-    /* Must be done after QML is all set up so that the file browser popup gets the signal. */
-    setFileBrowserOpen(startupFileBrowser());
-}
+void DVQmlCommunication::postQmlInit() { }
 
 DVDrawMode::Type DVQmlCommunication::drawMode() const {
     return m_drawMode;
@@ -173,20 +170,9 @@ QString DVQmlCommunication::buildCompiler() {
     return version::compiler;
 }
 
-bool DVQmlCommunication::fileBrowserOpen() const {
-    return m_fileBrowserOpen;
-}
-
-void DVQmlCommunication::setFileBrowserOpen(bool open) {
-    if (open != m_fileBrowserOpen) {
-        m_fileBrowserOpen = open;
-        emit fileBrowserOpenChanged();
-    }
-}
-
 bool DVQmlCommunication::saveWindowState() const {
     /* Default value if it isn't set is true. */
-    return settings.contains("SaveWindowState") ? settings.value("SaveWindowState").toBool() : true;
+    return settings.value("SaveWindowState", true).toBool();
 }
 
 void DVQmlCommunication::setSaveWindowState(bool save) {
@@ -198,7 +184,7 @@ void DVQmlCommunication::setSaveWindowState(bool save) {
 
 bool DVQmlCommunication::startupFileBrowser() const {
     /* Default value if it isn't set is false. */
-    return settings.contains("StartupFileBrowser") ? settings.value("StartupFileBrowser").toBool() : false;
+    return settings.value("StartupFileBrowser").toBool();
 }
 
 void DVQmlCommunication::setStartupFileBrowser(bool open) {

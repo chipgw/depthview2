@@ -145,6 +145,7 @@ void DVWindow::initializeGL() {
     qmlRenderControl->initialize(context());
 
     qmlCommunication->postQmlInit();
+    folderListing->postQmlInit();
 
     /* The setGeometry() and setState() calls may try to set the qmlRoot geometry,
      * which means this needs to be done after QML is all set up. */

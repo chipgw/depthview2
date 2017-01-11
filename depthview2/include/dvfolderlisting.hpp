@@ -27,6 +27,8 @@ class DVFolderListing : public QAbstractListModel {
 
     QTimer driveTimer;
 
+    bool m_fileBrowserOpen;
+
     Q_PROPERTY(QString currentFile READ currentFile NOTIFY currentFileChanged)
     Q_PROPERTY(QUrl currentURL READ currentURL NOTIFY currentFileChanged)
 
@@ -51,8 +53,11 @@ class DVFolderListing : public QAbstractListModel {
     /* There is no WRITE function because you add or remove via addBookmark() and deleteBookmark(). */
     Q_PROPERTY(QStringList bookmarks READ bookmarks NOTIFY bookmarksChanged)
 
+    Q_PROPERTY(bool fileBrowserOpen READ fileBrowserOpen WRITE setFileBrowserOpen NOTIFY fileBrowserOpenChanged)
+
 public:
     explicit DVFolderListing(QObject* parent, QSettings& s);
+    void postQmlInit();
 
     /* Just the name of the current file, no path. */
     QString currentFile() const;
@@ -142,6 +147,9 @@ public:
 
     bool initDir(const QString& dir);
 
+    bool fileBrowserOpen() const;
+    void setFileBrowserOpen(bool open);
+
 signals:
     /* No argument because they are used as NOTIFY for multiple properties. */
     void currentFileChanged();
@@ -152,4 +160,6 @@ signals:
     void historyChanged();
 
     void bookmarksChanged();
+
+    void fileBrowserOpenChanged();
 };

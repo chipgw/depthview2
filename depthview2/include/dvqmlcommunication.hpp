@@ -29,8 +29,6 @@ class DVQmlCommunication : public QObject {
 
     Q_PROPERTY(bool swapEyes READ swapEyes WRITE setSwapEyes NOTIFY swapEyesChanged)
 
-    Q_PROPERTY(bool fileBrowserOpen READ fileBrowserOpen WRITE setFileBrowserOpen NOTIFY fileBrowserOpenChanged)
-
     Q_PROPERTY(bool saveWindowState READ saveWindowState WRITE setSaveWindowState NOTIFY saveWindowStateChanged)
     Q_PROPERTY(bool startupFileBrowser READ startupFileBrowser WRITE setStartupFileBrowser NOTIFY startupFileBrowserChanged)
 
@@ -75,9 +73,6 @@ public:
     Q_INVOKABLE QString buildType();
     Q_INVOKABLE QString buildCompiler();
 
-    bool fileBrowserOpen() const;
-    void setFileBrowserOpen(bool open);
-
     bool saveWindowState() const;
     void setSaveWindowState(bool save);
 
@@ -100,8 +95,6 @@ signals:
     void pluginModesChanged();
 
     void swapEyesChanged();
-
-    void fileBrowserOpenChanged();
 
     /* Settings. */
     bool saveWindowStateChanged();
@@ -155,6 +148,4 @@ private:
     QMap<QString, QQuickItem*> pluginModes;
 
     bool m_swapEyes;
-
-    bool m_fileBrowserOpen;
 };

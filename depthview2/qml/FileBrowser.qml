@@ -2,7 +2,6 @@ import QtQuick 2.5
 import QtQuick.Layouts 1.2
 import QtQuick.Controls 2.0
 import DepthView 2.0
-import QtAV 1.6
 
 Popup {
     id: root
@@ -17,7 +16,7 @@ Popup {
     function cancel() {
         /* Reset to the folder that was active when the browser was first shown. */
         FolderListing.currentDir = startingFolder
-        DepthView.fileBrowserOpen = false;
+        FolderListing.fileBrowserOpen = false;
     }
 
     onOpened: startingFolder = FolderListing.currentDir
@@ -37,7 +36,7 @@ Popup {
                     FolderListing.currentDir = fileURL
                 else {
                     FolderListing.openFile(fileURL)
-                    DepthView.fileBrowserOpen = false;
+                    FolderListing.fileBrowserOpen = false;
                 }
             }
 

@@ -89,7 +89,7 @@ Rectangle {
                             text: "Open..."
                             font: uiTextFont
 
-                            onTriggered: DepthView.fileBrowserOpen = true
+                            onTriggered: FolderListing.fileBrowserOpen = true
                         }
 
                         MenuItem {
@@ -587,7 +587,7 @@ Rectangle {
         width: parent.width
         height: parent.height
 
-        visible: DepthView.fileBrowserOpen
+        visible: FolderListing.fileBrowserOpen
 
         /* Ensure video is paused when file browser is opened. */
         onOpened: if (image.isPlaying) image.playPause()
@@ -612,7 +612,7 @@ Rectangle {
         source: "qrc:/images/cursor.png"
 
         /* Visible when the timer is running or when the UI is visible. */
-        visible: mouseTimer.running || DepthView.fileBrowserOpen || topMenu.state === "" || bottomMenu.state === ""
+        visible: mouseTimer.running || FolderListing.fileBrowserOpen || topMenu.state === "" || bottomMenu.state === ""
 
         Timer {
             id: mouseTimer
@@ -652,14 +652,14 @@ Rectangle {
         sequence: StandardKey.Open
         context: Qt.ApplicationShortcut
 
-        onActivated: DepthView.fileBrowserOpen = true
+        onActivated: FolderListing.fileBrowserOpen = true
     }
 
     Shortcut {
         sequence: "Right"
         context: Qt.ApplicationShortcut
 
-        enabled: !DepthView.fileBrowserOpen
+        enabled: !FolderListing.fileBrowserOpen
 
         onActivated: FolderListing.openNext()
     }
@@ -667,7 +667,7 @@ Rectangle {
         sequence: "Left"
         context: Qt.ApplicationShortcut
 
-        enabled: !DepthView.fileBrowserOpen
+        enabled: !FolderListing.fileBrowserOpen
 
         onActivated: FolderListing.openPrevious()
     }
@@ -693,7 +693,7 @@ Rectangle {
     }
 
     function closePopups() {
-        if (DepthView.fileBrowserOpen)
+        if (FolderListing.fileBrowserOpen)
             fileBrowser.cancel()
         if (aboutBox.visible)
             aboutBox.close()

@@ -3,7 +3,8 @@
 #include <QSettings>
 #include <QDateTime>
 
-DVFolderListing::DVFolderListing(QObject *parent, QSettings& s) : QAbstractListModel(parent), settings(s), currentHistory(-1), driveTimer(this) {
+DVFolderListing::DVFolderListing(QObject *parent, QSettings& s) : QAbstractListModel(parent),
+    settings(s), currentHistory(-1), driveTimer(this), m_fileBrowserOpen(false) {
     if (settings.contains("Bookmarks"))
         m_bookmarks = settings.value("Bookmarks").toStringList();
 
@@ -30,6 +31,12 @@ DVFolderListing::DVFolderListing(QObject *parent, QSettings& s) : QAbstractListM
     /* TODO - Figure out a way to detect when there is actually a change rather than just putting it on a timer. */
     connect(&driveTimer, &QTimer::timeout, this, &DVFolderListing::storageDevicePathsChanged);
     driveTimer.start(8000);
+}
+
+void DVFolderListing::postQmlInit() {
+    if (!m_currentFile.exists())
+        /* Must be done after QML is all set up so that the file browser popup gets the signal. */
+        setFileBrowserOpen(settings.value("StartupFileBrowser").toBool());
 }
 
 void DVFolderListing::openNext() {
@@ -356,3 +363,13 @@ bool DVFolderListing::initDir(const QString& dir) {
     return true;
 }
 
+bool DVFolderListing::fileBrowserOpen() const {
+    return m_fileBrowserOpen;
+}
+
+void DVFolderListing::setFileBrowserOpen(bool open) {
+    if (open != m_fileBrowserOpen) {
+        m_fileBrowserOpen = open;
+        emit fileBrowserOpenChanged();
+    }
+}

@@ -147,7 +147,7 @@ void DVWindow::doPluginInput() {
 }
 
 DVInputMode::Type DVWindow::inputMode() const {
-    return qmlCommunication->fileBrowserOpen() ? DVInputMode::FileBrowser : folderListing->isCurrentFileVideo() ? DVInputMode::VideoPlayer : DVInputMode::ImageViewer;
+    return folderListing->fileBrowserOpen() ? DVInputMode::FileBrowser : folderListing->isCurrentFileVideo() ? DVInputMode::VideoPlayer : DVInputMode::ImageViewer;
 }
 
 void DVWindow::up() {
@@ -172,21 +172,21 @@ void DVWindow::cancel() {
 }
 
 void DVWindow::openFileBrowser() {
-    qmlCommunication->setFileBrowserOpen(true);
+    folderListing->setFileBrowserOpen(true);
 }
 
 void DVWindow::goBack() {
-    if (qmlCommunication->fileBrowserOpen() && folderListing->canGoBack())
+    if (folderListing->fileBrowserOpen() && folderListing->canGoBack())
         folderListing->goBack();
 }
 
 void DVWindow::goForward() {
-    if (qmlCommunication->fileBrowserOpen() && folderListing->canGoForward())
+    if (folderListing->fileBrowserOpen() && folderListing->canGoForward())
         folderListing->goForward();
 }
 
 void DVWindow::goUp() {
-    if (qmlCommunication->fileBrowserOpen() && folderListing->canGoUp())
+    if (folderListing->fileBrowserOpen() && folderListing->canGoUp())
         folderListing->goUp();
 }
 
