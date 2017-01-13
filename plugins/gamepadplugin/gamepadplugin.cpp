@@ -62,6 +62,8 @@ bool GamepadPlugin::init(QQmlEngine* qmlEngine) {
     buttonXJustChanged = false;
     buttonYJustChanged = false;
 
+    gamepadEnable = QQmlProperty(configMenuObject, "gamepadEnable");
+
     /* Get the list of connected gamepads. */
     auto gamepads = QGamepadManager::instance()->connectedGamepads();
 
@@ -92,6 +94,9 @@ QQuickItem* GamepadPlugin::getConfigMenuObject() {
 #define JUST_PRESSED(X) (gamepad.X() && X##JustChanged)
 
 bool GamepadPlugin::pollInput(DVInputInterface* inputInterface) {
+    if (!gamepadEnable.read().toBool())
+        return false;
+
     DVInputMode::Type mode = inputInterface->inputMode();
 
     if (mode == DVInputMode::FileBrowser) {

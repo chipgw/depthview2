@@ -16,6 +16,8 @@ class GamepadPlugin : public QObject, public DVInputPlugin {
 
     QGamepad gamepad;
 
+    QQmlProperty gamepadEnable;
+
     bool buttonAJustChanged;
     bool buttonBJustChanged;
     bool buttonCenterJustChanged;

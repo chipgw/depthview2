@@ -5,6 +5,13 @@ import QtQuick.Layouts 1.3
 Popup {
     id: root
 
+    function reset() {
+        saveWindowStateCheckBox.checked = DepthView.saveWindowState
+        startupFileBrowserCheckBox.checked = DepthView.startupFileBrowser
+
+        /* TODO - Reset plugin settings. */
+    }
+
     Page {
         anchors.fill: parent
 
@@ -29,11 +36,15 @@ Popup {
             RowLayout {
                 anchors.fill: parent
 
+                ToolButton {
+                    text: qsTr("Reset")
+
+                    onClicked: reset()
+                }
                 Item {
                     Layout.fillWidth: true
                 }
                 ToolButton {
-                    id: buttonAccept
                     text: qsTr("Ok")
 
                     onClicked: {
@@ -45,12 +56,10 @@ Popup {
                 }
 
                 ToolButton {
-                    id: buttonCancel
                     text: qsTr("Cancel")
 
                     onClicked: {
-                        saveWindowStateCheckBox.checked = DepthView.saveWindowState
-                        startupFileBrowserCheckBox.checked = DepthView.startupFileBrowser
+                        reset()
 
                         root.close()
                     }
@@ -67,42 +76,49 @@ Popup {
                 id: swipe
                 anchors.fill: parent
 
-                Column {
+                Flickable {
                     readonly property string title: "General Settings"
 
-                    CheckBox {
-                        id: saveWindowStateCheckBox
-                        text: qsTr("Remember Window State")
+                    ScrollBar.vertical: ScrollBar { }
+                    contentHeight: generalSettingsContent.childrenRect.height
 
-                        checked: DepthView.saveWindowState
-                    }
+                    /* Only enable panning when the item is tall enough. */
+                    interactive: contentHeight > height
 
-                    CheckBox {
-                        id: startupFileBrowserCheckBox
-                        text: qsTr("Show File Browser at Startup")
+                    Column {
+                        id: generalSettingsContent
+                        CheckBox {
+                            id: saveWindowStateCheckBox
+                            text: qsTr("Remember Window State")
 
-                        checked: DepthView.startupFileBrowser
+                            checked: DepthView.saveWindowState
+                        }
+
+                        CheckBox {
+                            id: startupFileBrowserCheckBox
+                            text: qsTr("Show File Browser at Startup")
+
+                            checked: DepthView.startupFileBrowser
+                        }
                     }
                 }
 
                 Repeater {
                     model: DepthView.pluginConfigMenus
 
-                    Item {
+                    Flickable {
+                        /* Use the title property from the provided item. */
                         readonly property string title: modelData.title
-                        children: [modelData]
+
+                        ScrollBar.vertical: ScrollBar { }
+                        contentHeight: modelData.childrenRect.height
+
+                        /* Only enable panning when the item is tall enough. */
+                        interactive: contentHeight > height
+
+                        Component.onCompleted: modelData.parent = contentItem
                     }
                 }
-            }
-
-            PageIndicator {
-                currentIndex: swipe.currentIndex
-                count: swipe.count
-
-                visible: count > 1
-
-                anchors.bottom: parent.bottom
-                anchors.horizontalCenter: parent.horizontalCenter
             }
         }
     }
