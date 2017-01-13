@@ -76,6 +76,7 @@ void DVWindow::loadPlugins() {
 
             if (inputPlugin->init(qmlEngine)) {
                 inputPlugins.append(inputPlugin);
+                qmlCommunication->addInputPluginConfig(inputPlugin->getConfigMenuObject());
 
                 qDebug("Loaded plugin: \"%s\"", qPrintable(filename));
             } else {

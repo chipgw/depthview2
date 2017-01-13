@@ -1,7 +1,12 @@
 import QtQuick 2.0
 import QtQuick.Controls 2.0
+import QtQuick.Layouts 1.3
 
 Column {
+    anchors.fill: parent
+
+    readonly property string title: "OpenVR Settings"
+
     /* Properties for C++ to read. */
     property alias lockMouse: openVR_LockMouse.checked
     property alias curvedScreen: openVR_CurvedScreen.checked
@@ -9,71 +14,70 @@ Column {
     property alias screenDistance: openVR_ScreenDistance.value
     property alias screenHeight: openVR_ScreenHeight.value
 
-    MenuItem {
+    CheckBox {
         id: openVR_LockMouse
         text: "Lock Mouse"
-        checkable: true
     }
-    MenuItem {
+    CheckBox {
         id: openVR_CurvedScreen
         text: "Curved Screen"
-        checkable: true
     }
 
-    MenuItem {
-        text: "Screen Size"
+    RowLayout {
+        width: parent.width
+        Label {
+            text: "Screen Size"
+            height: parent.height
+            verticalAlignment: Text.AlignVCenter
+        }
+        Slider {
+            id: openVR_ScreenSize
 
-        onTriggered: openVR_ScreenSizePopup.open()
+            value: 7
 
-        Popup {
-            id: openVR_ScreenSizePopup
+            from: 1
+            to: screenDistance * 2
 
-            Slider {
-                id: openVR_ScreenSize
-
-                value: 7
-
-                from: 1
-                to: screenDistance * 2
-            }
+            Layout.fillWidth: true
         }
     }
 
-    MenuItem {
-        text: "Screen Distance"
+    RowLayout {
+        width: parent.width
+        Label {
+            text: "Screen Distance"
+            height: parent.height
+            verticalAlignment: Text.AlignVCenter
+        }
+        Slider {
+            id: openVR_ScreenDistance
 
-        onTriggered: openVR_ScreenDistancePopup.open()
+            value: 8
 
-        Popup {
-            id: openVR_ScreenDistancePopup
+            from: 1
+            to: 100
 
-            Slider {
-                id: openVR_ScreenDistance
-
-                value: 8
-
-                from: 1
-                to: 100
-            }
+            Layout.fillWidth: true
         }
     }
 
-    MenuItem {
-        text: "Screen Height"
+    RowLayout {
+        width: parent.width
+        Label {
+            text: "Screen Height"
+            height: parent.height
+            verticalAlignment: Text.AlignVCenter
+        }
 
-        onTriggered: openVR_ScreenHeightPopup.open()
+        Slider {
+            id: openVR_ScreenHeight
 
-        Popup {
-            id: openVR_ScreenHeightPopup
+            value: 2
 
-            Slider {
-                id: openVR_ScreenHeight
+            from: 1
+            to: 40
 
-                value: 2
-
-                from: 1
-                to: 40
-            }
+            Layout.fillWidth: true
         }
     }
 }

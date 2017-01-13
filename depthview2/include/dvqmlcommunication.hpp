@@ -26,6 +26,7 @@ class DVQmlCommunication : public QObject {
     Q_PROPERTY(QStringList modes READ getModes NOTIFY pluginModesChanged)
 
     Q_PROPERTY(QQuickItem* pluginConfigMenu READ getPluginConfigMenu NOTIFY pluginModeChanged)
+    Q_PROPERTY(QList<QObject*> pluginConfigMenus READ getPluginConfigMenus NOTIFY pluginModesChanged)
 
     Q_PROPERTY(bool swapEyes READ swapEyes WRITE setSwapEyes NOTIFY swapEyesChanged)
 
@@ -62,9 +63,11 @@ public:
     void setPluginMode(const QString& mode);
 
     void addPluginMode(const QString& mode, QQuickItem* config);
+    void addInputPluginConfig(QQuickItem* config);
     QStringList getPluginModes() const;
     QStringList getModes() const;
     QQuickItem* getPluginConfigMenu() const;
+    QObjectList getPluginConfigMenus() const;
 
     bool swapEyes() const;
     void setSwapEyes(bool swap);
@@ -146,6 +149,7 @@ private:
 
     QString m_pluginMode;
     QMap<QString, QQuickItem*> pluginModes;
+    QList<QQuickItem*> inputPluginConfig;
 
     bool m_swapEyes;
 };

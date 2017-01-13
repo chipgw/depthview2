@@ -134,12 +134,28 @@ void DVQmlCommunication::addPluginMode(const QString& mode, QQuickItem* config) 
     emit pluginModesChanged();
 }
 
+void DVQmlCommunication::addInputPluginConfig(QQuickItem* config) {
+    inputPluginConfig.append(config);
+    emit pluginModesChanged();
+}
+
 QStringList DVQmlCommunication::getPluginModes() const {
     return pluginModes.keys();
 }
 
 QQuickItem* DVQmlCommunication::getPluginConfigMenu() const {
     return pluginModes.contains(m_pluginMode) ? pluginModes[m_pluginMode] : nullptr;
+}
+
+QObjectList DVQmlCommunication::getPluginConfigMenus() const {
+    QObjectList list;
+
+    for (QQuickItem* item : pluginModes.values())
+        list.append((QObject*)item);
+    for (QQuickItem* item : inputPluginConfig)
+        list.append((QObject*)item);
+
+    return list;
 }
 
 QStringList DVQmlCommunication::getModes() const {

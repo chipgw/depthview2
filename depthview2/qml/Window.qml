@@ -52,8 +52,8 @@ Rectangle {
             }
 
             /* Visible when the mouse is close, when the screen was recently touched, when any of the menus are open, or when a video is paused. */
-            state: fakeCursor.y < 128 || fileMenu.visible || viewMenu.visible || modeMenu.visible || pluginConfigMenu.visible ||
-                   touchTimer.running || FolderListing.currentFile.length < 1 || (FolderListing.currentFileIsVideo && !image.isPlaying) ? "" : "HIDDEN"
+            state: fakeCursor.y < 128 || fileMenu.visible || viewMenu.visible || modeMenu.visible || touchTimer.running ||
+                   FolderListing.currentFile.length < 1 || (FolderListing.currentFileIsVideo && !image.isPlaying) ? "" : "HIDDEN"
 
             states: [
                 State {
@@ -247,22 +247,6 @@ Rectangle {
                                 }
                             }
                         }
-                    }
-                }
-
-                ToolButton {
-                    text: "Plugin Settings"
-                    font: uiTextFont
-
-                    onClicked: pluginConfigMenu.open()
-
-                    visible: DepthView.pluginConfigMenu && DepthView.drawMode === DrawMode.Plugin
-
-                    Menu {
-                        y: parent.height
-                        id: pluginConfigMenu
-
-                        contentItem: DepthView.pluginConfigMenu
                     }
                 }
 
@@ -709,8 +693,6 @@ Rectangle {
             greyFacPopup.close()
         if (modeMenu.visible)
             modeMenu.close()
-        if (pluginConfigMenu.visible)
-            pluginConfigMenu.close()
         if (sourceMode.visible)
             sourceMode.close()
     }
@@ -720,7 +702,7 @@ Rectangle {
         anchors.fill: parent
 
         enabled: aboutBox.visible || mediaInfoBox.visible || volumePopup.visible || fileMenu.visible || viewMenu.visible ||
-                 greyFacPopup.visible || modeMenu.visible || pluginConfigMenu.visible || sourceMode.visible
+                 greyFacPopup.visible || modeMenu.visible || sourceMode.visible
 
         onClicked: closePopups()
     }

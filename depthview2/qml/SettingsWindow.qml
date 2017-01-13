@@ -5,83 +5,105 @@ import QtQuick.Layouts 1.3
 Popup {
     id: root
 
-    clip: true
-
-    SwipeView {
-        id: swipe
+    Page {
         anchors.fill: parent
 
-        Page {
-            header: ToolBar {
-                Label {
-                    anchors.fill: parent
-                    verticalAlignment: Text.AlignVCenter
-                    text: "General Settings"
-                }
-            }
-
-            footer: ToolBar {
-                RowLayout {
-                    anchors.fill: parent
-
-                    Item {
-                        Layout.fillWidth: true
-                    }
-                    ToolButton {
-                        id: buttonAccept
-                        text: qsTr("Ok")
-
-                        onClicked: {
-                            DepthView.saveWindowState = saveWindowStateCheckBox.checked
-                            DepthView.startupFileBrowser = startupFileBrowserCheckBox.checked
-
-                            root.close()
-                        }
-                    }
-
-                    ToolButton {
-                        id: buttonCancel
-                        text: qsTr("Cancel")
-
-                        onClicked: {
-                            saveWindowStateCheckBox.checked = DepthView.saveWindowState
-                            startupFileBrowserCheckBox.checked = DepthView.startupFileBrowser
-
-                            root.close()
-                        }
-                    }
-                }
-
-            }
-
-            Column {
-                id: gridLayout
+        header: ToolBar {
+            Row {
                 anchors.fill: parent
+                Repeater {
+                    model: swipe.contentChildren
 
-                CheckBox {
-                    id: saveWindowStateCheckBox
-                    text: qsTr("Remember Window State")
+                    ToolButton {
+                        text: modelData.title
 
-                    checked: DepthView.saveWindowState
-                }
+                        onClicked: swipe.currentIndex = index
 
-                CheckBox {
-                    id: startupFileBrowserCheckBox
-                    text: qsTr("Show File Browser at Startup")
-
-                    checked: DepthView.startupFileBrowser
+                        checked: swipe.currentIndex === index
+                    }
                 }
             }
         }
-    }
 
-    PageIndicator {
-        currentIndex: swipe.currentIndex
-        count: swipe.count
+        footer: ToolBar {
+            RowLayout {
+                anchors.fill: parent
 
-        visible: count > 1
+                Item {
+                    Layout.fillWidth: true
+                }
+                ToolButton {
+                    id: buttonAccept
+                    text: qsTr("Ok")
 
-        anchors.bottom: parent.bottom
-        anchors.horizontalCenter: parent.horizontalCenter
+                    onClicked: {
+                        DepthView.saveWindowState = saveWindowStateCheckBox.checked
+                        DepthView.startupFileBrowser = startupFileBrowserCheckBox.checked
+
+                        root.close()
+                    }
+                }
+
+                ToolButton {
+                    id: buttonCancel
+                    text: qsTr("Cancel")
+
+                    onClicked: {
+                        saveWindowStateCheckBox.checked = DepthView.saveWindowState
+                        startupFileBrowserCheckBox.checked = DepthView.startupFileBrowser
+
+                        root.close()
+                    }
+                }
+            }
+        }
+
+        Item {
+            anchors.fill: parent
+
+            clip: true
+
+            SwipeView {
+                id: swipe
+                anchors.fill: parent
+
+                Column {
+                    readonly property string title: "General Settings"
+
+                    CheckBox {
+                        id: saveWindowStateCheckBox
+                        text: qsTr("Remember Window State")
+
+                        checked: DepthView.saveWindowState
+                    }
+
+                    CheckBox {
+                        id: startupFileBrowserCheckBox
+                        text: qsTr("Show File Browser at Startup")
+
+                        checked: DepthView.startupFileBrowser
+                    }
+                }
+
+                Repeater {
+                    model: DepthView.pluginConfigMenus
+
+                    Item {
+                        readonly property string title: modelData.title
+                        children: [modelData]
+                    }
+                }
+            }
+
+            PageIndicator {
+                currentIndex: swipe.currentIndex
+                count: swipe.count
+
+                visible: count > 1
+
+                anchors.bottom: parent.bottom
+                anchors.horizontalCenter: parent.horizontalCenter
+            }
+        }
     }
 }
