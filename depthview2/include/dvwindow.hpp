@@ -72,6 +72,11 @@ public:
     void seekForward();
     void seekAmount(qint64 msec);
 
+    void volumeUp();
+    void volumeDown();
+    void mute();
+    void setVolume(qreal volume);
+
     /* ------------------------------ *
      * End DVInputInterface functions *
      * ------------------------------ */

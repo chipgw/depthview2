@@ -94,55 +94,59 @@ QQuickItem* GamepadPlugin::getConfigMenuObject() {
 #define JUST_PRESSED(X) (gamepad.X() && X##JustChanged)
 
 bool GamepadPlugin::pollInput(DVInputInterface* inputInterface) {
-    if (!gamepadEnable.read().toBool())
-        return false;
+    if (gamepadEnable.read().toBool()) {
+        DVInputMode::Type mode = inputInterface->inputMode();
 
-    DVInputMode::Type mode = inputInterface->inputMode();
-
-    if (mode == DVInputMode::FileBrowser) {
-        if (JUST_RELEASED(buttonL1))
-            inputInterface->goBack();
-        if (JUST_RELEASED(buttonR1))
-            inputInterface->goForward();
-        if (JUST_RELEASED(buttonY))
-            inputInterface->goUp();
-
-        if (JUST_RELEASED(buttonUp))
-            inputInterface->up();
-        if (JUST_RELEASED(buttonDown))
-            inputInterface->down();
-        if (JUST_RELEASED(buttonLeft))
-            inputInterface->left();
-        if (JUST_RELEASED(buttonRight))
-            inputInterface->right();
-
-        if (JUST_RELEASED(buttonA))
-            inputInterface->accept();
-    } else {
-        if (JUST_RELEASED(buttonY))
-            inputInterface->openFileBrowser();
-        if (JUST_RELEASED(buttonX))
-            inputInterface->fileInfo();
-
-        if (JUST_RELEASED(buttonLeft))
-            inputInterface->previousFile();
-        if (JUST_RELEASED(buttonRight))
-            inputInterface->nextFile();
-
-        if (mode == DVInputMode::VideoPlayer) {
-            if (JUST_RELEASED(buttonA))
-                inputInterface->playPauseVideo();
-
+        if (mode == DVInputMode::FileBrowser) {
             if (JUST_RELEASED(buttonL1))
-                inputInterface->seekBack();
+                inputInterface->goBack();
             if (JUST_RELEASED(buttonR1))
-                inputInterface->seekForward();
-        }
-    }
+                inputInterface->goForward();
+            if (JUST_RELEASED(buttonY))
+                inputInterface->goUp();
 
-    /* This happens no matter the mode. */
-    if (JUST_RELEASED(buttonB) || JUST_RELEASED(buttonSelect))
-        inputInterface->cancel();
+            if (JUST_RELEASED(buttonUp))
+                inputInterface->up();
+            if (JUST_RELEASED(buttonDown))
+                inputInterface->down();
+            if (JUST_RELEASED(buttonLeft))
+                inputInterface->left();
+            if (JUST_RELEASED(buttonRight))
+                inputInterface->right();
+
+            if (JUST_RELEASED(buttonA))
+                inputInterface->accept();
+        } else {
+            if (JUST_RELEASED(buttonY))
+                inputInterface->openFileBrowser();
+            if (JUST_RELEASED(buttonX))
+                inputInterface->fileInfo();
+
+            if (JUST_RELEASED(buttonLeft))
+                inputInterface->previousFile();
+            if (JUST_RELEASED(buttonRight))
+                inputInterface->nextFile();
+
+            if (mode == DVInputMode::VideoPlayer) {
+                if (JUST_RELEASED(buttonA))
+                    inputInterface->playPauseVideo();
+
+                if (JUST_RELEASED(buttonL1))
+                    inputInterface->seekBack();
+                if (JUST_RELEASED(buttonR1))
+                    inputInterface->seekForward();
+
+                if (JUST_RELEASED(buttonUp))
+                    inputInterface->volumeUp();
+                if (JUST_RELEASED(buttonDown))
+                    inputInterface->volumeDown();
+            }
+        }
+
+        /* This happens no matter the mode. */
+        if (JUST_RELEASED(buttonB) || JUST_RELEASED(buttonSelect))
+            inputInterface->cancel();
+    }
 
     /* Reset the change tracking variables. */
     buttonAJustChanged = false;

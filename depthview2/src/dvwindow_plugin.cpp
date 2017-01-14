@@ -232,3 +232,19 @@ void DVWindow::seekForward() {
 void DVWindow::seekAmount(qint64 msec) {
     player->seek(msec);
 }
+
+void DVWindow::volumeUp() {
+    player->audio()->setVolume(qMin(player->audio()->volume() + 0.1, 1.0));
+}
+
+void DVWindow::volumeDown() {
+    player->audio()->setVolume(qMax(player->audio()->volume() - 0.1, 0.0));
+}
+
+void DVWindow::mute() {
+    player->audio()->setMute(!player->audio()->isMute());
+}
+
+void DVWindow::setVolume(qreal volume) {
+    player->audio()->setVolume(volume);
+}

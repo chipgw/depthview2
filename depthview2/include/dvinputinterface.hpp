@@ -47,4 +47,9 @@ public:
     virtual void seekBack() = 0;
     virtual void seekForward() = 0;
     virtual void seekAmount(qint64 msec) = 0;
+
+    virtual void volumeUp() = 0;
+    virtual void volumeDown() = 0;
+    virtual void mute() = 0;
+    virtual void setVolume(qreal volume) = 0;
 };
