@@ -8,8 +8,23 @@ Popup {
     function reset() {
         saveWindowStateCheckBox.checked = DepthView.saveWindowState
         startupFileBrowserCheckBox.checked = DepthView.startupFileBrowser
+        greyFacSlider.value = DepthView.greyFac
+        mirrorLeftCheckBox.checked = DepthView.mirrorLeft
+        mirrorRightCheckBox.checked = DepthView.mirrorRight
+        anamorphicCheckBox.checked = DepthView.anamorphicDualView
+        swapEyesCheckBox.checked = DepthView.swapEyes
 
         /* TODO - Reset plugin settings. */
+    }
+
+    function apply() {
+        DepthView.saveWindowState = saveWindowStateCheckBox.checked
+        DepthView.startupFileBrowser = startupFileBrowserCheckBox.checked
+        DepthView.greyFac = greyFacSlider.value
+        DepthView.mirrorLeft = mirrorLeftCheckBox.checked
+        DepthView.mirrorRight = mirrorRightCheckBox.checked
+        DepthView.anamorphicDualView = anamorphicCheckBox.checked
+        DepthView.swapEyes = swapEyesCheckBox.checked
     }
 
     Page {
@@ -45,11 +60,15 @@ Popup {
                     Layout.fillWidth: true
                 }
                 ToolButton {
+                    text: qsTr("Apply")
+
+                    onClicked: apply()
+                }
+                ToolButton {
                     text: qsTr("Ok")
 
                     onClicked: {
-                        DepthView.saveWindowState = saveWindowStateCheckBox.checked
-                        DepthView.startupFileBrowser = startupFileBrowserCheckBox.checked
+                        apply()
 
                         root.close()
                     }
@@ -77,7 +96,7 @@ Popup {
                 anchors.fill: parent
 
                 Flickable {
-                    readonly property string title: "General Settings"
+                    readonly property string title: qsTr("General Settings")
 
                     ScrollBar.vertical: ScrollBar { }
                     contentHeight: generalSettingsContent.childrenRect.height
@@ -87,6 +106,8 @@ Popup {
 
                     Column {
                         id: generalSettingsContent
+                        width: parent.width
+
                         CheckBox {
                             id: saveWindowStateCheckBox
                             text: qsTr("Remember Window State")
@@ -99,6 +120,68 @@ Popup {
                             text: qsTr("Show File Browser at Startup")
 
                             checked: DepthView.startupFileBrowser
+                        }
+
+
+                        GroupBox {
+                            width: parent.width
+                            title: qsTr("Anaglyph")
+
+                            RowLayout {
+                                anchors.fill: parent
+
+                                Label {
+                                    text: qsTr("Grey Factor")
+                                    font: uiTextFont
+                                }
+
+                                Slider {
+                                    id: greyFacSlider
+                                    Layout.fillWidth: true
+                                    value: DepthView.greyFac
+                                }
+                            }
+                        }
+
+                        GroupBox {
+                            width: parent.width
+                            title: qsTr("Side-by-Side/Top-Bottom")
+
+                            Column {
+                                anchors.fill: parent
+
+                                CheckBox {
+                                    id: mirrorLeftCheckBox
+                                    text: qsTr("Mirror Left")
+                                    font: uiTextFont
+
+                                    checked: DepthView.mirrorLeft
+                                }
+
+                                CheckBox {
+                                    id: mirrorRightCheckBox
+                                    text: qsTr("Mirror Right")
+                                    font: uiTextFont
+
+                                    checked: DepthView.mirrorRight
+                                }
+
+                                CheckBox {
+                                    id: anamorphicCheckBox
+                                    text: qsTr("Anamorphic")
+                                    font: uiTextFont
+
+                                    checked: DepthView.anamorphicDualView
+
+                                }
+                            }
+                        }
+
+                        CheckBox {
+                            id: swapEyesCheckBox
+                            text: qsTr("Swap Eyes")
+
+                            checked: DepthView.swapEyes
                         }
                     }
                 }

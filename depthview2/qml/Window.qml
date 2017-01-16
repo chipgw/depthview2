@@ -52,7 +52,7 @@ Rectangle {
             }
 
             /* Visible when the mouse is close, when the screen was recently touched, when any of the menus are open, or when a video is paused. */
-            state: fakeCursor.y < 128 || fileMenu.visible || viewMenu.visible || modeMenu.visible || touchTimer.running ||
+            state: fakeCursor.y < 128 || fileMenu.visible || modeMenu.visible || touchTimer.running ||
                    FolderListing.currentFile.length < 1 || (FolderListing.currentFileIsVideo && !image.isPlaying) ? "" : "HIDDEN"
 
             states: [
@@ -103,89 +103,6 @@ Rectangle {
                             text: "Quit"
                             font: uiTextFont
                             onTriggered: Qt.quit()
-                        }
-                    }
-                }
-
-                ToolButton {
-                    text: "View"
-                    font: uiTextFont
-                    onClicked: viewMenu.open()
-
-                    Menu {
-                        id: viewMenu
-                        y: parent.height
-
-                        /* The layout makes it collapse items that aren't visible. */
-                        ColumnLayout {
-                            MenuItem {
-                                visible: DepthView.drawMode === DrawMode.Anaglyph
-                                text: "Grey Factor"
-                                font: uiTextFont
-
-                                onTriggered: greyFacPopup.open()
-
-                                Popup {
-                                    id: greyFacPopup
-                                    Slider {
-                                        value: DepthView.greyFac
-                                        visible: DepthView.drawMode === DrawMode.Anaglyph
-
-                                        onValueChanged: DepthView.greyFac = value
-                                    }
-                                }
-                            }
-
-                            MenuItem {
-                                visible: DepthView.drawMode === DrawMode.SidebySide || DepthView.drawMode === DrawMode.TopBottom
-                                text: "Anamorphic"
-                                font: uiTextFont
-
-                                checkable: true
-                                checked: DepthView.anamorphicDualView
-
-                                onCheckedChanged: DepthView.anamorphicDualView = checked
-                            }
-
-                            MenuItem {
-                                visible: DepthView.drawMode === DrawMode.SidebySide || DepthView.drawMode === DrawMode.TopBottom
-                                text: "Mirror Left"
-                                font: uiTextFont
-
-                                checkable: true
-                                checked: DepthView.mirrorLeft
-
-                                onCheckedChanged: DepthView.mirrorLeft = checked
-                            }
-
-                            MenuItem {
-                                visible: DepthView.drawMode === DrawMode.SidebySide || DepthView.drawMode === DrawMode.TopBottom
-                                text: "Mirror Right"
-                                font: uiTextFont
-
-                                checkable: true
-                                checked: DepthView.mirrorRight
-
-                                onCheckedChanged: DepthView.mirrorRight = checked
-                            }
-
-                            MenuItem {
-                                text: "Swap Eyes"
-                                checkable: true
-
-                                onCheckedChanged: DepthView.swapEyes = checked
-                            }
-
-                            MenuItem {
-                                id: fullscreenCheckBox
-                                text: "Fullscreen"
-                                font: uiTextFont
-
-                                checkable: true
-                                checked: DepthView.fullscreen
-
-                                onCheckedChanged: DepthView.fullscreen = checked
-                            }
                         }
                     }
                 }
@@ -254,6 +171,15 @@ Rectangle {
                     Layout.fillWidth: true;
                 }
 
+                ToolButton {
+                    text: checked ? "fullscreen_exit" : "fullscreen"
+                    font: googleMaterialFont
+
+                    checkable: true
+                    checked: DepthView.fullscreen
+
+                    onCheckedChanged: DepthView.fullscreen = checked
+                }
                 ToolButton {
                     text: "settings"
                     font: googleMaterialFont
@@ -687,10 +613,6 @@ Rectangle {
             volumePopup.close()
         if (fileMenu.visible)
             fileMenu.close()
-        if (viewMenu.visible)
-            viewMenu.close()
-        if (greyFacPopup.visible)
-            greyFacPopup.close()
         if (modeMenu.visible)
             modeMenu.close()
         if (sourceMode.visible)
@@ -701,8 +623,7 @@ Rectangle {
         /* Popup close policy is borked with a touchscreen, so we do it ourselves. */
         anchors.fill: parent
 
-        enabled: aboutBox.visible || mediaInfoBox.visible || volumePopup.visible || fileMenu.visible || viewMenu.visible ||
-                 greyFacPopup.visible || modeMenu.visible || sourceMode.visible
+        enabled: aboutBox.visible || mediaInfoBox.visible || volumePopup.visible || fileMenu.visible || modeMenu.visible || sourceMode.visible
 
         onClicked: closePopups()
     }
