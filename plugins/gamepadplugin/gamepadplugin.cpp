@@ -26,8 +26,6 @@ bool GamepadPlugin::init(QQmlEngine* qmlEngine) {
     if (configMenuObject == nullptr)
         return false;
 
-    /* TODO - Currently the config menu is completely ignored and useless... */
-
     connect(&gamepad, &QGamepad::buttonAChanged,        this, &GamepadPlugin::buttonAChanged);
     connect(&gamepad, &QGamepad::buttonBChanged,        this, &GamepadPlugin::buttonBChanged);
     connect(&gamepad, &QGamepad::buttonCenterChanged,   this, &GamepadPlugin::buttonCenterChanged);
@@ -45,22 +43,7 @@ bool GamepadPlugin::init(QQmlEngine* qmlEngine) {
     connect(&gamepad, &QGamepad::buttonXChanged,        this, &GamepadPlugin::buttonXChanged);
     connect(&gamepad, &QGamepad::buttonYChanged,        this, &GamepadPlugin::buttonYChanged);
 
-    buttonAJustChanged = false;
-    buttonBJustChanged = false;
-    buttonCenterJustChanged = false;
-    buttonDownJustChanged = false;
-    buttonGuideJustChanged = false;
-    buttonL1JustChanged = false;
-    buttonL3JustChanged = false;
-    buttonLeftJustChanged = false;
-    buttonR1JustChanged = false;
-    buttonR3JustChanged = false;
-    buttonRightJustChanged = false;
-    buttonSelectJustChanged = false;
-    buttonStartJustChanged = false;
-    buttonUpJustChanged = false;
-    buttonXJustChanged = false;
-    buttonYJustChanged = false;
+    resetChangedTracker();
 
     gamepadEnable = QQmlProperty(configMenuObject, "gamepadEnable");
 
@@ -98,6 +81,9 @@ bool GamepadPlugin::pollInput(DVInputInterface* inputInterface) {
         DVInputMode::Type mode = inputInterface->inputMode();
 
         if (mode == DVInputMode::FileBrowser) {
+            if (JUST_RELEASED(buttonStart))
+                inputInterface->cancel();
+
             if (JUST_RELEASED(buttonL1))
                 inputInterface->goBack();
             if (JUST_RELEASED(buttonR1))
@@ -117,7 +103,7 @@ bool GamepadPlugin::pollInput(DVInputInterface* inputInterface) {
             if (JUST_RELEASED(buttonA))
                 inputInterface->accept();
         } else {
-            if (JUST_RELEASED(buttonY))
+            if (JUST_RELEASED(buttonStart))
                 inputInterface->openFileBrowser();
             if (JUST_RELEASED(buttonX))
                 inputInterface->fileInfo();
@@ -149,24 +135,16 @@ bool GamepadPlugin::pollInput(DVInputInterface* inputInterface) {
     }
 
     /* Reset the change tracking variables. */
-    buttonAJustChanged = false;
-    buttonBJustChanged = false;
-    buttonCenterJustChanged = false;
-    buttonDownJustChanged = false;
-    buttonGuideJustChanged = false;
-    buttonL1JustChanged = false;
-    buttonL3JustChanged = false;
-    buttonLeftJustChanged = false;
-    buttonR1JustChanged = false;
-    buttonR3JustChanged = false;
-    buttonRightJustChanged = false;
-    buttonSelectJustChanged = false;
-    buttonStartJustChanged = false;
-    buttonUpJustChanged = false;
-    buttonXJustChanged = false;
-    buttonYJustChanged = false;
+    resetChangedTracker();
 
     return false;
+}
+
+void GamepadPlugin::resetChangedTracker() {
+    buttonAJustChanged = buttonBJustChanged = buttonCenterJustChanged = buttonDownJustChanged =
+            buttonGuideJustChanged = buttonL1JustChanged = buttonL3JustChanged = buttonLeftJustChanged =
+            buttonR1JustChanged = buttonR3JustChanged = buttonRightJustChanged = buttonSelectJustChanged =
+            buttonStartJustChanged = buttonUpJustChanged = buttonXJustChanged = buttonYJustChanged = false;
 }
 
 void GamepadPlugin::buttonAChanged(bool value) {

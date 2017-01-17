@@ -35,6 +35,8 @@ class GamepadPlugin : public QObject, public DVInputPlugin {
     bool buttonXJustChanged;
     bool buttonYJustChanged;
 
+    void resetChangedTracker();
+
 public slots:
     void buttonAChanged(bool value);
     void buttonBChanged(bool value);
