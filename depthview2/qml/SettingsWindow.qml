@@ -207,13 +207,19 @@ Popup {
                         readonly property string title: modelData.title
 
                         function reset() {
-                            if (modelData.reset)
+                            try {
                                 modelData.reset()
+                            } catch (e) {
+                                console.warn(title, "did not reset correctly!", e)
+                            }
                         }
 
                         function apply() {
-                            if (modelData.apply)
+                            try {
                                 modelData.apply()
+                            } catch (e) {
+                                console.warn(title, "did not apply correctly!", e)
+                            }
                         }
 
                         ScrollBar.vertical: ScrollBar { }
