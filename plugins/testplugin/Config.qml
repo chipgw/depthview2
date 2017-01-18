@@ -5,9 +5,20 @@ Column {
     readonly property string title: "Test Plugin Settings"
 
     /* Properties for C++ to read. */
-    property alias logRenderStart: testPluginLogRenderStart.checked
-    property alias logRenderEnd: testPluginLogRenderEnd.checked
-    property alias logFrameSwap: testPluginLogFrameSwap.checked
+    property bool logRenderStart: false
+    property bool logRenderEnd: false
+    property bool logFrameSwap: false
+
+    function reset() {
+        testPluginLogRenderStart.checked = logRenderStart
+        testPluginLogRenderEnd.checked = logRenderEnd
+        testPluginLogFrameSwap.checked = logFrameSwap
+    }
+    function apply() {
+        logRenderStart = testPluginLogRenderStart.checked
+        logRenderEnd = testPluginLogRenderEnd.checked
+        logFrameSwap = testPluginLogFrameSwap.checked
+    }
 
     CheckBox {
         /* IDs need to be unique per plugin. Best way to guarantee that is to prefix with plugin name. */

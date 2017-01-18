@@ -8,19 +8,38 @@ Column {
     readonly property string title: "OpenVR Settings"
 
     /* Properties for C++ to read. */
-    property alias lockMouse: openVR_LockMouse.checked
-    property alias curvedScreen: openVR_CurvedScreen.checked
-    property alias screenSize: openVR_ScreenSize.value
-    property alias screenDistance: openVR_ScreenDistance.value
-    property alias screenHeight: openVR_ScreenHeight.value
+    property bool lockMouse: false
+    property bool curvedScreen: false
+    property real screenSize: 7
+    property real screenDistance: 8
+    property real screenHeight: 2
+
+    function reset() {
+        openVR_LockMouse.checked = lockMouse
+        openVR_CurvedScreen.checked = curvedScreen
+        openVR_ScreenSize.value = screenSize
+        openVR_ScreenDistance.value = screenDistance
+        openVR_ScreenHeight.value = screenHeight
+    }
+    function apply() {
+        lockMouse = openVR_LockMouse.checked
+        curvedScreen = openVR_CurvedScreen.checked
+        screenSize = openVR_ScreenSize.value
+        screenDistance = openVR_ScreenDistance.value
+        screenHeight = openVR_ScreenHeight.value
+    }
 
     CheckBox {
         id: openVR_LockMouse
         text: "Lock Mouse"
+
+        checked: lockMouse
     }
     CheckBox {
         id: openVR_CurvedScreen
         text: "Curved Screen"
+
+        checked: curvedScreen
     }
 
     RowLayout {
@@ -33,7 +52,7 @@ Column {
         Slider {
             id: openVR_ScreenSize
 
-            value: 7
+            value: screenSize
 
             from: 1
             to: screenDistance * 2
@@ -52,7 +71,7 @@ Column {
         Slider {
             id: openVR_ScreenDistance
 
-            value: 8
+            value: screenDistance
 
             from: 1
             to: 100
@@ -72,7 +91,7 @@ Column {
         Slider {
             id: openVR_ScreenHeight
 
-            value: 2
+            value: screenHeight
 
             from: 1
             to: 40

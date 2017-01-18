@@ -5,26 +5,19 @@ import QtQuick.Layouts 1.3
 Popup {
     id: root
 
-    function reset() {
-        saveWindowStateCheckBox.checked = DepthView.saveWindowState
-        startupFileBrowserCheckBox.checked = DepthView.startupFileBrowser
-        greyFacSlider.value = DepthView.greyFac
-        mirrorLeftCheckBox.checked = DepthView.mirrorLeft
-        mirrorRightCheckBox.checked = DepthView.mirrorRight
-        anamorphicCheckBox.checked = DepthView.anamorphicDualView
-        swapEyesCheckBox.checked = DepthView.swapEyes
-
-        /* TODO - Reset plugin settings. */
+    function resetAll() {
+        for (var i = 0; i < swipe.contentModel.count; ++i)
+            swipe.contentModel.get(i).reset();
     }
-
-    function apply() {
-        DepthView.saveWindowState = saveWindowStateCheckBox.checked
-        DepthView.startupFileBrowser = startupFileBrowserCheckBox.checked
-        DepthView.greyFac = greyFacSlider.value
-        DepthView.mirrorLeft = mirrorLeftCheckBox.checked
-        DepthView.mirrorRight = mirrorRightCheckBox.checked
-        DepthView.anamorphicDualView = anamorphicCheckBox.checked
-        DepthView.swapEyes = swapEyesCheckBox.checked
+    function applyAll() {
+        for (var i = 0; i < swipe.contentModel.count; ++i)
+            swipe.contentModel.get(i).apply();
+    }
+    function resetCurrent() {
+        swipe.currentItem.reset();
+    }
+    function applyCurrent() {
+        swipe.currentItem.apply();
     }
 
     Page {
@@ -54,7 +47,7 @@ Popup {
                 ToolButton {
                     text: qsTr("Reset")
 
-                    onClicked: reset()
+                    onClicked: resetCurrent()
                 }
                 Item {
                     Layout.fillWidth: true
@@ -62,13 +55,13 @@ Popup {
                 ToolButton {
                     text: qsTr("Apply")
 
-                    onClicked: apply()
+                    onClicked: applyCurrent()
                 }
                 ToolButton {
                     text: qsTr("Ok")
 
                     onClicked: {
-                        apply()
+                        applyAll()
 
                         root.close()
                     }
@@ -78,7 +71,7 @@ Popup {
                     text: qsTr("Cancel")
 
                     onClicked: {
-                        reset()
+                        resetAll()
 
                         root.close()
                     }
@@ -96,6 +89,26 @@ Popup {
                 anchors.fill: parent
 
                 Flickable {
+                    function reset() {
+                        saveWindowStateCheckBox.checked = DepthView.saveWindowState
+                        startupFileBrowserCheckBox.checked = DepthView.startupFileBrowser
+                        greyFacSlider.value = DepthView.greyFac
+                        mirrorLeftCheckBox.checked = DepthView.mirrorLeft
+                        mirrorRightCheckBox.checked = DepthView.mirrorRight
+                        anamorphicCheckBox.checked = DepthView.anamorphicDualView
+                        swapEyesCheckBox.checked = DepthView.swapEyes
+                    }
+
+                    function apply() {
+                        DepthView.saveWindowState = saveWindowStateCheckBox.checked
+                        DepthView.startupFileBrowser = startupFileBrowserCheckBox.checked
+                        DepthView.greyFac = greyFacSlider.value
+                        DepthView.mirrorLeft = mirrorLeftCheckBox.checked
+                        DepthView.mirrorRight = mirrorRightCheckBox.checked
+                        DepthView.anamorphicDualView = anamorphicCheckBox.checked
+                        DepthView.swapEyes = swapEyesCheckBox.checked
+                    }
+
                     readonly property string title: qsTr("General Settings")
 
                     ScrollBar.vertical: ScrollBar { }
@@ -192,6 +205,16 @@ Popup {
                     Flickable {
                         /* Use the title property from the provided item. */
                         readonly property string title: modelData.title
+
+                        function reset() {
+                            if (modelData.reset)
+                                modelData.reset()
+                        }
+
+                        function apply() {
+                            if (modelData.apply)
+                                modelData.apply()
+                        }
 
                         ScrollBar.vertical: ScrollBar { }
                         contentHeight: modelData.childrenRect.height
