@@ -98,8 +98,6 @@ DVWindow::~DVWindow() {
 
     delete renderFBO;
 
-    /* TODO - I'm pretty sure there is more that needs to be deleted here... */
-
     if (qmlCommunication->saveWindowState()) {
         /* Save the window geometry so that it can be restored next run. */
         settings.beginGroup("Window");
@@ -448,6 +446,5 @@ void DVWindow::doCommandLine(QCommandLineParser& parser) {
 
     /* If there weren't any warnings we don't show the dialog. */
     if(!warning.isEmpty())
-        /* TODO - Perhaps this should be done within QML? */
         QMessageBox::warning(nullptr, tr("Invalid Command Line!"), warning);
 }

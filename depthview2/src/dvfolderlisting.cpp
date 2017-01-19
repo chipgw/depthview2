@@ -139,8 +139,6 @@ void DVFolderListing::setCurrentDir(QString dir) {
 
     /* Tell the model system that we've finished changing all the things. */
     endResetModel();
-
-    /* TODO - What happens to currentFile? */
 }
 
 bool DVFolderListing::canGoUp() const {

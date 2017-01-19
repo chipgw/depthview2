@@ -136,7 +136,6 @@ void DVWindow::pluginOnFrameSwapped() {
 
 void DVWindow::doPluginInput() {
     /* Get input from ALL input plugins. */
-    /* TODO - Maybe make a settings dialog where they can be disabled? */
     for (DVInputPlugin* plugin : inputPlugins)
         plugin->pollInput(this);
 
