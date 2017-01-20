@@ -226,7 +226,7 @@ Popup {
                         }
 
                         ScrollBar.vertical: ScrollBar { }
-                        contentHeight: modelData.childrenRect.height
+                        contentHeight: modelData.height
 
                         /* Only enable panning when the item is tall enough. */
                         interactive: contentHeight > height
