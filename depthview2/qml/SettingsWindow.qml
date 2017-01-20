@@ -20,6 +20,17 @@ Popup {
         swipe.currentItem.apply();
     }
 
+    function cancel() {
+        resetAll()
+
+        close()
+    }
+    function accept() {
+        applyAll()
+
+        close()
+    }
+
     Page {
         anchors.fill: parent
 
@@ -60,21 +71,13 @@ Popup {
                 ToolButton {
                     text: qsTr("Ok")
 
-                    onClicked: {
-                        applyAll()
-
-                        root.close()
-                    }
+                    onClicked: accept()
                 }
 
                 ToolButton {
                     text: qsTr("Cancel")
 
-                    onClicked: {
-                        resetAll()
-
-                        root.close()
-                    }
+                    onClicked: cancel()
                 }
             }
         }

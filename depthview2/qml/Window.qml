@@ -617,13 +617,15 @@ Rectangle {
             modeMenu.close()
         if (sourceMode.visible)
             sourceMode.close()
+        if (settingsPopup.visible)
+            settingsPopup.cancel()
     }
 
     MouseArea {
         /* Popup close policy is borked with a touchscreen, so we do it ourselves. */
         anchors.fill: parent
 
-        enabled: aboutBox.visible || mediaInfoBox.visible || volumePopup.visible || fileMenu.visible || modeMenu.visible || sourceMode.visible
+        enabled: aboutBox.visible || mediaInfoBox.visible || volumePopup.visible || fileMenu.visible || modeMenu.visible || sourceMode.visible || settingsPopup.visible
 
         onClicked: closePopups()
     }
