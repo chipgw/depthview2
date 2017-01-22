@@ -17,8 +17,12 @@ bool OpenVRPlugin::init(QOpenGLExtraFunctions* f, QQmlEngine* qmlEngine) {
         return false;
     }
 
-    /* This wil be inited on first usage. */
+    /* These wil be inited on first usage. */
     vrSystem = nullptr;
+    leftEyeRenderFBO = nullptr;
+    rightEyeRenderFBO = nullptr;
+    leftEyeResolveFBO = nullptr;
+    rightEyeResolveFBO = nullptr;
 
     mirrorShader = new QOpenGLShaderProgram;
 
