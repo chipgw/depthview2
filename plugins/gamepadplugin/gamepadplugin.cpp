@@ -45,14 +45,9 @@ bool GamepadPlugin::init(QQmlEngine* qmlEngine) {
 
     resetChangedTracker();
 
+    connect(QGamepadManager::instance(), &QGamepadManager::gamepadConnected, this, &GamepadPlugin::gamepadConnected);
+
     gamepadEnable = QQmlProperty(configMenuObject, "gamepadEnable");
-
-    /* Get the list of connected gamepads. */
-    auto gamepads = QGamepadManager::instance()->connectedGamepads();
-
-    /* If there are any connected, use the first. */
-    if (!gamepads.isEmpty())
-        gamepad.setDeviceId(gamepads.first());
 
     qDebug("Gamepad plugin inited, controller%sfound.", gamepad.isConnected() ? " " : " not ");
 
@@ -145,6 +140,11 @@ void GamepadPlugin::resetChangedTracker() {
             buttonGuideJustChanged = buttonL1JustChanged = buttonL3JustChanged = buttonLeftJustChanged =
             buttonR1JustChanged = buttonR3JustChanged = buttonRightJustChanged = buttonSelectJustChanged =
             buttonStartJustChanged = buttonUpJustChanged = buttonXJustChanged = buttonYJustChanged = false;
+}
+
+void GamepadPlugin::gamepadConnected(int deviceId) {
+    if (!gamepad.isConnected())
+        gamepad.setDeviceId(deviceId);
 }
 
 void GamepadPlugin::buttonAChanged(bool value) {
