@@ -150,6 +150,7 @@ private:
     QString m_pluginMode;
     QMap<QString, QQuickItem*> pluginModes;
     QList<QQuickItem*> inputPluginConfig;
+    Qt::WindowState lastWindowState;
 
     bool m_swapEyes;
 };

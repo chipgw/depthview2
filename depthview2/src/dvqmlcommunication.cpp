@@ -7,7 +7,8 @@
 #include <QMessageBox>
 #include <QSettings>
 
-DVQmlCommunication::DVQmlCommunication(QWindow* parent, QSettings& s) : QObject(parent), settings(s), owner(parent), m_swapEyes(false) {
+DVQmlCommunication::DVQmlCommunication(QWindow* parent, QSettings& s) : QObject(parent),
+    settings(s), owner(parent), m_swapEyes(false), lastWindowState(Qt::WindowNoState) {
     /* We need to detect when the window state changes sowe can updatethe fullscreen property accordingly. */
     connect(owner, &QWindow::windowStateChanged, this, &DVQmlCommunication::ownerWindowStateChanged);
 
@@ -91,12 +92,16 @@ bool DVQmlCommunication::fullscreen() const {
 void DVQmlCommunication::setFullscreen(bool fullscreen) {
     /* Only set if changed. */
     if (fullscreen != (owner->windowState() == Qt::WindowFullScreen))
-        owner->setWindowState(fullscreen ? Qt::WindowFullScreen : Qt::WindowMaximized);
+        owner->setWindowState(fullscreen ? Qt::WindowFullScreen : lastWindowState);
 
     /* Signal will be emitted because of the state change. */
 }
 
 void DVQmlCommunication::ownerWindowStateChanged(Qt::WindowState windowState) {
+    /* TODO - Sometimes when entering fullscreen it changes to WindowNoState first which breaks it... */
+    if (windowState != Qt::WindowFullScreen)
+        lastWindowState = windowState;
+
     emit fullscreenChanged(windowState == Qt::WindowFullScreen);
 }
 
