@@ -2,8 +2,6 @@ TEMPLATE = app
 
 QT += qml quick widgets av
 
-lessThan(QT_MAJOR_VERSION, 5) || lessThan(QT_MINOR_VERSION, 7): error("This program requires Qt 5.7 or later.")
-
 SOURCES += src/main.cpp \
     src/dvwindow.cpp \
     src/dvwindow_plugin.cpp \
@@ -14,9 +12,6 @@ SOURCES += src/main.cpp \
     src/dvthumbnailresponse.cpp
 
 RESOURCES += qml.qrc
-
-# Additional import path used to resolve QML modules in Qt Creator's code model
-QML_IMPORT_PATH =
 
 # Add "CONFIG+=portable" (with quotes) to qmake arguments to enable portable build.
 portable:DEFINES += DV_PORTABLE

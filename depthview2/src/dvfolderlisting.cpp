@@ -264,10 +264,10 @@ qint64 DVFolderListing::currentFileSize() {
 }
 QString DVFolderListing::currentFileInfo() {
     QString info = "<h1>Media Info:</h1>" + m_currentFile.absoluteFilePath() +
-            "<br>Type: " + (isCurrentFileStereoImage() ? "Stereo Image" :
-                            isCurrentFileVideo() ? "Video" : "Image") +
-            "<br>File Size: " + bytesToString(m_currentFile.size()) +
-            "<br>Date Created: " + m_currentFile.created().toString();
+                   "<br>Type: " + (isCurrentFileStereoImage() ? "Stereo Image" :
+                                   isCurrentFileVideo() ? "Video" : "Image") +
+                   "<br>File Size: " + bytesToString(m_currentFile.size()) +
+                   "<br>Date Created: " + m_currentFile.created().toString();
 
     QString owner = m_currentFile.owner();
     if (!owner.isEmpty())

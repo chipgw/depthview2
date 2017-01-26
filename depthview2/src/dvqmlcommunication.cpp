@@ -8,7 +8,7 @@
 #include <QSettings>
 
 DVQmlCommunication::DVQmlCommunication(QWindow* parent, QSettings& s) : QObject(parent),
-    settings(s), owner(parent), m_swapEyes(false), lastWindowState(Qt::WindowNoState) {
+    settings(s), owner(parent), lastWindowState(Qt::WindowNoState), m_swapEyes(false) {
     /* We need to detect when the window state changes sowe can updatethe fullscreen property accordingly. */
     connect(owner, &QWindow::windowStateChanged, this, &DVQmlCommunication::ownerWindowStateChanged);
 
@@ -218,5 +218,4 @@ void DVQmlCommunication::setStartupFileBrowser(bool open) {
         settings.setValue("StartupFileBrowser", open);
         emit startupFileBrowserChanged();
     }
-
 }
