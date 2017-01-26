@@ -126,6 +126,10 @@ void DVWindow::pluginOnFrameSwapped() {
     DVRenderPlugin* plugin = getCurrentRenderPlugin();
 
     if (plugin != nullptr) {
+        /* Make sure the render size is up to date. */
+        /* TODO - A signal from the plugin would likely be more efficient... */
+        updateQmlSize();
+
         /* Let it do its thing. */
         plugin->frameSwapped(context()->extraFunctions());
 

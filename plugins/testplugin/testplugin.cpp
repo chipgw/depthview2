@@ -46,6 +46,8 @@ bool TestPlugin::init(QOpenGLExtraFunctions* f, QQmlEngine* qmlEngine) {
     logRenderStart = QQmlProperty(configMenuObject, "logRenderStart");
     logRenderEnd = QQmlProperty(configMenuObject, "logRenderEnd");
     logFrameSwap = QQmlProperty(configMenuObject, "logFrameSwap");
+    lockMouse = QQmlProperty(configMenuObject, "lockMouse");
+    renderSizeFactor = QQmlProperty(configMenuObject, "renderSizeFactor");
 
     qDebug("inited");
 
@@ -114,11 +116,13 @@ QQuickItem* TestPlugin::getConfigMenuObject() {
 }
 
 bool TestPlugin::shouldLockMouse() {
-    return false;
+    return lockMouse.read().toBool();
 }
 
 QSize TestPlugin::getRenderSize(const QSize& windowSize) {
-    return windowSize;
+    bool ok;
+    qreal sizeFactor = renderSizeFactor.read().toReal(&ok);
+    return windowSize * (ok ? sizeFactor : 1.0);
 }
 
 bool TestPlugin::pollInput(DVInputInterface* inputInterface) {

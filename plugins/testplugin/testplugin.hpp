@@ -37,4 +37,6 @@ private:
     QQmlProperty logRenderStart;
     QQmlProperty logRenderEnd;
     QQmlProperty logFrameSwap;
+    QQmlProperty lockMouse;
+    QQmlProperty renderSizeFactor;
 };
