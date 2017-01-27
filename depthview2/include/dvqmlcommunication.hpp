@@ -43,6 +43,7 @@ public:
     /* The current draw mode. */
     DVDrawMode::Type drawMode() const;
     void setDrawMode(DVDrawMode::Type mode);
+    void initDrawMode(DVDrawMode::Type mode);
 
     bool anamorphicDualView() const;
     void setAnamorphicDualView(bool anamorphic);

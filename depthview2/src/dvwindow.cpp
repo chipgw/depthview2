@@ -430,9 +430,9 @@ void DVWindow::doCommandLine(QCommandLineParser& parser) {
 
         if (mode >= DVDrawMode::Plugin) {
             qmlCommunication->setPluginMode(renderer);
-            qmlCommunication->setDrawMode(DVDrawMode::Plugin);
+            qmlCommunication->initDrawMode(DVDrawMode::Plugin);
         } else {
-            qmlCommunication->setDrawMode(DVDrawMode::Type(mode));
+            qmlCommunication->initDrawMode(DVDrawMode::Type(mode));
         }
     }
 

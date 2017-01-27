@@ -46,6 +46,11 @@ void DVQmlCommunication::setDrawMode(DVDrawMode::Type mode) {
     }
 }
 
+void DVQmlCommunication::initDrawMode(DVDrawMode::Type mode) {
+    m_drawMode = mode;
+    settings.setValue("DrawMode", DVDrawMode::toString(mode));
+}
+
 bool DVQmlCommunication::anamorphicDualView() const {
     return m_anamorphicDualView;
 }
