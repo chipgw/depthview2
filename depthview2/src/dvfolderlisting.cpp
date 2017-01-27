@@ -352,7 +352,9 @@ int DVFolderListing::rowCount(const QModelIndex& parent) const {
 }
 
 bool DVFolderListing::initDir(const QString& dir) {
+    /* Clear any stored history and reset the counter. */
     browserHistory.clear();
+    currentHistory = -1;
 
     /* Return false if cd fails. */
     if (!m_currentDir.cd(dir))
