@@ -55,7 +55,7 @@ Column {
             value: screenSize
 
             from: 1
-            to: screenDistance * 2
+            to: openVR_ScreenDistance.value * 2
 
             Layout.fillWidth: true
         }

@@ -122,20 +122,18 @@ bool OpenVRPlugin::deinit() {
     return true;
 }
 
-bool OpenVRPlugin::initVR(QOpenGLExtraFunctions* f) {
-    Q_UNUSED(f)
+bool OpenVRPlugin::initVR() {
+    vr::EVRInitError error = vr::VRInitError_None;
+    vrSystem = vr::VR_Init(&error, vr::VRApplication_Scene);
 
-    vr::EVRInitError eError = vr::VRInitError_None;
-    vrSystem = vr::VR_Init(&eError, vr::VRApplication_Scene);
-
-    if (eError != vr::VRInitError_None) {
+    if (error != vr::VRInitError_None) {
         vrSystem = nullptr;
         qDebug("Error initing vr system!");
         return false;
     }
 
     /* TODO - Actually use this. Also, support tracked controllers. (Gonna be hard, considering I have none...) */
-    renderModels = (vr::IVRRenderModels*)vr::VR_GetGenericInterface(vr::IVRRenderModels_Version, &eError);
+    renderModels = (vr::IVRRenderModels*)vr::VR_GetGenericInterface(vr::IVRRenderModels_Version, &error);
 
     if (renderModels == nullptr) {
         vrSystem = nullptr;
@@ -159,11 +157,10 @@ bool OpenVRPlugin::initVR(QOpenGLExtraFunctions* f) {
     rightEyeResolveFBO = new QOpenGLFramebufferObject(renderWidth, renderHeight);
 
     /* How many verts in each direction. */
-    GLushort lensGridSegmentCountH = 43;
-    GLushort lensGridSegmentCountV = 43;
+    GLushort lensGridSegmentCount = 43;
 
-    float w = 1.0f/(lensGridSegmentCountH-1);
-    float h = 1.0f/(lensGridSegmentCountV-1);
+    float w = 1.0f/(lensGridSegmentCount-1);
+    float h = 1.0f/(lensGridSegmentCount-1);
 
     float u, v;
 
@@ -173,8 +170,8 @@ bool OpenVRPlugin::initVR(QOpenGLExtraFunctions* f) {
     QVector<GLushort> indexes;
 
     /* Calculate the left eye's distortion verts. */
-    for (int y = 0; y < lensGridSegmentCountV; ++y) {
-        for (int x = 0; x < lensGridSegmentCountH; ++x) {
+    for (int y = 0; y < lensGridSegmentCount; ++y) {
+        for (int x = 0; x < lensGridSegmentCount; ++x) {
             /* Calculate the undistorted UV coordinates for the vertex. */
             u = x*w;
             v = y*h;
@@ -182,22 +179,24 @@ bool OpenVRPlugin::initVR(QOpenGLExtraFunctions* f) {
             /* Place a vertex, taking the UV and mapping from [0, 1] to [-1, 1]. */
             verts.push_back(QVector2D(2.0f*u-1.0f, 2.0f*v-1.0f));
 
+            vr::DistortionCoordinates_t distorted;
             /* Get the distortion coordinates from OpenVR. Invert v because of how OpenGL handles textures. */
-            auto distorted = vrSystem->ComputeDistortion(vr::Eye_Left, u, 1.0f-v);
+            if(!vrSystem->ComputeDistortion(vr::Eye_Left, u, 1.0f-v, &distorted))
+                qWarning("Error getting distortion coordinates!");
 
             /* Put the distortion coordinate into the list, inverting v back into OpenGL land. */
             verts.push_back(QVector2D(distorted.rfRed[0], 1.0f - distorted.rfRed[1]));
             verts.push_back(QVector2D(distorted.rfGreen[0], 1.0f - distorted.rfGreen[1]));
             verts.push_back(QVector2D(distorted.rfBlue[0], 1.0f - distorted.rfBlue[1]));
 
-            if (y == lensGridSegmentCountV-1 || x == lensGridSegmentCountH-1)
+            if (y == lensGridSegmentCount-1 || x == lensGridSegmentCount-1)
                 continue;
 
             /* Calculate the indexes for a nice little quad. */
-            a = lensGridSegmentCountH*y+x;
-            b = lensGridSegmentCountH*y+x+1;
-            c = (y+1)*lensGridSegmentCountH+x+1;
-            d = (y+1)*lensGridSegmentCountH+x;
+            a = lensGridSegmentCount*y+x;
+            b = lensGridSegmentCount*y+x+1;
+            c = (y+1)*lensGridSegmentCount+x+1;
+            d = (y+1)*lensGridSegmentCount+x;
 
             /* Add the quad as a pair of triangles. */
             indexes.push_back(a);
@@ -214,8 +213,8 @@ bool OpenVRPlugin::initVR(QOpenGLExtraFunctions* f) {
     int offset = verts.size() / 4;
 
     /* Calculate the right eye's distortion verts. */
-    for (int y = 0; y < lensGridSegmentCountV; ++y) {
-        for (int x = 0; x < lensGridSegmentCountH; ++x) {
+    for (int y = 0; y < lensGridSegmentCount; ++y) {
+        for (int x = 0; x < lensGridSegmentCount; ++x) {
             /* Calculate the undistorted UV coordinates for the vertex. */
             u = x*w;
             v = y*h;
@@ -223,22 +222,24 @@ bool OpenVRPlugin::initVR(QOpenGLExtraFunctions* f) {
             /* Place a vertex, taking the UV and mapping from [0, 1] to [-1, 1]. */
             verts.push_back(QVector2D(2.0f*u-1.0f, 2.0f*v-1.0f));
 
+            vr::DistortionCoordinates_t distorted;
             /* Get the distortion coordinates from OpenVR. Invert v because of how OpenGL handles textures. */
-            auto distorted = vrSystem->ComputeDistortion(vr::Eye_Right, u, 1.0f-v);
+            if(!vrSystem->ComputeDistortion(vr::Eye_Right, u, 1.0f-v, &distorted))
+                qWarning("Error getting distortion coordinates!");
 
             /* Put the distortion coordinate into the list, inverting v back into OpenGL land. */
             verts.push_back(QVector2D(distorted.rfRed[0], 1.0f - distorted.rfRed[1]));
             verts.push_back(QVector2D(distorted.rfGreen[0], 1.0f - distorted.rfGreen[1]));
             verts.push_back(QVector2D(distorted.rfBlue[0], 1.0f - distorted.rfBlue[1]));
 
-            if (y == lensGridSegmentCountV-1 || x == lensGridSegmentCountH-1)
+            if (y == lensGridSegmentCount-1 || x == lensGridSegmentCount-1)
                 continue;
 
             /* Calculate the indexes for a nice little quad. */
-            a = lensGridSegmentCountH*y+x +offset;
-            b = lensGridSegmentCountH*y+x+1 +offset;
-            c = (y+1)*lensGridSegmentCountH+x+1 +offset;
-            d = (y+1)*lensGridSegmentCountH+x +offset;
+            a = lensGridSegmentCount*y+x +offset;
+            b = lensGridSegmentCount*y+x+1 +offset;
+            c = (y+1)*lensGridSegmentCount+x+1 +offset;
+            d = (y+1)*lensGridSegmentCount+x +offset;
 
             /* Add the quad as a pair of triangles. */
             indexes.push_back(a);
@@ -273,7 +274,7 @@ bool OpenVRPlugin::initVR(QOpenGLExtraFunctions* f) {
 bool OpenVRPlugin::render(const QString& drawModeName, QOpenGLExtraFunctions* f) {
     Q_UNUSED(drawModeName)
 
-    if (vrSystem == nullptr && !initVR(f))
+    if (vrSystem == nullptr && !initVR())
         return false;
 
     vr::VRCompositor()->WaitGetPoses(trackedDevicePose, vr::k_unMaxTrackedDeviceCount, NULL, 0 );
@@ -315,8 +316,8 @@ bool OpenVRPlugin::render(const QString& drawModeName, QOpenGLExtraFunctions* f)
     const vr::HmdMatrix34_t& rightMatrix = vrSystem->GetEyeToHeadTransform(vr::Eye_Right);
 
     /* Get a projection matrix for each eye. */
-    const vr::HmdMatrix44_t& leftProj = vrSystem->GetProjectionMatrix(vr::Eye_Left,  0.1f, 100.0f, vr::API_OpenGL);
-    const vr::HmdMatrix44_t& rightProj = vrSystem->GetProjectionMatrix(vr::Eye_Right, 0.1f, 100.0f, vr::API_OpenGL);
+    const vr::HmdMatrix44_t& leftProj = vrSystem->GetProjectionMatrix(vr::Eye_Left,  0.1f, 100.0f);
+    const vr::HmdMatrix44_t& rightProj = vrSystem->GetProjectionMatrix(vr::Eye_Right, 0.1f, 100.0f);
 
     /* Convert them all to QMatrix4x4 and combine them. */
     QMatrix4x4 leftEyeMat  = QMatrix4x4(*leftProj.m) *  QMatrix4x4(QMatrix4x3(*leftMatrix.m))  * head;
@@ -412,10 +413,10 @@ bool OpenVRPlugin::render(const QString& drawModeName, QOpenGLExtraFunctions* f)
     distortionIBO->release();
     f->glBindTexture(GL_TEXTURE_2D, 0);
 
-    vr::Texture_t leftEyeTexture = { reinterpret_cast<void*>(static_cast<intptr_t>(leftEyeResolveFBO->texture())), vr::API_OpenGL, vr::ColorSpace_Gamma };
+    vr::Texture_t leftEyeTexture = { reinterpret_cast<void*>(static_cast<intptr_t>(leftEyeResolveFBO->texture())), vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
     vr::VRCompositor()->Submit(vr::Eye_Left, &leftEyeTexture);
 
-    vr::Texture_t rightEyeTexture = { reinterpret_cast<void*>(static_cast<intptr_t>(rightEyeResolveFBO->texture())), vr::API_OpenGL, vr::ColorSpace_Gamma };
+    vr::Texture_t rightEyeTexture = { reinterpret_cast<void*>(static_cast<intptr_t>(rightEyeResolveFBO->texture())), vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
     vr::VRCompositor()->Submit(vr::Eye_Right, &rightEyeTexture);
 
     /* All's well that ends well... */

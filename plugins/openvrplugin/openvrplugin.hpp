@@ -20,7 +20,7 @@ class OpenVRPlugin : public QObject, public DVRenderPlugin {
 public:
     bool init(QOpenGLExtraFunctions* f, QQmlEngine* qmlEngine);
     bool deinit();
-    bool initVR(QOpenGLExtraFunctions* f);
+    bool initVR();
 
     bool render(const QString& drawModeName, QOpenGLExtraFunctions* f);
 

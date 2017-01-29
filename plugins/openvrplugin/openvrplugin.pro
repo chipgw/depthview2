@@ -1,8 +1,7 @@
-#-------------------------------------------------
-#
-# Project created by QtCreator 2015-09-14T17:14:41
-#
-#-------------------------------------------------
+#------------------------------#
+# OpenVR plugin for DepthView2 #
+#  (Works with OpenVR v1.0.5)  #
+#------------------------------#
 
 TARGET = dv2_openvrplugin
 TEMPLATE = lib
