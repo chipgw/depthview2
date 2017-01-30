@@ -17,6 +17,10 @@ void DVWindow::loadPlugins() {
     /* Start with the path the application is in. */
     QDir pluginsDir(qApp->applicationDirPath());
 
+    /* Plugins start with "dv2_" on Windows and "libdv2_" on Linux. */
+    pluginsDir.setNameFilters(QStringList({"dv2_*", "libdv2_*"}));
+    pluginsDir.setFilter(QDir::Files);
+
 #if defined(Q_OS_WIN)
     /* If we're in a "debug" or "release" folder go up a level, because that's where plugins are copied by the build system. */
     if (pluginsDir.dirName().toLower() == "debug" || pluginsDir.dirName().toLower() == "release")
@@ -41,8 +45,8 @@ void DVWindow::loadPlugins() {
 
     qDebug("Loading plugins from \"%s\"...", qPrintable(pluginsDir.absolutePath()));
 
-    /* Try to load all files in the directory. */
-    for (const QString& filename : pluginsDir.entryList(QDir::Files)) {
+    /* Try to load all files in the directory using the filters defined above. */
+    for (const QString& filename : pluginsDir.entryList()) {
         /* If the file isn't a valid library for this platform, don't bother. */
         if (!QLibrary::isLibrary(filename)) continue;
 
