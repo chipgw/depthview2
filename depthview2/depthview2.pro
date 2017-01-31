@@ -8,8 +8,7 @@ SOURCES += src/main.cpp \
     src/dvqmlcommunication.cpp \
     src/version.cpp \
     src/dvfolderlisting.cpp \
-    src/dvthumbnailprovider.cpp \
-    src/dvthumbnailresponse.cpp
+    src/dvthumbnailprovider.cpp
 
 RESOURCES += qml.qrc
 
@@ -28,8 +27,7 @@ HEADERS += \
     include/version.hpp \
     include/dvfolderlisting.hpp \
     include/dvinputinterface.hpp \
-    include/dvthumbnailprovider.hpp \
-    include/dvthumbnailresponse.hpp
+    include/dvthumbnailprovider.hpp
 
 INCLUDEPATH += include
 

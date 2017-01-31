@@ -49,7 +49,7 @@ bool TestPlugin::init(QOpenGLExtraFunctions* f, QQmlEngine* qmlEngine) {
     lockMouse = QQmlProperty(configMenuObject, "lockMouse");
     renderSizeFactor = QQmlProperty(configMenuObject, "renderSizeFactor");
 
-    qDebug("inited");
+    qDebug("Test plugin inited.");
 
     return true;
 }
@@ -57,7 +57,7 @@ bool TestPlugin::init(QOpenGLExtraFunctions* f, QQmlEngine* qmlEngine) {
 bool TestPlugin::deinit() {
     delete shader;
 
-    qDebug("deinited");
+    qDebug("Test plugin deinited.");
 
     return true;
 }
