@@ -93,12 +93,12 @@ bool OpenVRPlugin::init(QOpenGLExtraFunctions* f, QQmlEngine* qmlEngine) {
     screenDistance = QQmlProperty(configMenu, "screenDistance");
     screenHeight = QQmlProperty(configMenu, "screenHeight");
     screenSize = QQmlProperty(configMenu, "screenSize");
-    curvedScreen = QQmlProperty(configMenu, "curvedScreen");
+    screenCurve = QQmlProperty(configMenu, "screenCurve");
     lockMouse = QQmlProperty(configMenu, "lockMouse");
     screenDistance.connectNotifySignal(this, SLOT(updateScreen()));
     screenHeight.connectNotifySignal(this, SLOT(updateScreen()));
     screenSize.connectNotifySignal(this, SLOT(updateScreen()));
-    curvedScreen.connectNotifySignal(this, SLOT(updateScreen()));
+    screenCurve.connectNotifySignal(this, SLOT(updateScreen()));
 
     qDebug("OpenVR plugin base inited.");
 
@@ -458,7 +458,9 @@ void OpenVRPlugin::updateScreen() {
     screen.clear();
     screenUV.clear();
 
-    if (curvedScreen.read().toBool()) {
+    float curviness = screenCurve.read().toFloat();
+
+    if (curviness > 0.0f) {
         constexpr int halfSteps = 50;
         float theta = size / distance;
 
@@ -466,9 +468,13 @@ void OpenVRPlugin::updateScreen() {
         float step = theta / halfSteps;
 
         for (int current = -halfSteps; current < halfSteps; ++current) {
+            /* Interpolate between the cylindrical coordinate and the flat coordinate based on curviness. */
+            float xCoord = std::sin(current * step) * distance * curviness + current / size * (1.0f-curviness);
+            float yCoord = std::cos(current * step) * -distance * curviness - distance * (1.0f-curviness);
+
             /* Calculate the coordinate of the vertex. */
-            screen += {{std::sin(current * step) * distance, z - height, std::cos(current * step) * -distance},
-                       {std::sin(current * step) * distance, z + height, std::cos(current * step) * -distance}};
+            screen += {{xCoord, z - height, yCoord},
+                       {xCoord, z + height, yCoord}};
 
             /* Map current from [-halfStep, halfStep] to [0, 1]. */
             float U = 0.5f * current / halfSteps + 0.5f;

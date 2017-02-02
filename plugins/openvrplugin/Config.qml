@@ -9,21 +9,21 @@ Column {
 
     /* Properties for C++ to read. */
     property bool lockMouse: false
-    property bool curvedScreen: false
+    property real screenCurve: 0
     property real screenSize: 7
     property real screenDistance: 8
     property real screenHeight: 2
 
     function reset() {
         openVR_LockMouse.checked = lockMouse
-        openVR_CurvedScreen.checked = curvedScreen
+        openVR_ScreenCurve.value = screenCurve
         openVR_ScreenSize.value = screenSize
         openVR_ScreenDistance.value = screenDistance
         openVR_ScreenHeight.value = screenHeight
     }
     function apply() {
         lockMouse = openVR_LockMouse.checked
-        curvedScreen = openVR_CurvedScreen.checked
+        screenCurve = openVR_ScreenCurve.value
         screenSize = openVR_ScreenSize.value
         screenDistance = openVR_ScreenDistance.value
         screenHeight = openVR_ScreenHeight.value
@@ -35,19 +35,28 @@ Column {
 
         checked: lockMouse
     }
-    CheckBox {
-        id: openVR_CurvedScreen
-        text: "Curved Screen"
+    RowLayout {
+        width: parent.width
+        Label {
+            text: "Screen Curviness"
+        }
+        Slider {
+            id: openVR_ScreenCurve
 
-        checked: curvedScreen
+            value: screenCurve
+
+            from: 0
+            to: 1
+
+            Layout.fillWidth: true
+        }
     }
 
     RowLayout {
         width: parent.width
         Label {
             text: "Screen Size"
-            height: parent.height
-            verticalAlignment: Text.AlignVCenter
+            anchors.verticalCenter: parent.verticalCenter
         }
         Slider {
             id: openVR_ScreenSize
@@ -65,8 +74,7 @@ Column {
         width: parent.width
         Label {
             text: "Screen Distance"
-            height: parent.height
-            verticalAlignment: Text.AlignVCenter
+            anchors.verticalCenter: parent.verticalCenter
         }
         Slider {
             id: openVR_ScreenDistance
@@ -84,8 +92,7 @@ Column {
         width: parent.width
         Label {
             text: "Screen Height"
-            height: parent.height
-            verticalAlignment: Text.AlignVCenter
+            anchors.verticalCenter: parent.verticalCenter
         }
 
         Slider {
