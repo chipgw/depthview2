@@ -446,6 +446,10 @@ QSize OpenVRPlugin::getRenderSize(const QSize& windowSize) {
     return windowSize;
 }
 
+float interpolate(float v1, float v2, float a) {
+    return v1 * a + v2 * (1.0f-a);
+}
+
 void OpenVRPlugin::updateScreen() {
     /* Get the properties from QML. */
     float distance = screenDistance.read().toFloat();
@@ -460,38 +464,24 @@ void OpenVRPlugin::updateScreen() {
 
     float curviness = screenCurve.read().toFloat();
 
-    if (curviness > 0.0f) {
-        constexpr int halfSteps = 50;
-        float theta = size / distance;
+    constexpr int halfSteps = 50;
 
-        /* Theta is the angle of half the screen,so this is angle of each step.  */
-        float step = theta / halfSteps;
+    /* size/distance gives the angle of half the screen, so this is angle of each step.  */
+    float step = size / (distance * halfSteps);
 
-        for (int current = -halfSteps; current < halfSteps; ++current) {
-            /* Interpolate between the cylindrical coordinate and the flat coordinate based on curviness. */
-            float xCoord = std::sin(current * step) * distance * curviness + current / size * (1.0f-curviness);
-            float yCoord = std::cos(current * step) * -distance * curviness - distance * (1.0f-curviness);
+    for (int current = -halfSteps; current <= halfSteps; ++current) {
+        /* Interpolate between the cylindrical coordinate and the flat coordinate based on curviness. */
+        float xCoord = interpolate(std::sin(current * step) * distance, current * size / halfSteps, curviness);
+        float yCoord = interpolate(std::cos(current * step) * -distance, -distance, curviness);
 
-            /* Calculate the coordinate of the vertex. */
-            screen += {{xCoord, z - height, yCoord},
-                       {xCoord, z + height, yCoord}};
+        /* Calculate the coordinate of the vertex. */
+        screen += {{xCoord, z - height, yCoord},
+        {xCoord, z + height, yCoord}};
 
-            /* Map current from [-halfStep, halfStep] to [0, 1]. */
-            float U = 0.5f * current / halfSteps + 0.5f;
+        /* Map current from [-halfStep, halfStep] to [0, 1]. */
+        float U = 0.5f * current / halfSteps + 0.5f;
 
-            screenUV += {{U, 0.0f}, {U, 1.0f}};
-        }
-    } else {
-        /* A simple rectangle... */
-        screen += {{-size, z - height, -distance},  /* 2--4 */
-                   {-size, z + height, -distance},  /* |\ | */
-                   { size, z - height, -distance},  /* | \| */
-                   { size, z + height, -distance}}; /* 1--3 */
-
-        screenUV += {{0.0f, 0.0f},
-                     {0.0f, 1.0f},
-                     {1.0f, 0.0f},
-                     {1.0f, 1.0f}};
+        screenUV += {{U, 0.0f}, {U, 1.0f}};
     }
 }
 
