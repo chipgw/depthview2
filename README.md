@@ -1,8 +1,8 @@
 DepthView
 =========
-is a viewer for stereoscopic 3D .jps and .pns images and also some formats of 3D video. I run it on Windows, Linux, and Android.
+is a viewer for stereoscopic 3D images and video. It runs on Windows and Linux, with experimental Android support.
 
-This is a WIP complete rewrite using QML and OpenGL. The original project is located here: [DepthView]
+This is a complete rewrite of [DepthView] using QML and OpenGL.
 
 Supported Draw Modes
 --------------------
@@ -12,6 +12,12 @@ Supported Draw Modes
 * Interlaced (horizontal and vertical)
 * Checkerboard
 * Single Image (Mono)
+
+Supported File Formats
+----------------------
+* Stereo 3D jps & pns files
+* 2D or 3D jpg, png, & bmp images (3D can be top/bottom or side-by-side).
+* 2D or 3D avi, mp4, m4v, mkv, ogv, ogg, webm, flv, 3gp, wmv, & mpg videos (3D can be top/bottom or side-by-side).
 
 Dependencies
 ------------
