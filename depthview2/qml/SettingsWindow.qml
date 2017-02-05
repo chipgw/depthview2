@@ -34,19 +34,15 @@ Popup {
     Page {
         anchors.fill: parent
 
-        header: ToolBar {
-            Row {
-                anchors.fill: parent
-                Repeater {
-                    model: swipe.contentChildren
+        header: TabBar {
+            id: bar
+            currentIndex: swipe.currentIndex
 
-                    ToolButton {
-                        text: modelData.title
+            Repeater {
+                model: swipe.contentChildren
 
-                        onClicked: swipe.currentIndex = index
-
-                        checked: swipe.currentIndex === index
-                    }
+                TabButton {
+                    text: modelData.title
                 }
             }
         }
@@ -90,6 +86,7 @@ Popup {
             SwipeView {
                 id: swipe
                 anchors.fill: parent
+                currentIndex: bar.currentIndex
 
                 Flickable {
                     function reset() {
