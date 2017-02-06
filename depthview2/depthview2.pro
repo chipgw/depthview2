@@ -1,6 +1,6 @@
 TEMPLATE = app
 
-QT += qml quick widgets av
+QT += qml quick widgets av quickcontrols2
 
 SOURCES += src/main.cpp \
     src/dvwindow.cpp \

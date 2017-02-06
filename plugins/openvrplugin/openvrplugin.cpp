@@ -475,8 +475,7 @@ void OpenVRPlugin::updateScreen() {
         float yCoord = interpolate(std::cos(current * step) * -distance, -distance, curviness);
 
         /* Calculate the coordinate of the vertex. */
-        screen += {{xCoord, z - height, yCoord},
-        {xCoord, z + height, yCoord}};
+        screen += {{xCoord, z - height, yCoord}, {xCoord, z + height, yCoord}};
 
         /* Map current from [-halfStep, halfStep] to [0, 1]. */
         float U = 0.5f * current / halfSteps + 0.5f;

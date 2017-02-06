@@ -17,23 +17,21 @@ Column {
     function reset() {
         openVR_LockMouse.checked = lockMouse
         openVR_ScreenCurve.value = screenCurve
-        openVR_ScreenSize.value = screenSize
         openVR_ScreenDistance.value = screenDistance
+        openVR_ScreenSize.value = screenSize
         openVR_ScreenHeight.value = screenHeight
     }
     function apply() {
         lockMouse = openVR_LockMouse.checked
         screenCurve = openVR_ScreenCurve.value
-        screenSize = openVR_ScreenSize.value
         screenDistance = openVR_ScreenDistance.value
+        screenSize = openVR_ScreenSize.value
         screenHeight = openVR_ScreenHeight.value
     }
 
     CheckBox {
         id: openVR_LockMouse
         text: "Lock Mouse"
-
-        checked: lockMouse
     }
     RowLayout {
         width: parent.width
@@ -42,8 +40,6 @@ Column {
         }
         Slider {
             id: openVR_ScreenCurve
-
-            value: screenCurve
 
             from: 0
             to: 1
@@ -61,8 +57,6 @@ Column {
         Slider {
             id: openVR_ScreenSize
 
-            value: screenSize
-
             from: 1
             to: openVR_ScreenDistance.value * 2
 
@@ -78,8 +72,6 @@ Column {
         }
         Slider {
             id: openVR_ScreenDistance
-
-            value: screenDistance
 
             from: 1
             to: 100
@@ -97,8 +89,6 @@ Column {
 
         Slider {
             id: openVR_ScreenHeight
-
-            value: screenHeight
 
             from: 1
             to: 40

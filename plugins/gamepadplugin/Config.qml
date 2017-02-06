@@ -16,7 +16,5 @@ Column {
     CheckBox {
         id: gamepadPlugin_Enable
         text: "Enable Gamepad Input"
-
-        checked: gamepadEnable
     }
 }

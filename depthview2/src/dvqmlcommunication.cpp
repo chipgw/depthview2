@@ -6,6 +6,8 @@
 #include <QApplication>
 #include <QMessageBox>
 #include <QSettings>
+#include <QQuickStyle>
+#include <QProcess>
 
 DVQmlCommunication::DVQmlCommunication(QWindow* parent, QSettings& s) : QObject(parent),
     settings(s), owner(parent), lastWindowState(Qt::WindowNoState), m_swapEyes(false) {
@@ -20,6 +22,9 @@ DVQmlCommunication::DVQmlCommunication(QWindow* parent, QSettings& s) : QObject(
 
     m_mirrorLeft = settings.contains("MirrorLeft") ? settings.value("MirrorLeft").toBool() : false;
     m_mirrorRight = settings.contains("MirrorRight") ? settings.value("MirrorRight").toBool() : false;
+
+    if (settings.contains("ControlsTheme"))
+        QQuickStyle::setStyle(settings.value("ControlsTheme").toString());
 }
 
 void DVQmlCommunication::postQmlInit() {
@@ -222,5 +227,25 @@ void DVQmlCommunication::setStartupFileBrowser(bool open) {
     if (!settings.contains("StartupFileBrowser") || settings.value("StartupFileBrowser").toBool() != open) {
         settings.setValue("StartupFileBrowser", open);
         emit startupFileBrowserChanged();
+    }
+}
+
+QString DVQmlCommunication::uiTheme() {
+    return settings.contains("ControlsTheme") ? settings.value("ControlsTheme").toString() : QQuickStyle::name();
+}
+
+void DVQmlCommunication::setUiTheme(QString theme) {
+    if (!settings.contains("ControlsTheme") || settings.value("ControlsTheme").toString() != theme) {
+        /* TODO - Verify as valid. */
+        settings.setValue("ControlsTheme", theme);
+
+        emit uiThemeChanged();
+
+        if (QMessageBox::question(nullptr, "Restart to apply?", "You must restart to apply the new UI Theme, restart now?",
+                                  QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes) {
+            /* TODO - Send arguments to restore current state. */
+            QProcess::startDetached(QApplication::applicationFilePath());
+            QApplication::quit();
+        }
     }
 }

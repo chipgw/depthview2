@@ -31,6 +31,9 @@ Popup {
         close()
     }
 
+    /* Use the reset function to init values. */
+    Component.onCompleted: resetAll()
+
     Page {
         anchors.fill: parent
 
@@ -97,6 +100,7 @@ Popup {
                         mirrorRightCheckBox.checked = DepthView.mirrorRight
                         anamorphicCheckBox.checked = DepthView.anamorphicDualView
                         swapEyesCheckBox.checked = DepthView.swapEyes
+                        uiThemeComboBox.currentIndex = uiThemeComboBox.find(DepthView.uiTheme)
                     }
 
                     function apply() {
@@ -107,6 +111,7 @@ Popup {
                         DepthView.mirrorRight = mirrorRightCheckBox.checked
                         DepthView.anamorphicDualView = anamorphicCheckBox.checked
                         DepthView.swapEyes = swapEyesCheckBox.checked
+                        DepthView.uiTheme = uiThemeComboBox.currentText
                     }
 
                     readonly property string title: qsTr("General Settings")
@@ -124,17 +129,26 @@ Popup {
                         CheckBox {
                             id: saveWindowStateCheckBox
                             text: qsTr("Remember Window State")
-
-                            checked: DepthView.saveWindowState
                         }
 
                         CheckBox {
                             id: startupFileBrowserCheckBox
                             text: qsTr("Show File Browser at Startup")
-
-                            checked: DepthView.startupFileBrowser
                         }
 
+                        Row {
+                            Label {
+                                anchors.verticalCenter: parent.verticalCenter
+                                text: "UI Theme: "
+                            }
+
+                            ComboBox {
+                                id: uiThemeComboBox
+
+                                /* TODO - Material mode messes up the Google Material icons. (Funny how that works...) */
+                                model: ["Default", "Material", "Universal"]
+                            }
+                        }
 
                         GroupBox {
                             width: parent.width
@@ -151,7 +165,6 @@ Popup {
                                 Slider {
                                     id: greyFacSlider
                                     Layout.fillWidth: true
-                                    value: DepthView.greyFac
                                 }
                             }
                         }
@@ -167,25 +180,18 @@ Popup {
                                     id: mirrorLeftCheckBox
                                     text: qsTr("Mirror Left")
                                     font: uiTextFont
-
-                                    checked: DepthView.mirrorLeft
                                 }
 
                                 CheckBox {
                                     id: mirrorRightCheckBox
                                     text: qsTr("Mirror Right")
                                     font: uiTextFont
-
-                                    checked: DepthView.mirrorRight
                                 }
 
                                 CheckBox {
                                     id: anamorphicCheckBox
                                     text: qsTr("Anamorphic")
                                     font: uiTextFont
-
-                                    checked: DepthView.anamorphicDualView
-
                                 }
                             }
                         }
@@ -193,8 +199,6 @@ Popup {
                         CheckBox {
                             id: swapEyesCheckBox
                             text: qsTr("Swap Eyes")
-
-                            checked: DepthView.swapEyes
                         }
                     }
                 }

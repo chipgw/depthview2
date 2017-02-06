@@ -33,6 +33,8 @@ class DVQmlCommunication : public QObject {
     Q_PROPERTY(bool saveWindowState READ saveWindowState WRITE setSaveWindowState NOTIFY saveWindowStateChanged)
     Q_PROPERTY(bool startupFileBrowser READ startupFileBrowser WRITE setStartupFileBrowser NOTIFY startupFileBrowserChanged)
 
+    Q_PROPERTY(QString uiTheme READ uiTheme WRITE setUiTheme NOTIFY uiThemeChanged)
+
 public:
     /* Settings can be set from DVWindow. */
     QSettings& settings;
@@ -83,6 +85,9 @@ public:
     bool startupFileBrowser() const;
     void setStartupFileBrowser(bool open);
 
+    QString uiTheme();
+    void setUiTheme(QString theme);
+
 signals:
     void isLeftChanged(bool isLeft);
     void drawModeChanged(DVDrawMode::Type mode);
@@ -101,8 +106,9 @@ signals:
     void swapEyesChanged();
 
     /* Settings. */
-    bool saveWindowStateChanged();
-    bool startupFileBrowserChanged();
+    void saveWindowStateChanged();
+    void startupFileBrowserChanged();
+    void uiThemeChanged();
 
     /* Used for setting the cursor position. */
     void mouseMoved(const QPointF& pos);
