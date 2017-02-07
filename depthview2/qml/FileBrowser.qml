@@ -279,7 +279,8 @@ Popup {
 
                 ToolButton {
                     font: googleMaterialFont
-                    text: "arrow_back"
+                    /* "arrow_back" */
+                    text: "\ue5c4"
                     
                     enabled: FolderListing.canGoBack
                     
@@ -288,7 +289,8 @@ Popup {
                 
                 ToolButton {
                     font: googleMaterialFont
-                    text: "arrow_forward"
+                    /* "arrow_forward" */
+                    text: "\ue5c8"
                     
                     enabled: FolderListing.canGoForward
                     
@@ -297,7 +299,8 @@ Popup {
                 
                 ToolButton {
                     font: googleMaterialFont
-                    text: "arrow_upward"
+                    /* "arrow_upward" */
+                    text: "\ue5d8"
                     
                     /* Don't go up if there is no up to go. */
                     enabled: FolderListing.canGoUp
@@ -324,7 +327,8 @@ Popup {
                 
                 ToolButton {
                     font: googleMaterialFont
-                    text: "cancel"
+                    /* "cancel" */
+                    text: "\ue5c9"
                     
                     onClicked: root.cancel()
                 }

@@ -172,7 +172,8 @@ Rectangle {
                 }
 
                 ToolButton {
-                    text: checked ? "fullscreen_exit" : "fullscreen"
+                    /* "fullscreen_exit" and "fullscreen". */
+                    text: checked ? "\ue5d1" : "\ue5d0"
                     font: googleMaterialFont
 
                     checkable: true
@@ -181,13 +182,15 @@ Rectangle {
                     onCheckedChanged: DepthView.fullscreen = checked
                 }
                 ToolButton {
-                    text: "settings"
+                    /* "settings" */
+                    text: "\ue8b8"
                     font: googleMaterialFont
                     onClicked: settingsPopup.open()
                 }
 
                 ToolButton {
-                    text: "help"
+                    /* "help" */
+                    text: "\ue887"
                     font: googleMaterialFont
                     onClicked: aboutBox.open()
                 }
@@ -307,7 +310,7 @@ Rectangle {
                             font: googleMaterialFont
                             /* TODO - I'm not sure this icon is clear enough, but it's the best fit I found.
                              * Perhaps I should make my own, and make icons for the modes themselves... */
-                            text: "settings_applications"
+                            text: "\ue8b9"
 
                             Menu {
                                 id: sourceMode
@@ -349,8 +352,8 @@ Rectangle {
 
                         ToolButton {
                             font: googleMaterialFont
-
-                            text: "skip_previous"
+                            /* "skip_previous" */
+                            text: "\ue045"
 
                             onClicked: FolderListing.openPrevious()
                         }
@@ -359,7 +362,8 @@ Rectangle {
                             visible: FolderListing.currentFileIsVideo
 
                             font: googleMaterialFont
-                            text: image.isPlaying ? "pause" : "play_arrow"
+                            /* "pause" and "play_arrow" */
+                            text: image.isPlaying ? "\ue034" : "\ue037"
 
                             onClicked: image.playPause()
                         }
@@ -367,15 +371,16 @@ Rectangle {
                             visible: FolderListing.currentFileIsVideo
 
                             font: googleMaterialFont
-                            text: "fast_forward"
+                            /* "fast_forward" */
+                            text: "\ue01f"
 
                             onClicked: image.fastForward()
                         }
 
                         ToolButton {
                             font: googleMaterialFont
-
-                            text: "skip_next"
+                            /* "skip_next" */
+                            text: "\ue044"
 
                             onClicked: FolderListing.openNext()
                         }
@@ -390,7 +395,8 @@ Rectangle {
 
                             font: googleMaterialFont
 
-                            text: image.videoVolume > 0.5 ? "volume_up" : image.videoVolume > 0.0 ? "volume_down" : "volume_off"
+                            /* "volume_up", "volume_down", & "volume_off", respectively. */
+                            text: image.videoVolume > 0.5 ? "\ue050" : image.videoVolume > 0.0 ? "\ue04d" : "\ue04f"
                             visible: FolderListing.currentFileIsVideo
 
                             /* It is only possible to click this when the popup is closed. */
