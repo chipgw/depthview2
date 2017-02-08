@@ -23,6 +23,7 @@ DVQmlCommunication::DVQmlCommunication(QWindow* parent, QSettings& s) : QObject(
     m_mirrorLeft = settings.contains("MirrorLeft") ? settings.value("MirrorLeft").toBool() : false;
     m_mirrorRight = settings.contains("MirrorRight") ? settings.value("MirrorRight").toBool() : false;
 
+    /* This constructor gets called before QML is set up, so this works. */
     if (settings.contains("ControlsTheme"))
         QQuickStyle::setStyle(settings.value("ControlsTheme").toString());
 }
@@ -231,6 +232,7 @@ void DVQmlCommunication::setStartupFileBrowser(bool open) {
 }
 
 QString DVQmlCommunication::uiTheme() {
+    /* Either get it from settings, or get the one currently being used. */
     return settings.contains("ControlsTheme") ? settings.value("ControlsTheme").toString() : QQuickStyle::name();
 }
 
@@ -241,6 +243,7 @@ void DVQmlCommunication::setUiTheme(QString theme) {
 
         emit uiThemeChanged();
 
+        /* Theme has to be set before any controls are loaded by QML, so a restart is required to apply. */
         if (QMessageBox::question(nullptr, "Restart to apply?", "You must restart to apply the new UI Theme, restart now?",
                                   QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes) {
             /* TODO - Send arguments to restore current state. */

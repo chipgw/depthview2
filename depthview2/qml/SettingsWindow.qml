@@ -35,6 +35,7 @@ Popup {
     Component.onCompleted: resetAll()
 
     Page {
+        clip: true
         anchors.fill: parent
 
         header: TabBar {
@@ -83,8 +84,6 @@ Popup {
 
         Item {
             anchors.fill: parent
-
-            clip: true
 
             SwipeView {
                 id: swipe
@@ -145,7 +144,6 @@ Popup {
                             ComboBox {
                                 id: uiThemeComboBox
 
-                                /* TODO - Material mode messes up the Google Material icons. (Funny how that works...) */
                                 model: ["Default", "Material", "Universal"]
                             }
                         }
