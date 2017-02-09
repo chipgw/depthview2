@@ -15,6 +15,7 @@
 #include <QOpenGLExtraFunctions>
 #include <QCommandLineParser>
 #include <QMessageBox>
+#include <QMimeData>
 #include <AVPlayer.h>
 
 /* Android in particular may not have this defined. */
@@ -361,7 +362,7 @@ void DVWindow::resizeGL(int, int) {
     updateQmlSize();
 }
 
-/* These events need only be passed on to the qmlWindow. */
+/* Most events need only be passed on to the qmlWindow. */
 bool DVWindow::event(QEvent* e) {
     switch (e->type()) {
     case QEvent::Leave:
@@ -403,6 +404,35 @@ bool DVWindow::event(QEvent* e) {
     case QEvent::KeyRelease:
         QCoreApplication::sendEvent(qmlWindow, e);
         return true;
+    case QEvent::DragEnter: {
+        QDragEnterEvent* drag = static_cast<QDragEnterEvent*>(e);
+        if (drag->mimeData()->hasUrls()) {
+            for (const QUrl& url : drag->mimeData()->urls()) {
+                QFileInfo info(url.toLocalFile());
+                /* If there are any local URLs that exist and match either the video or image filters, accept the drop. */
+                if (info.exists() && (folderListing->isFileImage(info) || folderListing->isFileVideo(info))) {
+                    drag->acceptProposedAction();
+                    return true;
+                }
+            }
+        }
+        /* Don't relay the event to QOpenGLWindow. */
+        return true;
+    }
+    case QEvent::Drop: {
+        QDropEvent* drop = static_cast<QDropEvent*>(e);
+        if (drop->mimeData()->hasUrls()) {
+            for (const QUrl& url : drop->mimeData()->urls()) {
+                /* If the file opened properly, accept the drop. */
+                if (folderListing->openFile(url)) {
+                    drop->acceptProposedAction();
+                    return true;
+                }
+            }
+        }
+        /* Don't relay the event to QOpenGLWindow. */
+        return true;
+    }
     default:
         break;
     }
