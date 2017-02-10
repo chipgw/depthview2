@@ -4,6 +4,7 @@ QT += qml quick widgets av quickcontrols2
 
 SOURCES += src/main.cpp \
     src/dvwindow.cpp \
+    src/dvwindow_gl.cpp \
     src/dvwindow_plugin.cpp \
     src/dvqmlcommunication.cpp \
     src/version.cpp \
