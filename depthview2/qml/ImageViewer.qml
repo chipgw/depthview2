@@ -64,6 +64,11 @@ Item {
                                  : "<br>Resolution: " + image.width + "x" + image.height)
                                  + "<hr>"
 
+    /* The size of the full image/video in its raw form, no stereo accounted for. */
+    readonly property size sourceSize: FolderListing.currentFileIsVideo ? Qt.size(vid.width, vid.height) : image.sourceSize
+    /* The size of a single eye of stereo video/image. */
+    readonly property size stereoSize: FolderListing.currentFileIsVideo ? Qt.size(vidWrapper.width, vidWrapper.height) : Qt.size(imageContainer.width, imageContainer.height)
+
     property int stereoMode: FolderListing.currentFileStereoMode
 
     function seek(offset) {
@@ -158,6 +163,7 @@ Item {
     }
 
     Item {
+        id: vidWrapper
         visible: FolderListing.currentFileIsVideo
 
         anchors.centerIn: parent

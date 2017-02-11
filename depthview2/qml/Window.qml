@@ -3,6 +3,7 @@ import QtQuick.Layouts 1.2
 import DepthView 2.0
 import QtQuick.Controls 2.0
 import QtQuick.Window 2.2
+import QtAV 1.6
 
 Rectangle {
     id: root
@@ -261,6 +262,7 @@ Rectangle {
                         value: image.videoPosition
 
                         MouseArea {
+                            id: progressMouseArea
                             anchors.fill: parent.background
 
                             /* mouseX * this = the position of the video at the point under the cursor.
@@ -276,10 +278,62 @@ Rectangle {
                             hoverEnabled: true
 
                             ToolTip {
+                                id: progressToolTip
                                 x: parent.mouseX - implicitWidth / 2
                                 visible: parent.containsMouse
 
-                                text: image.timeString(parent.screenPosToTime * parent.mouseX)
+                                text: image.timeString(progressMouseArea.screenPosToTime * progressMouseArea.mouseX)
+
+                                contentItem: Item {
+                                    implicitWidth: progressThumbWrapper.width
+                                    implicitHeight: childrenRect.height
+
+                                    Item {
+                                        id: progressThumbWrapper
+
+                                        property size maxSize: Qt.size(320, 240)
+
+                                        /* Why this is needed when the parent is the same exact width IDK, but it doesn't work without it. */
+                                        anchors.horizontalCenter: parent.horizontalCenter
+
+                                        /* Fit the output size inside the limits maintaining aspect ratio. */
+                                        width: Math.min(maxSize.width / image.stereoSize.width, maxSize.height / image.stereoSize.height) * image.stereoSize.width
+                                        height: Math.min(maxSize.width / image.stereoSize.width, maxSize.height / image.stereoSize.height) * image.stereoSize.height
+
+                                        VideoPreview {
+                                            id: progressThumb
+
+                                            /* This needs to be to its parent as the source size is to the stereo size. */
+                                            width: parent.width * image.sourceSize.width / image.stereoSize.width
+                                            height: parent.height * image.sourceSize.height / image.stereoSize.height
+
+                                            file: image.source
+                                            timestamp: progressMouseArea.screenPosToTime * progressMouseArea.mouseX
+
+                                            /* Always stretch. We set the VideoOutput to the size we want. */
+                                            fillMode: VideoOutput.Stretch
+
+                                            /* Hide the video, just use it as a source for the ShaderEffect. */
+                                            opacity: 0
+                                        }
+                                        StereoShader {
+                                            target: progressThumb
+                                            stereoMode: image.stereoMode
+
+                                            /* Videos tend to be the other way around from images... */
+                                            swap: true
+                                        }
+                                    }
+
+                                    Text {
+                                        anchors {
+                                            horizontalCenter: parent.horizontalCenter
+                                            top: progressThumbWrapper.bottom
+                                        }
+                                        text: progressToolTip.text
+                                        font: progressToolTip.font
+                                    }
+                                }
                             }
                         }
                     }
