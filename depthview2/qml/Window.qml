@@ -279,10 +279,10 @@ Rectangle {
 
                             ToolTip {
                                 id: progressToolTip
-                                x: parent.mouseX - implicitWidth / 2
-                                visible: parent.containsMouse
 
-                                text: image.timeString(progressMouseArea.screenPosToTime * progressMouseArea.mouseX)
+                                /* Limit to parent's width to avoid bugging to the wrong side of the screen when near the edge. */
+                                x: Math.min(Math.max(parent.mouseX - implicitWidth / 2, 0), parent.width - implicitWidth)
+                                visible: parent.containsMouse
 
                                 contentItem: Item {
                                     implicitWidth: progressThumbWrapper.width
@@ -330,7 +330,7 @@ Rectangle {
                                             horizontalCenter: parent.horizontalCenter
                                             top: progressThumbWrapper.bottom
                                         }
-                                        text: progressToolTip.text
+                                        text: image.timeString(progressMouseArea.screenPosToTime * progressMouseArea.mouseX)
                                         font: progressToolTip.font
                                     }
                                 }
