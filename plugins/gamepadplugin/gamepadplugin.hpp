@@ -58,7 +58,7 @@ public slots:
     void buttonYChanged(bool value);
 
 public:
-    bool init(QQmlEngine* qmlEngine);
+    bool init(QQmlContext* qmlContext);
     bool deinit();
 
     void frameSwapped();

@@ -12,38 +12,34 @@ Column {
     property real renderSizeFactor: 1.0
 
     function reset() {
-        testPluginLogRenderStart.checked = logRenderStart
-        testPluginLogRenderEnd.checked = logRenderEnd
-        testPluginLogFrameSwap.checked = logFrameSwap
-        testPluginLockMouse.checked = lockMouse
-        testPluginRenderSizeFac.value = renderSizeFactor
+        logRenderStartCheckBox.checked = logRenderStart
+        logRenderEndCheckBox.checked = logRenderEnd
+        logFrameSwapCheckBox.checked = logFrameSwap
+        lockMouseCheckBox.checked = lockMouse
+        renderSizeFacSlider.value = renderSizeFactor
     }
     function apply() {
-        logRenderStart = testPluginLogRenderStart.checked
-        logRenderEnd = testPluginLogRenderEnd.checked
-        logFrameSwap = testPluginLogFrameSwap.checked
-        lockMouse = testPluginLockMouse.checked
-        renderSizeFactor = testPluginRenderSizeFac.value
+        logRenderStart = logRenderStartCheckBox.checked
+        logRenderEnd = logRenderEndCheckBox.checked
+        logFrameSwap = logFrameSwapCheckBox.checked
+        lockMouse = lockMouseCheckBox.checked
+        renderSizeFactor = renderSizeFacSlider.value
     }
 
     CheckBox {
-        /* IDs need to be unique per plugin. Best way to guarantee that is to prefix with plugin name. */
-        id: testPluginLogRenderStart
+        id: logRenderStartCheckBox
         text: "Log Render Start"
     }
     CheckBox {
-        /* IDs need to be unique per plugin. Best way to guarantee that is to prefix with plugin name. */
-        id: testPluginLogRenderEnd
+        id: logRenderEndCheckBox
         text: "Log Render End"
     }
     CheckBox {
-        /* IDs need to be unique per plugin. Best way to guarantee that is to prefix with plugin name. */
-        id: testPluginLogFrameSwap
+        id: logFrameSwapCheckBox
         text: "Log Frame Swap"
     }
     CheckBox {
-        /* IDs need to be unique per plugin. Best way to guarantee that is to prefix with plugin name. */
-        id: testPluginLockMouse
+        id: lockMouseCheckBox
         text: "Lock Mouse"
     }
 
@@ -54,7 +50,7 @@ Column {
         }
 
         Slider {
-            id: testPluginRenderSizeFac
+            id: renderSizeFacSlider
             from: 0.5
             to: 1
             value: 1

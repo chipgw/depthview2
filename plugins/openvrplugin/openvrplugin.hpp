@@ -18,7 +18,7 @@ class OpenVRPlugin : public QObject, public DVRenderPlugin {
     Q_INTERFACES(DVRenderPlugin)
 
 public:
-    bool init(QOpenGLExtraFunctions* f, QQmlEngine* qmlEngine);
+    bool init(QOpenGLExtraFunctions* f, QQmlContext* qmlContext);
     bool deinit();
     bool initVR();
 

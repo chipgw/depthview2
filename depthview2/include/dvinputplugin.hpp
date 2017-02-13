@@ -2,7 +2,7 @@
 
 #include <QtPlugin>
 
-class QQmlEngine;
+class QQmlContext;
 class QQuickItem;
 class DVInputInterface;
 
@@ -11,7 +11,7 @@ public:
     virtual ~DVInputPlugin() { }
 
     /* Set up the plugin and return true if it can be used. */
-    virtual bool init(QQmlEngine* qmlEngine) = 0;
+    virtual bool init(QQmlContext* qmlContext) = 0;
 
     /* Delete and clean up anything used by the plugin. */
     virtual bool deinit() = 0;

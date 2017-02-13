@@ -3,8 +3,9 @@
 #include <QOpenGLShaderProgram>
 #include <QQmlComponent>
 #include <QQuickItem>
+#include <QQmlContext>
 
-bool TestPlugin::init(QOpenGLExtraFunctions* f, QQmlEngine* qmlEngine) {
+bool TestPlugin::init(QOpenGLExtraFunctions* f, QQmlContext* qmlContext) {
     Q_UNUSED(f)
 
     Q_INIT_RESOURCE(testplugin);
@@ -24,7 +25,7 @@ bool TestPlugin::init(QOpenGLExtraFunctions* f, QQmlEngine* qmlEngine) {
     /* Right image is TEXTURE1. */
     shader->setUniformValue("textureR", 1);
 
-    QQmlComponent component(qmlEngine);
+    QQmlComponent component(qmlContext->engine());
 
     component.loadUrl(QUrl(QStringLiteral("qrc:/TestPlugin/Config.qml")));
 
@@ -37,7 +38,7 @@ bool TestPlugin::init(QOpenGLExtraFunctions* f, QQmlEngine* qmlEngine) {
         return false;
     }
 
-    configMenuObject = qobject_cast<QQuickItem*>(component.create());
+    configMenuObject = qobject_cast<QQuickItem*>(component.create(qmlContext));
 
     /* Critical error! abort! abort! */
     if (configMenuObject == nullptr)

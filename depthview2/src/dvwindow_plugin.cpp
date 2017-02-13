@@ -6,6 +6,7 @@
 #include "dvfolderlisting.hpp"
 #include "dvqmlcommunication.hpp"
 #include <QQuickItem>
+#include <QQmlContext>
 #include <QMetaObject>
 #include <QApplication>
 #include <QOpenGLContext>
@@ -62,31 +63,35 @@ void DVWindow::loadPlugins() {
         DVRenderPlugin* renderPlugin = qobject_cast<DVRenderPlugin*>(obj);
         DVInputPlugin* inputPlugin = qobject_cast<DVInputPlugin*>(obj);
 
+        QQmlContext* pluginContext = new QQmlContext(qmlEngine, this);
+
         if (renderPlugin != nullptr) {
             qDebug("Found render plugin: \"%s\"", qPrintable(filename));
 
-            if (renderPlugin->init(context()->extraFunctions(), qmlEngine)) {
+            if (renderPlugin->init(context()->extraFunctions(), pluginContext)) {
                 for (const QString& mode : renderPlugin->drawModeNames())
                     qmlCommunication->addPluginMode(mode, renderPlugin->getConfigMenuObject());
 
                 renderPlugins.append(renderPlugin);
 
                 qDebug("Loaded plugin: \"%s\"", qPrintable(filename));
-            } else {
-                qDebug("Plugin: \"%s\" failed to init.", qPrintable(filename));
+
+                continue;
             }
         } else if (inputPlugin != nullptr) {
             qDebug("Found input plugin: \"%s\"", qPrintable(filename));
 
-            if (inputPlugin->init(qmlEngine)) {
+            if (inputPlugin->init(pluginContext)) {
                 inputPlugins.append(inputPlugin);
                 qmlCommunication->addInputPluginConfig(inputPlugin->getConfigMenuObject());
 
                 qDebug("Loaded plugin: \"%s\"", qPrintable(filename));
-            } else {
-                qDebug("Plugin: \"%s\" failed to init.", qPrintable(filename));
+
+                continue;
             }
         }
+        qDebug("Plugin: \"%s\" failed to init.", qPrintable(filename));
+        delete pluginContext;
     }
     qDebug("Done loading plugins.");
 }

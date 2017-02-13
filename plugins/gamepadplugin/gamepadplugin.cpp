@@ -2,12 +2,13 @@
 #include "dvinputinterface.hpp"
 #include <QQmlComponent>
 #include <QQuickItem>
+#include <QQmlContext>
 #include <QGamepad>
 
-bool GamepadPlugin::init(QQmlEngine* qmlEngine) {
+bool GamepadPlugin::init(QQmlContext* qmlContext) {
     Q_INIT_RESOURCE(gamepadplugin);
 
-    QQmlComponent component(qmlEngine);
+    QQmlComponent component(qmlContext->engine());
 
     component.loadUrl(QUrl(QStringLiteral("qrc:/GamepadPlugin/Config.qml")));
 
@@ -20,7 +21,7 @@ bool GamepadPlugin::init(QQmlEngine* qmlEngine) {
         return false;
     }
 
-    configMenuObject = qobject_cast<QQuickItem*>(component.create());
+    configMenuObject = qobject_cast<QQuickItem*>(component.create(qmlContext));
 
     /* Critical error! abort! abort! */
     if (configMenuObject == nullptr)

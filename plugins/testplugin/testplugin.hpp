@@ -14,7 +14,7 @@ class TestPlugin : public QObject, public DVRenderPlugin {
     QQuickItem* configMenuObject;
 
 public:
-    bool init(QOpenGLExtraFunctions* f, QQmlEngine* qmlEngine);
+    bool init(QOpenGLExtraFunctions* f, QQmlContext* qmlContext);
     bool deinit();
 
     bool render(const QString& drawModeName, QOpenGLExtraFunctions* f);

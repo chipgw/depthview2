@@ -3,7 +3,7 @@
 #include <QtPlugin>
 
 class QOpenGLExtraFunctions;
-class QQmlEngine;
+class QQmlContext;
 class QQuickItem;
 class DVInputInterface;
 
@@ -12,7 +12,7 @@ public:
     virtual ~DVRenderPlugin() { }
 
     /* Set up the plugin and return true if it can be used. */
-    virtual bool init(QOpenGLExtraFunctions* f, QQmlEngine* qmlEngine) = 0;
+    virtual bool init(QOpenGLExtraFunctions* f, QQmlContext* qmlContext) = 0;
     /* Delete and clean up anything used by the plugin. */
     virtual bool deinit() = 0;
 

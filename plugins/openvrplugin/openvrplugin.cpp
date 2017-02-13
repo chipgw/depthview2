@@ -5,10 +5,11 @@
 #include <QOpenGLBuffer>
 #include <QQmlComponent>
 #include <QQuickItem>
+#include <QQmlContext>
 #include <QDebug>
 #include <cmath>
 
-bool OpenVRPlugin::init(QOpenGLExtraFunctions* f, QQmlEngine* qmlEngine) {
+bool OpenVRPlugin::init(QOpenGLExtraFunctions* f, QQmlContext* qmlContext) {
     Q_UNUSED(f)
     Q_INIT_RESOURCE(openvrplugin);
 
@@ -71,7 +72,7 @@ bool OpenVRPlugin::init(QOpenGLExtraFunctions* f, QQmlEngine* qmlEngine) {
     /* The source texture will be bound to TEXTURE0. */
     distortionShader->setUniformValue("texture", 0);
 
-    QQmlComponent component(qmlEngine);
+    QQmlComponent component(qmlContext->engine());
 
     component.loadUrl(QUrl(QStringLiteral("qrc:/OpenVR/Config.qml")));
 
@@ -84,7 +85,7 @@ bool OpenVRPlugin::init(QOpenGLExtraFunctions* f, QQmlEngine* qmlEngine) {
         return false;
     }
 
-    configMenu = qobject_cast<QQuickItem*>(component.create());
+    configMenu = qobject_cast<QQuickItem*>(component.create(qmlContext));
 
     /* Critical error! abort! abort! */
     if (configMenu == nullptr)
