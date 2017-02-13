@@ -15,5 +15,8 @@
         <file>icons/MaterialIcons-Regular.ttf</file>
         <file>qml/StereoShader.qml</file>
         <file>qml/SettingsWindow.qml</file>
+        <file>qml/TopMenu.qml</file>
+        <file>qml/BottomMenu.qml</file>
+        <file>qml/VideoProgressBar.qml</file>
     </qresource>
 </RCC>

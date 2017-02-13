@@ -28,529 +28,67 @@ Rectangle {
                     pixelSize: Screen.pixelDensity > 12 ? 64 : 12
                 });
 
-    function updateZoom() {
-        zoomFitButton.checked = image.zoom === -1
-        zoom100Button.checked = image.zoom === 1
-    }
-
     ImageViewer {
         id: image
         anchors.fill: parent
 
-        onZoomChanged: updateZoom()
+        onZoomChanged: bottomMenu.updateZoom()
     }
 
     Item {
         anchors.fill: parent
 
-        ToolBar {
+        TopMenu {
             id: topMenu
-            anchors {
-                /* Fill the top edge of the screen. */
-                top: parent.top
-                left: parent.left
-                right: parent.right
-            }
 
-            /* Visible when the mouse is close, when the screen was recently touched, when any of the menus are open, or when a video is paused. */
-            state: fakeCursor.y < 128 || fileMenu.visible || modeMenu.visible || touchTimer.running ||
-                   FolderListing.currentFile.length < 1 || (FolderListing.currentFileIsVideo && !image.isPlaying) ? "" : "HIDDEN"
-
-            states: [
-                State {
-                    name: "HIDDEN"
-                    PropertyChanges { target: topMenu; anchors.topMargin: -topMenu.height }
-                }
-            ]
-
-            transitions: [
-                Transition {
-                    to: "*"
-                    NumberAnimation {
-                        target: topMenu
-                        properties: "anchors.topMargin"
-                        duration: 200
-                    }
-                }
-            ]
-
-            RowLayout {
-                width: parent.width
-
-                ToolButton {
-                    text: "File"
-                    font: uiTextFont
-                    onClicked: fileMenu.open()
-
-                    Menu {
-                        id: fileMenu
-                        y: parent.height
-
-                        MenuItem {
-                            text: "Open..."
-                            font: uiTextFont
-
-                            onTriggered: FolderListing.fileBrowserOpen = true
-                        }
-
-                        MenuItem {
-                            text: "File Info"
-                            font: uiTextFont
-
-                            onTriggered: mediaInfoBox.open()
-                        }
-
-                        MenuItem {
-                            text: "Quit"
-                            font: uiTextFont
-                            onTriggered: Qt.quit()
-                        }
-                    }
-                }
-
-                ToolButton {
-                    text: "Draw Mode"
-                    font: uiTextFont
-                    onClicked: modeMenu.open()
-
-                    Menu {
-                        id: modeMenu
-                        y: parent.height
-
-                        /* This layout avoids a situation where they all end up jumbled one on top of the other for some reason... */
-                        ColumnLayout {
-                            Repeater {
-                                id: modeList
-                                model: ListModel {
-                                    ListElement { text: "Anaglyph"; mode: DrawMode.Anaglyph }
-                                    ListElement { text: "Side-by-Side"; mode: DrawMode.SidebySide }
-                                    ListElement { text: "Top/Bottom"; mode: DrawMode.TopBottom }
-                                    ListElement { text: "Interlaced Horizontal"; mode: DrawMode.InterlacedH }
-                                    ListElement { text: "Interlaced Vertical"; mode: DrawMode.InterlacedV }
-                                    ListElement { text: "Checkerboard"; mode: DrawMode.Checkerboard }
-                                    ListElement { text: "Mono"; mode: DrawMode.Mono }
-                                }
-                                MenuItem {
-                                    text: model.text
-                                    font: uiTextFont
-
-                                    checkable: true
-                                    checked: DepthView.drawMode === model.mode
-
-                                    onCheckedChanged:
-                                        if (checked) {
-                                            DepthView.drawMode = model.mode
-                                            modeMenu.close()
-                                        }
-                                }
-                            }
-                            Repeater {
-                                id: pluginModeList
-                                model: DepthView.pluginModes
-
-                                MenuItem {
-                                    text: modelData
-                                    checkable: true
-                                    font: uiTextFont
-
-                                    checked: DepthView.drawMode === DrawMode.Plugin && DepthView.pluginMode === modelData
-
-                                    onCheckedChanged:
-                                        /* When checked we set the mode to Plugin and use the button text as the plugin mode. */
-                                        if (checked) {
-                                            DepthView.pluginMode = modelData
-                                            DepthView.drawMode = DrawMode.Plugin
-                                            modeMenu.close()
-                                        }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                Item {
-                    Layout.fillWidth: true;
-                }
-
-                ToolButton {
-                    /* "fullscreen_exit" and "fullscreen". */
-                    text: checked ? "\ue5d1" : "\ue5d0"
-                    font: googleMaterialFont
-
-                    checkable: true
-                    checked: DepthView.fullscreen
-
-                    onCheckedChanged: DepthView.fullscreen = checked
-                }
-                ToolButton {
-                    /* "settings" */
-                    text: "\ue8b8"
-                    font: googleMaterialFont
-                    onClicked: settingsPopup.open()
-                }
-
-                ToolButton {
-                    /* "help" */
-                    text: "\ue887"
-                    font: googleMaterialFont
-                    onClicked: aboutBox.open()
-                }
-            }
+            /* Visible when the mouse is close or when the screen was recently touched. */
+            forceOpen: fakeCursor.y < 128 || touchTimer.running
         }
 
-        ToolBar {
+        BottomMenu {
             id: bottomMenu
-            anchors {
-                /* Fill the bottom edge of the screen. */
-                bottom: parent.bottom
-                left: parent.left
-                right: parent.right
-            }
 
-            /* Visible when the mouse is close, when the screen was recently touched, when any of the menus are open, or when a video is paused. */
-            state: (root.height - fakeCursor.y) < 128 || sourceMode.visible || volumePopup.visible || touchTimer.running ||
-                   FolderListing.currentFile.length < 1 || (FolderListing.currentFileIsVideo && !image.isPlaying) ? "" : "HIDDEN"
-
-            states: [
-                State {
-                    name: "HIDDEN"
-                    PropertyChanges { target: bottomMenu; anchors.bottomMargin: -bottomMenu.height }
-                }
-            ]
-
-            transitions: [
-                Transition {
-                    to: "*"
-                    NumberAnimation {
-                        target: bottomMenu
-                        properties: "anchors.bottomMargin"
-                        duration: 200
-                    }
-                }
-            ]
-
-            ColumnLayout {
-                width: parent.width
-
-                RowLayout {
-                    id: playbackControls
-
-                    anchors {
-                        left: parent.left
-                        right: parent.right
-                    }
-
-                    /* Only show if currently on a video. */
-                    visible: FolderListing.currentFileIsVideo
-                    enabled: FolderListing.currentFileIsVideo
-
-                    Label {
-                        /* Show the time elapsed. */
-                        text: "  " + image.timeString(image.videoPosition)
-
-                        /* When the video is loading the duration is -1, which just looks odd. */
-                        visible: image.videoDuration > 0
-                    }
-
-                    ProgressBar {
-                        background.height: Screen.pixelDensity > 12 ? 32 : 12
-                        contentItem.implicitHeight: Screen.pixelDensity > 12 ? 24 : 8
-
-                        Layout.fillWidth: true
-
-                        to: image.videoDuration
-                        value: image.videoPosition
-
-                        MouseArea {
-                            id: progressMouseArea
-                            anchors.fill: parent.background
-
-                            /* mouseX * this = the position of the video at the point under the cursor.
-                             * (mouseX is already relative to this object, which makes it easy.) */
-                            property real screenPosToTime: image.videoDuration / width
-
-                            /* When the mouse moves (only when pressed) or is clicked, seek to that position. */
-                            onMouseXChanged: if (containsPress) image.seek(screenPosToTime * mouseX);
-                            onClicked: image.seek(screenPosToTime * mouseX);
-
-                            acceptedButtons: Qt.LeftButton
-
-                            hoverEnabled: true
-
-                            ToolTip {
-                                id: progressToolTip
-
-                                /* Limit to parent's width to avoid bugging to the wrong side of the screen when near the edge. */
-                                x: Math.min(Math.max(parent.mouseX - implicitWidth / 2, 0), parent.width - implicitWidth)
-                                visible: parent.containsMouse
-
-                                contentItem: Item {
-                                    implicitWidth: progressThumbWrapper.width
-                                    implicitHeight: childrenRect.height
-
-                                    Item {
-                                        id: progressThumbWrapper
-
-                                        property size maxSize: Qt.size(320, 240)
-
-                                        /* Why this is needed when the parent is the same exact width IDK, but it doesn't work without it. */
-                                        anchors.horizontalCenter: parent.horizontalCenter
-
-                                        /* Fit the output size inside the limits maintaining aspect ratio. */
-                                        width: Math.min(maxSize.width / image.stereoSize.width, maxSize.height / image.stereoSize.height) * image.stereoSize.width
-                                        height: Math.min(maxSize.width / image.stereoSize.width, maxSize.height / image.stereoSize.height) * image.stereoSize.height
-
-                                        VideoPreview {
-                                            id: progressThumb
-
-                                            /* This needs to be to its parent as the source size is to the stereo size. */
-                                            width: parent.width * image.sourceSize.width / image.stereoSize.width
-                                            height: parent.height * image.sourceSize.height / image.stereoSize.height
-
-                                            file: image.source
-                                            timestamp: progressMouseArea.screenPosToTime * progressMouseArea.mouseX
-
-                                            /* Always stretch. We set the VideoOutput to the size we want. */
-                                            fillMode: VideoOutput.Stretch
-
-                                            /* Hide the video, just use it as a source for the ShaderEffect. */
-                                            opacity: 0
-                                        }
-                                        StereoShader {
-                                            target: progressThumb
-                                            stereoMode: image.stereoMode
-
-                                            /* Videos tend to be the other way around from images... */
-                                            swap: true
-                                        }
-                                    }
-
-                                    Text {
-                                        anchors {
-                                            horizontalCenter: parent.horizontalCenter
-                                            top: progressThumbWrapper.bottom
-                                        }
-                                        text: image.timeString(progressMouseArea.screenPosToTime * progressMouseArea.mouseX)
-                                        font: progressToolTip.font
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    Label {
-                        /* The time remaining. */
-                        text: "-" + image.timeString(image.videoDuration - image.videoPosition) + "  "
-
-                        /* When the video is loading the duration is -1, which just looks odd. */
-                        visible:  image.videoDuration > 0
-                    }
-                }
-
-                Item {
-                    anchors {
-                        left: parent.left
-                        right: parent.right
-                    }
-                    height: childrenRect.height
-
-                    RowLayout {
-                        anchors.left: parent.left
-
-                        ToolButton {
-                            visible: !FolderListing.currentFileIsStereoImage
-                            onClicked: sourceMode.open()
-
-                            font: googleMaterialFont
-                            /* TODO - I'm not sure this icon is clear enough, but it's the best fit I found.
-                             * Perhaps I should make my own, and make icons for the modes themselves... */
-                            text: "\ue8b9"
-
-                            Menu {
-                                id: sourceMode
-                                y: -height
-
-                                /* This layout avoids a situation where they all end up jumbled one on top of the other for some reason... */
-                                ColumnLayout {
-                                    Repeater {
-                                        model: ListModel {
-                                            ListElement { text: "Side-by-Side"; mode: SourceMode.SidebySide }
-                                            ListElement { text: "Side-by-Side Anamorphic"; mode: SourceMode.SidebySideAnamorphic }
-                                            ListElement { text: "Top/Bottom"; mode: SourceMode.TopBottom }
-                                            ListElement { text: "Top/Bottom Anamorphic"; mode: SourceMode.TopBottomAnamorphic }
-                                            ListElement { text: "Mono"; mode: SourceMode.Mono }
-                                        }
-
-                                        MenuItem {
-                                            text: model.text
-
-                                            checkable: true
-                                            checked: image.stereoMode === model.mode
-                                            font: uiTextFont
-
-                                            onCheckedChanged:
-                                                if (checked) {
-                                                    image.stereoMode = model.mode
-                                                    sourceMode.close()
-                                                }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    RowLayout {
-                        /* Navigation controls in the middle. */
-                        anchors.horizontalCenter: parent.horizontalCenter
-
-                        ToolButton {
-                            font: googleMaterialFont
-                            /* "skip_previous" */
-                            text: "\ue045"
-
-                            onClicked: FolderListing.openPrevious()
-                        }
-
-                        ToolButton {
-                            visible: FolderListing.currentFileIsVideo
-
-                            font: googleMaterialFont
-                            /* "pause" and "play_arrow" */
-                            text: image.isPlaying ? "\ue034" : "\ue037"
-
-                            onClicked: image.playPause()
-                        }
-                        ToolButton {
-                            visible: FolderListing.currentFileIsVideo
-
-                            font: googleMaterialFont
-                            /* "fast_forward" */
-                            text: "\ue01f"
-
-                            onClicked: image.fastForward()
-                        }
-
-                        ToolButton {
-                            font: googleMaterialFont
-                            /* "skip_next" */
-                            text: "\ue044"
-
-                            onClicked: FolderListing.openNext()
-                        }
-                    }
-
-                    RowLayout {
-                        anchors.right: parent.right
-
-                        /* Not a "zoom button" but goes in the same corner. */
-                        ToolButton {
-                            id: volumeButton
-
-                            font: googleMaterialFont
-
-                            /* "volume_up", "volume_down", & "volume_off", respectively. */
-                            text: image.videoVolume > 0.5 ? "\ue050" : image.videoVolume > 0.0 ? "\ue04d" : "\ue04f"
-                            visible: FolderListing.currentFileIsVideo
-
-                            /* It is only possible to click this when the popup is closed. */
-                            onClicked: volumePopup.open()
-
-                            Popup {
-                                id: volumePopup
-                                y: -height
-
-                                Slider {
-                                    orientation: Qt.Vertical
-
-                                    /* Init to the default value. */
-                                    value: image.videoVolume
-
-                                    onValueChanged: image.videoVolume = value
-                                }
-                            }
-                        }
-
-                        ToolButton {
-                            id: zoomFitButton
-                            text: "Fit"
-                            font: uiTextFont
-
-                            checkable: true
-                            checked: image.zoom === -1
-
-                            onCheckedChanged: {
-                                /* If this button was checked, set the zoom value to -1. */
-                                if (checked)
-                                    image.zoom = -1;
-
-                                /* Either way, update the checked state of both buttons.
-                                 * (If checked was set to false via mouse but the zoom is still -1 this will set it to true again.) */
-                                updateZoom()
-                            }
-                        }
-                        ToolButton {
-                            id: zoom100Button
-                            text: "1:1"
-                            font: uiTextFont
-
-                            checkable: true
-                            checked: image.zoom === 1
-
-                            onCheckedChanged: {
-                                /* If this button was checked, set the zoom value to 1. */
-                                if (checked)
-                                    image.zoom = 1;
-
-                                /* Either way, update the checked state of both buttons.
-                                 * (If checked was set to false via mouse but the zoom is still 1 this will set it to true again.) */
-                                updateZoom()
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        Popup {
-            id: aboutBox
-
-            /* Anchors don't work on popups because they are appended to the window content item. */
-            x: (parent.width - width) / 2
-            y: (parent.height - height) / 2
-
-            Label {
-                id: aboutLabel
-
-                text: "<h1>DepthView " + DepthView.versionString() +
-                      "</h1><p>DepthView is a basic application for viewing stereo 3D image files.</p>" +
-                      "<p>DepthView website: <a href=\"https://github.com/chipgw/depthview2\">github.com/chipgw/depthview2</a></p>" +
-                      "<p>Please report any bugs at: " +
-                      "<a href=\"https://github.com/chipgw/depthview2/issues\">github.com/chipgw/depthview2/issues</a></p>" +
-                      "<hr>"
-
-                /* Allow clicking links in the window. */
-                onLinkActivated: Qt.openUrlExternally(link)
-
-                textFormat: Text.RichText
-            }
-        }
-        Popup {
-            id: mediaInfoBox
-
-            /* No anchors for some reason... */
-            x: (parent.width - width) / 2
-            y: (parent.height - height) / 2
-
-            Label {
-                id: mediaInfoLabel
-                text: image.mediaInfo
-
-                textFormat: Text.RichText
-            }
+            /* Visible when the mouse is close or when the screen was recently touched.. */
+            forceOpen: (root.height - fakeCursor.y) < 128 || touchTimer.running
         }
     }
+    Popup {
+        id: aboutBox
 
+        /* Anchors don't work on popups because they are appended to the window content item. */
+        x: (parent.width - width) / 2
+        y: (parent.height - height) / 2
+
+        Label {
+            id: aboutLabel
+
+            text: "<h1>DepthView " + DepthView.versionString() +
+                  "</h1><p>DepthView is a basic application for viewing stereo 3D image files.</p>" +
+                  "<p>DepthView website: <a href=\"https://github.com/chipgw/depthview2\">github.com/chipgw/depthview2</a></p>" +
+                  "<p>Please report any bugs at: " +
+                  "<a href=\"https://github.com/chipgw/depthview2/issues\">github.com/chipgw/depthview2/issues</a></p>" +
+                  "<hr>"
+
+            /* Allow clicking links in the window. */
+            onLinkActivated: Qt.openUrlExternally(link)
+
+            textFormat: Text.RichText
+        }
+    }
+    Popup {
+        id: mediaInfoBox
+
+        /* No anchors for some reason... */
+        x: (parent.width - width) / 2
+        y: (parent.height - height) / 2
+
+        Label {
+            id: mediaInfoLabel
+            text: image.mediaInfo
+
+            textFormat: Text.RichText
+        }
+    }
     FileBrowser {
         id: fileBrowser
 
@@ -571,7 +109,6 @@ Rectangle {
         x:  root.width / 4
         y:  root.height / 4
     }
-
 
     Image {
         /* Start out off-screen so if the position doesn't get set it won't show up in the corner. */
@@ -665,27 +202,20 @@ Rectangle {
     function closePopups() {
         if (FolderListing.fileBrowserOpen)
             fileBrowser.cancel()
-        if (aboutBox.visible)
-            aboutBox.close()
-        if (mediaInfoBox.visible)
-            mediaInfoBox.close()
-        if (volumePopup.visible)
-            volumePopup.close()
-        if (fileMenu.visible)
-            fileMenu.close()
-        if (modeMenu.visible)
-            modeMenu.close()
-        if (sourceMode.visible)
-            sourceMode.close()
         if (settingsPopup.visible)
             settingsPopup.cancel()
+
+        aboutBox.close()
+        mediaInfoBox.close()
+        topMenu.closeMenus()
+        bottomMenu.closeMenus()
     }
 
     MouseArea {
         /* Popup close policy is borked with a touchscreen, so we do it ourselves. */
         anchors.fill: parent
 
-        enabled: aboutBox.visible || mediaInfoBox.visible || volumePopup.visible || fileMenu.visible || modeMenu.visible || sourceMode.visible || settingsPopup.visible
+        enabled: aboutBox.visible || mediaInfoBox.visible || topMenu.isMenuOpen || bottomMenu.isMenuOpen || settingsPopup.visible
 
         onClicked: closePopups()
     }
