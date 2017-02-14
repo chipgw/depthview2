@@ -96,6 +96,7 @@ bool OpenVRPlugin::init(QOpenGLExtraFunctions* f, QQmlContext* qmlContext) {
     screenSize = QQmlProperty(configMenu, "screenSize");
     screenCurve = QQmlProperty(configMenu, "screenCurve");
     lockMouse = QQmlProperty(configMenu, "lockMouse");
+    renderSizeFac = QQmlProperty(configMenu, "renderSizeFac");
     screenDistance.connectNotifySignal(this, SLOT(updateScreen()));
     screenHeight.connectNotifySignal(this, SLOT(updateScreen()));
     screenSize.connectNotifySignal(this, SLOT(updateScreen()));
@@ -444,7 +445,9 @@ bool OpenVRPlugin::shouldLockMouse() {
 }
 
 QSize OpenVRPlugin::getRenderSize(const QSize& windowSize) {
-    return windowSize;
+    bool ok;
+    qreal sizeFactor = renderSizeFac.read().toReal(&ok);
+    return windowSize * (ok ? sizeFactor : 1.0);
 }
 
 float interpolate(float v1, float v2, float a) {
