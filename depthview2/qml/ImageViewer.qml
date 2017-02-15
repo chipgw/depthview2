@@ -8,17 +8,6 @@ Item {
 
     property real zoom: -1
 
-    Connections {
-        target: FolderListing
-
-        onCurrentFileChanged: {
-            /* Make sure the current mode is up to date. */
-            stereoMode = FolderListing.currentFileStereoMode
-            /* Reset video settings. */
-            seek(0);
-        }
-    }
-
     function playPause() {
         if (FolderListing.currentFileIsVideo) {
             /* Reset speed. */
@@ -45,6 +34,15 @@ Item {
     property bool isPlaying: FolderListing.currentFileIsVideo && media.playbackState === MediaPlayer.PlayingState
 
     property url source: FolderListing.currentURL
+
+    onSourceChanged: {
+        /* Make sure the current mode is up to date. */
+        stereoMode = FolderListing.currentFileStereoMode
+        /* Reset video settings. */
+        seek(0);
+        /* Reset speed. */
+        media.playbackRate = 1.0;
+    }
 
     property alias videoPosition: media.position
     property alias videoDuration: media.duration
