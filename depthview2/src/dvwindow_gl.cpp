@@ -207,8 +207,10 @@ void DVWindow::loadShader(QOpenGLShaderProgram& shader, const char* vshader, con
     res.open(QIODevice::ReadOnly | QIODevice::Text);
     QString fshaderSrc = res.readAll();
 
+#ifndef Q_OS_MAC
     if (!context()->isOpenGLES())
         fshaderSrc.prepend("#version 130\n");
+#endif
 
     shader.addShaderFromSourceCode(QOpenGLShader::Fragment, fshaderSrc);
 
