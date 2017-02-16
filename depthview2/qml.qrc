@@ -18,5 +18,6 @@
         <file>qml/TopMenu.qml</file>
         <file>qml/BottomMenu.qml</file>
         <file>qml/VideoProgressBar.qml</file>
+        <file>qml/LabeledSlider.qml</file>
     </qresource>
 </RCC>

@@ -1,10 +1,9 @@
 import QtQuick 2.0
 import QtQuick.Controls 2.0
-import QtQuick.Layouts 1.3
+/* For LabeledSlider */
+import "qrc:/qml"
 
 Column {
-    width: parent.width
-
     readonly property string title: "OpenVR Settings"
 
     /* Properties for C++ to read. */
@@ -36,83 +35,48 @@ Column {
         id: openVR_LockMouse
         text: "Lock Mouse"
     }
-    RowLayout {
-        width: parent.width
-        Label {
-            text: "Screen Curviness"
-        }
-        Slider {
-            id: openVR_ScreenCurve
 
-            from: 0
-            to: 1
+    LabeledSlider {
+        id: openVR_ScreenCurve
 
-            Layout.fillWidth: true
-        }
+        text: "Screen Curviness"
+
+        from: 0
+        to: 1
     }
 
-    RowLayout {
-        width: parent.width
-        Label {
-            text: "Screen Size"
-            anchors.verticalCenter: parent.verticalCenter
-        }
-        Slider {
-            id: openVR_ScreenSize
+    LabeledSlider {
+        id: openVR_ScreenSize
 
-            from: 1
-            to: openVR_ScreenDistance.value * 2
+        text: "Screen Size"
 
-            Layout.fillWidth: true
-        }
+        from: 1
+        to: openVR_ScreenDistance.value * 2
     }
 
-    RowLayout {
-        width: parent.width
-        Label {
-            text: "Screen Distance"
-            anchors.verticalCenter: parent.verticalCenter
-        }
-        Slider {
-            id: openVR_ScreenDistance
+    LabeledSlider {
+        id: openVR_ScreenDistance
 
-            from: 1
-            to: 100
+        text: "Screen Distance"
 
-            Layout.fillWidth: true
-        }
+        from: 1
+        to: 100
     }
 
-    RowLayout {
-        width: parent.width
-        Label {
-            text: "Screen Height"
-            anchors.verticalCenter: parent.verticalCenter
-        }
+    LabeledSlider {
+        id: openVR_ScreenHeight
 
-        Slider {
-            id: openVR_ScreenHeight
+        text: "Screen Height"
 
-            from: 1
-            to: 40
-
-            Layout.fillWidth: true
-        }
+        from: 1
+        to: 40
     }
-    RowLayout {
-        width: parent.width
-        Label {
-            text: "Render Size Factor"
-            anchors.verticalCenter: parent.verticalCenter
-        }
+    LabeledSlider {
+        id: openvr_renderSizeFac
 
-        Slider {
-            id: openvr_renderSizeFac
+        text: "Render Size Factor"
 
-            from: 0.5
-            to: 1
-
-            Layout.fillWidth: true
-        }
+        from: 0.5
+        to: 1
     }
 }

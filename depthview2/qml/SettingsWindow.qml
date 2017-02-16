@@ -152,18 +152,11 @@ Popup {
                             width: parent.width
                             title: qsTr("Anaglyph")
 
-                            RowLayout {
-                                anchors.fill: parent
+                            LabeledSlider {
+                                text: qsTr("Grey Factor")
 
-                                Label {
-                                    text: qsTr("Grey Factor")
-                                    font: uiTextFont
-                                }
-
-                                Slider {
-                                    id: greyFacSlider
-                                    Layout.fillWidth: true
-                                }
+                                id: greyFacSlider
+                                Layout.fillWidth: true
                             }
                         }
 
@@ -230,7 +223,12 @@ Popup {
                         /* Only enable panning when the item is tall enough. */
                         interactive: contentHeight > height
 
-                        Component.onCompleted: modelData.parent = contentItem
+                        Component.onCompleted: {
+                            /* Attach the provided component to the Flickable's contentItem. */
+                            modelData.parent = contentItem
+                            /* Make the component inherit the contentItem's width. */
+                            modelData.width = Qt.binding(function() { return contentItem.width })
+                        }
                     }
                 }
             }

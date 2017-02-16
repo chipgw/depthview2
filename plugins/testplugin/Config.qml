@@ -1,5 +1,7 @@
 import QtQuick 2.0
 import QtQuick.Controls 2.0
+/* For LabeledSlider */
+import "qrc:/qml"
 
 Column {
     readonly property string title: "Test Plugin Settings"
@@ -43,17 +45,12 @@ Column {
         text: "Lock Mouse"
     }
 
-    Row {
-        Label {
-            text: "Render Size Factor"
-            anchors.verticalCenter: parent.verticalCenter
-        }
+    LabeledSlider {
+        id: renderSizeFacSlider
 
-        Slider {
-            id: renderSizeFacSlider
-            from: 0.5
-            to: 1
-            value: 1
-        }
+        text: "Render Size Factor"
+
+        from: 0.5
+        to: 1
     }
 }
