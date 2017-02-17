@@ -1,5 +1,5 @@
 <RCC>
     <qresource prefix="/GamepadPlugin">
-        <file>Config.qml</file>
+        <file>GamepadConfig.qml</file>
     </qresource>
 </RCC>

@@ -79,6 +79,10 @@ public:
     Q_INVOKABLE QString buildType();
     Q_INVOKABLE QString buildCompiler();
 
+    /* QObject should be const, but QML does not know how to do const. */
+    Q_INVOKABLE void savePluginSettings(QString pluginTitle, QObject* settingsObject);
+    Q_INVOKABLE void loadPluginSettings(QString pluginTitle, QObject* settingsObject);
+
     bool saveWindowState() const;
     void setSaveWindowState(bool save);
 

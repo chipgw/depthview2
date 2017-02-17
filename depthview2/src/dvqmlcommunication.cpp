@@ -207,6 +207,36 @@ QString DVQmlCommunication::buildCompiler() {
     return version::compiler;
 }
 
+void DVQmlCommunication::savePluginSettings(QString pluginTitle, QObject* settingsObject) {
+    /* Remove spaces from the plugin title. */
+    pluginTitle.remove(' ');
+
+    settings.beginGroup(pluginTitle);
+
+    /* Go through all properties of the item excluding the first one, which is the objectName property of QObject. */
+    for (int i = 1; i < settingsObject->metaObject()->propertyCount(); ++i)
+        settings.setValue(settingsObject->metaObject()->property(i).name(), settingsObject->metaObject()->property(i).read(settingsObject));
+
+    settings.endGroup();
+}
+
+void DVQmlCommunication::loadPluginSettings(QString pluginTitle, QObject* settingsObject) {
+    /* Remove spaces from the plugin title. */
+    pluginTitle.remove(' ');
+
+    /* If the group doesn't already exist, do nothing. */
+    if (!settings.childGroups().contains(pluginTitle))
+        return;
+
+    settings.beginGroup(pluginTitle);
+
+    /* Go through each setting in the group. */
+    for (const QString& key : settings.allKeys())
+        settingsObject->setProperty(key.toLocal8Bit().data(), settings.value(key));
+
+    settings.endGroup();
+}
+
 bool DVQmlCommunication::saveWindowState() const {
     /* Default value if it isn't set is true. */
     return settings.value("SaveWindowState", true).toBool();

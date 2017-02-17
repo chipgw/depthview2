@@ -10,7 +10,7 @@ bool GamepadPlugin::init(QQmlContext* qmlContext) {
 
     QQmlComponent component(qmlContext->engine());
 
-    component.loadUrl(QUrl(QStringLiteral("qrc:/GamepadPlugin/Config.qml")));
+    component.loadUrl(QUrl(QStringLiteral("qrc:/GamepadPlugin/GamepadConfig.qml")));
 
     /* Wait for it to load... */
     while(component.isLoading());
@@ -48,7 +48,7 @@ bool GamepadPlugin::init(QQmlContext* qmlContext) {
 
     connect(QGamepadManager::instance(), &QGamepadManager::gamepadConnected, this, &GamepadPlugin::gamepadConnected);
 
-    gamepadEnable = QQmlProperty(configMenuObject, "gamepadEnable");
+    gamepadEnable = QQmlProperty(QQmlProperty(configMenuObject, "settings").read().value<QObject*>(), "gamepadEnable");
 
     qDebug("Gamepad plugin inited, controller%sfound.", gamepad.isConnected() ? " " : " not ");
 

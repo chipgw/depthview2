@@ -27,7 +27,7 @@ bool TestPlugin::init(QOpenGLExtraFunctions* f, QQmlContext* qmlContext) {
 
     QQmlComponent component(qmlContext->engine());
 
-    component.loadUrl(QUrl(QStringLiteral("qrc:/TestPlugin/Config.qml")));
+    component.loadUrl(QUrl(QStringLiteral("qrc:/TestPlugin/TestPluginConfig.qml")));
 
     /* Wait for it to load... */
     while(component.isLoading());
@@ -44,11 +44,12 @@ bool TestPlugin::init(QOpenGLExtraFunctions* f, QQmlContext* qmlContext) {
     if (configMenuObject == nullptr)
         return false;
 
-    logRenderStart = QQmlProperty(configMenuObject, "logRenderStart");
-    logRenderEnd = QQmlProperty(configMenuObject, "logRenderEnd");
-    logFrameSwap = QQmlProperty(configMenuObject, "logFrameSwap");
-    lockMouse = QQmlProperty(configMenuObject, "lockMouse");
-    renderSizeFactor = QQmlProperty(configMenuObject, "renderSizeFactor");
+    QObject* obj = QQmlProperty(configMenuObject, "settings").read().value<QObject*>();
+    logRenderStart = QQmlProperty(obj, "logRenderStart");
+    logRenderEnd = QQmlProperty(obj, "logRenderEnd");
+    logFrameSwap = QQmlProperty(obj, "logFrameSwap");
+    lockMouse = QQmlProperty(obj, "lockMouse");
+    renderSizeFactor = QQmlProperty(obj, "renderSizeFactor");
 
     qDebug("Test plugin inited.");
 

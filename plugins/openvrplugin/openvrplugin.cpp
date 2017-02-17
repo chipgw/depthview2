@@ -74,7 +74,7 @@ bool OpenVRPlugin::init(QOpenGLExtraFunctions* f, QQmlContext* qmlContext) {
 
     QQmlComponent component(qmlContext->engine());
 
-    component.loadUrl(QUrl(QStringLiteral("qrc:/OpenVR/Config.qml")));
+    component.loadUrl(QUrl(QStringLiteral("qrc:/OpenVR/OpenVRConfig.qml")));
 
     /* Wait for it to load... */
     while(component.isLoading());
@@ -91,12 +91,13 @@ bool OpenVRPlugin::init(QOpenGLExtraFunctions* f, QQmlContext* qmlContext) {
     if (configMenu == nullptr)
         return false;
 
-    screenDistance = QQmlProperty(configMenu, "screenDistance");
-    screenHeight = QQmlProperty(configMenu, "screenHeight");
-    screenSize = QQmlProperty(configMenu, "screenSize");
-    screenCurve = QQmlProperty(configMenu, "screenCurve");
-    lockMouse = QQmlProperty(configMenu, "lockMouse");
-    renderSizeFac = QQmlProperty(configMenu, "renderSizeFac");
+    QObject* obj = QQmlProperty(configMenu, "settings").read().value<QObject*>();
+    screenDistance = QQmlProperty(obj, "screenDistance");
+    screenHeight = QQmlProperty(obj, "screenHeight");
+    screenSize = QQmlProperty(obj, "screenSize");
+    screenCurve = QQmlProperty(obj, "screenCurve");
+    lockMouse = QQmlProperty(obj, "lockMouse");
+    renderSizeFac = QQmlProperty(obj, "renderSizeFac");
     screenDistance.connectNotifySignal(this, SLOT(updateScreen()));
     screenHeight.connectNotifySignal(this, SLOT(updateScreen()));
     screenSize.connectNotifySignal(this, SLOT(updateScreen()));

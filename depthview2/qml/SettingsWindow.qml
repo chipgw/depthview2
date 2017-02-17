@@ -1,6 +1,7 @@
 import QtQuick 2.5
 import QtQuick.Controls 2.0
 import QtQuick.Layouts 1.3
+import DepthView 2.0
 
 Popup {
     id: root
@@ -203,6 +204,10 @@ Popup {
 
                         function reset() {
                             try {
+                                /* If the plugin has a settings object, load it. */
+                                if (modelData.settings)
+                                    DepthView.loadPluginSettings(title, modelData.settings)
+
                                 modelData.reset()
                             } catch (e) {
                                 console.warn(title, "did not reset correctly!", e)
@@ -212,6 +217,10 @@ Popup {
                         function apply() {
                             try {
                                 modelData.apply()
+
+                                /* If the plugin has a settings object, save it. */
+                                if (modelData.settings)
+                                    DepthView.savePluginSettings(title, modelData.settings)
                             } catch (e) {
                                 console.warn(title, "did not apply correctly!", e)
                             }
