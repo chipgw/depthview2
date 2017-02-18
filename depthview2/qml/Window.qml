@@ -104,10 +104,10 @@ Rectangle {
     SettingsWindow {
         id: settingsPopup
 
-        width:  root.width / 2
-        height:  root.height / 2
-        x:  root.width / 4
-        y:  root.height / 4
+        width:  root.width * 0.75
+        height:  root.height * 0.75
+        x:  root.width / 8
+        y:  root.height / 8
     }
 
     Image {

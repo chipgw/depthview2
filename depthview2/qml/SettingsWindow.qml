@@ -6,34 +6,23 @@ import DepthView 2.0
 Popup {
     id: root
 
-    function resetAll() {
+    function reset() {
         for (var i = 0; i < swipe.contentModel.count; ++i)
             swipe.contentModel.get(i).reset();
     }
-    function applyAll() {
-        for (var i = 0; i < swipe.contentModel.count; ++i)
-            swipe.contentModel.get(i).apply();
-    }
-    function resetCurrent() {
-        swipe.currentItem.reset();
-    }
-    function applyCurrent() {
-        swipe.currentItem.apply();
-    }
-
     function cancel() {
-        resetAll()
-
+        reset()
         close()
     }
     function accept() {
-        applyAll()
+        for (var i = 0; i < swipe.contentModel.count; ++i)
+            swipe.contentModel.get(i).apply();
 
         close()
     }
 
     /* Use the reset function to init values. */
-    Component.onCompleted: resetAll()
+    Component.onCompleted: reset()
 
     Page {
         clip: true
@@ -46,9 +35,7 @@ Popup {
             Repeater {
                 model: swipe.contentChildren
 
-                TabButton {
-                    text: modelData.title
-                }
+                TabButton { text: modelData.title }
             }
         }
 
@@ -59,15 +46,15 @@ Popup {
                 ToolButton {
                     text: qsTr("Reset")
 
-                    onClicked: resetCurrent()
+                    onClicked: swipe.currentItem.reset()
                 }
-                Item {
-                    Layout.fillWidth: true
-                }
+                /* Empty item for spacing. */
+                Item { Layout.fillWidth: true }
+
                 ToolButton {
                     text: qsTr("Apply")
 
-                    onClicked: applyCurrent()
+                    onClicked: swipe.currentItem.apply()
                 }
                 ToolButton {
                     text: qsTr("Ok")
@@ -95,22 +82,16 @@ Popup {
                     function reset() {
                         saveWindowStateCheckBox.checked = DepthView.saveWindowState
                         startupFileBrowserCheckBox.checked = DepthView.startupFileBrowser
-                        greyFacSlider.value = DepthView.greyFac
-                        mirrorLeftCheckBox.checked = DepthView.mirrorLeft
-                        mirrorRightCheckBox.checked = DepthView.mirrorRight
-                        anamorphicCheckBox.checked = DepthView.anamorphicDualView
-                        swapEyesCheckBox.checked = DepthView.swapEyes
                         uiThemeComboBox.currentIndex = uiThemeComboBox.find(DepthView.uiTheme)
+
+                        /* If the selection is invalid, use "Default", as that's what QML uses when none is set. */
+                        if (uiThemeComboBox.currentIndex < 0)
+                            uiThemeComboBox.currentIndex = 0
                     }
 
                     function apply() {
                         DepthView.saveWindowState = saveWindowStateCheckBox.checked
                         DepthView.startupFileBrowser = startupFileBrowserCheckBox.checked
-                        DepthView.greyFac = greyFacSlider.value
-                        DepthView.mirrorLeft = mirrorLeftCheckBox.checked
-                        DepthView.mirrorRight = mirrorRightCheckBox.checked
-                        DepthView.anamorphicDualView = anamorphicCheckBox.checked
-                        DepthView.swapEyes = swapEyesCheckBox.checked
                         DepthView.uiTheme = uiThemeComboBox.currentText
                     }
 
@@ -148,6 +129,37 @@ Popup {
                                 model: ["Default", "Material", "Universal"]
                             }
                         }
+                    }
+                }
+
+                Flickable {
+                    function reset() {
+                        greyFacSlider.value = DepthView.greyFac
+                        mirrorLeftCheckBox.checked = DepthView.mirrorLeft
+                        mirrorRightCheckBox.checked = DepthView.mirrorRight
+                        anamorphicCheckBox.checked = DepthView.anamorphicDualView
+                        swapEyesCheckBox.checked = DepthView.swapEyes
+                    }
+
+                    function apply() {
+                        DepthView.greyFac = greyFacSlider.value
+                        DepthView.mirrorLeft = mirrorLeftCheckBox.checked
+                        DepthView.mirrorRight = mirrorRightCheckBox.checked
+                        DepthView.anamorphicDualView = anamorphicCheckBox.checked
+                        DepthView.swapEyes = swapEyesCheckBox.checked
+                    }
+
+                    readonly property string title: qsTr("Render Settings")
+
+                    ScrollBar.vertical: ScrollBar { }
+                    contentHeight: renderSettingsContent.childrenRect.height
+
+                    /* Only enable panning when the item is tall enough. */
+                    interactive: contentHeight > height
+
+                    Column {
+                        id: renderSettingsContent
+                        width: parent.width
 
                         GroupBox {
                             width: parent.width
