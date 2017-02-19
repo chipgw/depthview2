@@ -62,12 +62,11 @@ Rectangle {
         Label {
             id: aboutLabel
 
-            text: "<h1>DepthView " + DepthView.versionString() +
-                  "</h1><p>DepthView is a basic application for viewing stereo 3D image files.</p>" +
-                  "<p>DepthView website: <a href=\"https://github.com/chipgw/depthview2\">github.com/chipgw/depthview2</a></p>" +
-                  "<p>Please report any bugs at: " +
-                  "<a href=\"https://github.com/chipgw/depthview2/issues\">github.com/chipgw/depthview2/issues</a></p>" +
-                  "<hr>"
+            text: qsTr("<h1>DepthView %1
+                  </h1><p>DepthView is a basic application for viewing stereo 3D image and video files.</p>
+                  <p>DepthView website: <a href=\"https://github.com/chipgw/depthview2\">github.com/chipgw/depthview2</a></p>
+                  <p>Please report any bugs at: <a href=\"https://github.com/chipgw/depthview2/issues\">github.com/chipgw/depthview2/issues</a></p>
+                  <hr>").arg(DepthView.versionString())
 
             /* Allow clicking links in the window. */
             onLinkActivated: Qt.openUrlExternally(link)

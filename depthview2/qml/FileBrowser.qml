@@ -56,10 +56,10 @@ Popup {
                         y: fakeCursor.height
                         visible: mouseArea.containsMouse
 
-                        text: "Type: " + (fileIsDir ? "Folder" : (fileIsVideo ? "Video" : "Image") +
-                              "<br>Size: " + FolderListing.bytesToString(fileSize)) +
-                              "<br>Created: " + fileCreated +
-                              "<br>" + FolderListing.decodeURL(fileURL)
+                        text: qsTr("Type: %1<br>Size: %2<br>Created: %3<br>%4").arg(
+                                  fileIsDir ? qsTr("Folder") : (fileIsVideo ? qsTr("Video") : qsTr("Image"))).arg(
+                                  FolderListing.bytesToString(fileSize)).arg(fileCreated).arg(
+                                  FolderListing.decodeURL(fileURL))
 
                         parent: fakeCursor
                     }
@@ -143,7 +143,7 @@ Popup {
 
                 Label {
                     padding: 8
-                    text: "Drives:"
+                    text: qsTr("Drives:")
                     font: uiTextFont
                 }
 
@@ -182,7 +182,7 @@ Popup {
 
                 Label {
                     padding: 8
-                    text: "Bookmarks:"
+                    text: qsTr("Bookmarks:")
                     font: uiTextFont
                 }
 
@@ -238,7 +238,7 @@ Popup {
                         left: drivePanelColumn.left
                         right: drivePanelColumn.right
                     }
-                    text: "Add Bookmark"
+                    text: qsTr("Add Bookmark")
 
                     onClicked: FolderListing.addBookmark(FolderListing.currentDir)
 

@@ -47,7 +47,7 @@ ToolBar {
         width: parent.width
 
         ToolButton {
-            text: "File"
+            text: qsTr("File")
             font: uiTextFont
             onClicked: fileMenu.open()
 
@@ -56,21 +56,21 @@ ToolBar {
                 y: parent.height
 
                 MenuItem {
-                    text: "Open..."
+                    text: qsTr("Open...")
                     font: uiTextFont
 
                     onTriggered: FolderListing.fileBrowserOpen = true
                 }
 
                 MenuItem {
-                    text: "File Info"
+                    text: qsTr("File Info")
                     font: uiTextFont
 
                     onTriggered: mediaInfoBox.open()
                 }
 
                 MenuItem {
-                    text: "Quit"
+                    text: qsTr("Quit")
                     font: uiTextFont
                     onTriggered: Qt.quit()
                 }
@@ -78,7 +78,7 @@ ToolBar {
         }
 
         ToolButton {
-            text: "Draw Mode"
+            text: qsTr("Draw Mode")
             font: uiTextFont
             onClicked: modeMenu.open()
 
@@ -91,13 +91,13 @@ ToolBar {
                     Repeater {
                         id: modeList
                         model: ListModel {
-                            ListElement { text: "Anaglyph"; mode: DrawMode.Anaglyph }
-                            ListElement { text: "Side-by-Side"; mode: DrawMode.SidebySide }
-                            ListElement { text: "Top/Bottom"; mode: DrawMode.TopBottom }
-                            ListElement { text: "Interlaced Horizontal"; mode: DrawMode.InterlacedH }
-                            ListElement { text: "Interlaced Vertical"; mode: DrawMode.InterlacedV }
-                            ListElement { text: "Checkerboard"; mode: DrawMode.Checkerboard }
-                            ListElement { text: "Mono"; mode: DrawMode.Mono }
+                            ListElement { text: qsTr("Anaglyph"); mode: DrawMode.Anaglyph }
+                            ListElement { text: qsTr("Side-by-Side"); mode: DrawMode.SidebySide }
+                            ListElement { text: qsTr("Top/Bottom"); mode: DrawMode.TopBottom }
+                            ListElement { text: qsTr("Interlaced Horizontal"); mode: DrawMode.InterlacedH }
+                            ListElement { text: qsTr("Interlaced Vertical"); mode: DrawMode.InterlacedV }
+                            ListElement { text: qsTr("Checkerboard"); mode: DrawMode.Checkerboard }
+                            ListElement { text: qsTr("Mono"); mode: DrawMode.Mono }
                         }
                         MenuItem {
                             text: model.text

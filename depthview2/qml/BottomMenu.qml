@@ -112,11 +112,11 @@ ToolBar {
                         ColumnLayout {
                             Repeater {
                                 model: ListModel {
-                                    ListElement { text: "Side-by-Side"; mode: SourceMode.SidebySide }
-                                    ListElement { text: "Side-by-Side Anamorphic"; mode: SourceMode.SidebySideAnamorphic }
-                                    ListElement { text: "Top/Bottom"; mode: SourceMode.TopBottom }
-                                    ListElement { text: "Top/Bottom Anamorphic"; mode: SourceMode.TopBottomAnamorphic }
-                                    ListElement { text: "Mono"; mode: SourceMode.Mono }
+                                    ListElement { text: qsTr("Side-by-Side"); mode: SourceMode.SidebySide }
+                                    ListElement { text: qsTr("Side-by-Side Anamorphic"); mode: SourceMode.SidebySideAnamorphic }
+                                    ListElement { text: qsTr("Top/Bottom"); mode: SourceMode.TopBottom }
+                                    ListElement { text: qsTr("Top/Bottom Anamorphic"); mode: SourceMode.TopBottomAnamorphic }
+                                    ListElement { text: qsTr("Mono"); mode: SourceMode.Mono }
                                 }
 
                                 MenuItem {
@@ -211,7 +211,7 @@ ToolBar {
 
                 ToolButton {
                     id: zoomFitButton
-                    text: "Fit"
+                    text: qsTr("Fit")
                     font: uiTextFont
 
                     checkable: true
@@ -229,7 +229,7 @@ ToolBar {
                 }
                 ToolButton {
                     id: zoom100Button
-                    text: "1:1"
+                    text: qsTr("1:1")
                     font: uiTextFont
 
                     checkable: true

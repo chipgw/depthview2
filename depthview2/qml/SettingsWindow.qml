@@ -120,7 +120,7 @@ Popup {
                         Row {
                             Label {
                                 anchors.verticalCenter: parent.verticalCenter
-                                text: "UI Theme: "
+                                text: qsTr("UI Theme: ")
                             }
 
                             ComboBox {
@@ -183,19 +183,16 @@ Popup {
                                 CheckBox {
                                     id: mirrorLeftCheckBox
                                     text: qsTr("Mirror Left")
-                                    font: uiTextFont
                                 }
 
                                 CheckBox {
                                     id: mirrorRightCheckBox
                                     text: qsTr("Mirror Right")
-                                    font: uiTextFont
                                 }
 
                                 CheckBox {
                                     id: anamorphicCheckBox
                                     text: qsTr("Anamorphic")
-                                    font: uiTextFont
                                 }
                             }
                         }
