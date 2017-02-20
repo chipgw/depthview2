@@ -231,9 +231,9 @@ Item {
                 }
 
                 /* Sideways scroll goes through files. */
-                if (wheel.angleDelta.x > 0)
+                if (!FolderListing.currentFileIsVideo && wheel.angleDelta.x > 0)
                     FolderListing.openPrevious()
-                if (wheel.angleDelta.x < 0)
+                if (!FolderListing.currentFileIsVideo && wheel.angleDelta.x < 0)
                     FolderListing.openNext()
             }
         }
