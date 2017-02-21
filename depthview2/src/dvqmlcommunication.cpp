@@ -33,7 +33,7 @@ void DVQmlCommunication::postQmlInit() {
         /* Check to make sure the plugin mode is a valid loaded plugin before setting. */
         QString mode = settings.value("PluginMode").toString();
         if (pluginModes.contains(mode))
-            m_pluginMode = mode;
+            emit pluginModeChanged(m_pluginMode = mode);
         else
             qWarning("Invalid plugin mode \"%s\" set in settings file!", qPrintable(mode));
     }
@@ -45,7 +45,7 @@ DVDrawMode::Type DVQmlCommunication::drawMode() const {
 
 void DVQmlCommunication::setDrawMode(DVDrawMode::Type mode) {
     /* Only emit if changed. */
-    if(m_drawMode != mode) {
+    if (m_drawMode != mode) {
         m_drawMode = mode;
         settings.setValue("DrawMode", DVDrawMode::toString(mode));
         emit drawModeChanged(mode);
@@ -63,7 +63,7 @@ bool DVQmlCommunication::anamorphicDualView() const {
 
 void DVQmlCommunication::setAnamorphicDualView(bool anamorphic) {
     /* Only emit if changed. */
-    if(m_anamorphicDualView != anamorphic) {
+    if (m_anamorphicDualView != anamorphic) {
         m_anamorphicDualView = anamorphic;
         settings.setValue("Anamorphic", anamorphic);
         emit anamorphicDualViewChanged(anamorphic);
