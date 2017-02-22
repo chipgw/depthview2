@@ -2,6 +2,7 @@
 
 #include <QUrl>
 #include "dvenums.hpp"
+#include "fileassociation.hpp"
 
 class QWindow;
 class QSettings;
@@ -91,6 +92,10 @@ public:
 
     QString uiTheme();
     void setUiTheme(QString theme);
+
+#ifdef DV_FILE_ASSOCIATION
+    Q_INVOKABLE void registerFileTypes();
+#endif
 
 signals:
     void isLeftChanged(bool isLeft);

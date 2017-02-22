@@ -129,6 +129,15 @@ Popup {
                                 model: ["Default", "Material", "Universal"]
                             }
                         }
+                        Button {
+                            /* If the function is undefined this build doesn't support file association. */
+                            visible: DepthView.registerFileTypes !== undefined
+
+                            /* TODO - It would be nice to have a more configurable "register these types" setup... */
+                            text: qsTr("Register stereo image files with DepthView.")
+
+                            onClicked: DepthView.registerFileTypes()
+                        }
                     }
                 }
 

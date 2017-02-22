@@ -282,3 +282,10 @@ void DVQmlCommunication::setUiTheme(QString theme) {
         }
     }
 }
+
+#ifdef DV_FILE_ASSOCIATION
+void DVQmlCommunication::registerFileTypes() {
+    fileassociation::registerFileTypes();
+}
+
+#endif
