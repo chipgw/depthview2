@@ -35,6 +35,7 @@ class DVQmlCommunication : public QObject {
     Q_PROPERTY(bool startupFileBrowser READ startupFileBrowser WRITE setStartupFileBrowser NOTIFY startupFileBrowserChanged)
 
     Q_PROPERTY(QString uiTheme READ uiTheme WRITE setUiTheme NOTIFY uiThemeChanged)
+    Q_PROPERTY(QStringList uiThemes READ uiThemes)
 
 public:
     /* Settings can be set from DVWindow. */
@@ -90,7 +91,8 @@ public:
     bool startupFileBrowser() const;
     void setStartupFileBrowser(bool open);
 
-    QString uiTheme();
+    QString uiTheme() const;
+    QStringList uiThemes() const;
     void setUiTheme(QString theme);
 
 #ifdef DV_FILE_ASSOCIATION

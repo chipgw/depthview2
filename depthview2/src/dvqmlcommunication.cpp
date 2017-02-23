@@ -261,14 +261,17 @@ void DVQmlCommunication::setStartupFileBrowser(bool open) {
     }
 }
 
-QString DVQmlCommunication::uiTheme() {
+QString DVQmlCommunication::uiTheme() const {
     /* Either get it from settings, or get the one currently being used. */
     return settings.contains("ControlsTheme") ? settings.value("ControlsTheme").toString() : QQuickStyle::name();
 }
 
+QStringList DVQmlCommunication::uiThemes() const {
+    return {"Default", "Material", "Universal"};
+}
+
 void DVQmlCommunication::setUiTheme(QString theme) {
-    if (!settings.contains("ControlsTheme") || settings.value("ControlsTheme").toString() != theme) {
-        /* TODO - Verify as valid. */
+    if (!(settings.contains("ControlsTheme") || settings.value("ControlsTheme").toString() != theme) && uiThemes().contains(theme)) {
         settings.setValue("ControlsTheme", theme);
 
         emit uiThemeChanged();
@@ -287,5 +290,4 @@ void DVQmlCommunication::setUiTheme(QString theme) {
 void DVQmlCommunication::registerFileTypes() {
     fileassociation::registerFileTypes();
 }
-
 #endif

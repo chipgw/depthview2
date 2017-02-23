@@ -126,7 +126,7 @@ Popup {
                             ComboBox {
                                 id: uiThemeComboBox
 
-                                model: ["Default", "Material", "Universal"]
+                                model: DepthView.uiThemes
                             }
                         }
                         Button {
