@@ -42,6 +42,8 @@ Item {
         seek(0);
         /* Reset speed. */
         media.playbackRate = 1.0;
+        /* Reset the zoom to fit. */
+        zoom = -1
     }
 
     property alias videoPosition: media.position
