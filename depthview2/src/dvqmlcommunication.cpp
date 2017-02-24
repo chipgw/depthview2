@@ -271,7 +271,7 @@ QStringList DVQmlCommunication::uiThemes() const {
 }
 
 void DVQmlCommunication::setUiTheme(QString theme) {
-    if (!(settings.contains("ControlsTheme") || settings.value("ControlsTheme").toString() != theme) && uiThemes().contains(theme)) {
+    if ((!settings.contains("ControlsTheme") || settings.value("ControlsTheme").toString() != theme) && uiThemes().contains(theme)) {
         settings.setValue("ControlsTheme", theme);
 
         emit uiThemeChanged();
