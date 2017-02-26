@@ -76,14 +76,14 @@ void DVFolderListing::openPrevious() {
 
 QString DVFolderListing::bytesToString(qint64 bytes) {
     int unit;
-    const char* units[] = {" Bytes", " kB", " MB", " GB"};
+    const char* units[] = {"Bytes", "kB", "MB", "GB"};
 
     /* Multiply by 10 to have one decimal point. */
     bytes *= 10;
 
     for (unit=-1; (++unit<3) && (bytes > 10239); bytes /= 1024);
 
-    return QString::number(bytes * 0.1f, 'f', 1) + units[unit];
+    return QString::number(bytes * 0.1f, 'f', 1) + ' ' + units[unit];
 }
 
 QString DVFolderListing::currentFile() const {
