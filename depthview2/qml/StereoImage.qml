@@ -6,8 +6,6 @@ Item {
     width: (imageMode === SourceMode.SidebySide || imageMode === SourceMode.SidebySideAnamorphic) ? img.width / 2 : img.width
     height: (imageMode === SourceMode.TopBottom || imageMode === SourceMode.TopBottomAnamorphic) ? img.height / 2 : img.height
 
-    scale: 1.0
-
     /* Wrap properties for the image. */
     property alias source: img.source
     property alias asynchronous: img.asynchronous
@@ -31,4 +29,3 @@ Item {
         stereoMode: SourceMode.SidebySide
     }
 }
-

@@ -199,6 +199,7 @@ Rectangle {
     }
 
     function closePopups() {
+        /* These cancel functions do more than just close the popup, so only call if the popup is open. */
         if (FolderListing.fileBrowserOpen)
             fileBrowser.cancel()
         if (settingsPopup.visible)

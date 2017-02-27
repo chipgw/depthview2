@@ -3,8 +3,12 @@ import DepthView 2.0
 
 ShaderEffect {
     anchors.fill: parent
+
+    /* Properties for the owner to set. */
     property variant target
     property int stereoMode
+
+    /* Properties for the shader to read. */
     property bool swap: false
     readonly property bool isSBS: stereoMode === SourceMode.SidebySide || stereoMode === SourceMode.SidebySideAnamorphic
     readonly property bool isTB: stereoMode === SourceMode.TopBottom || stereoMode === SourceMode.TopBottomAnamorphic

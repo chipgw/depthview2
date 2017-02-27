@@ -8,10 +8,14 @@ Item {
 
     property real zoom: -1
 
+    /* The actual scale value to be applied to the image/video, if zoom is -1 calculate the size-to-fit scale. */
+    readonly property real targetScale: (zoom < 0) ? Math.min(width / stereoSize.width, height / stereoSize.height) : zoom
+
     function playPause() {
         if (FolderListing.currentFileIsVideo) {
             /* Reset speed. */
             media.playbackRate = 1.0;
+
             if (media.playbackState === MediaPlayer.PlayingState)
                 media.pause()
             else
@@ -31,43 +35,46 @@ Item {
         media.playbackRate = Math.min(media.playbackRate * 2.0, 8.0);
     }
 
-    property bool isPlaying: FolderListing.currentFileIsVideo && media.playbackState === MediaPlayer.PlayingState
+    readonly property bool isPlaying: FolderListing.currentFileIsVideo && media.playbackState === MediaPlayer.PlayingState
 
     property url source: FolderListing.currentURL
 
     onSourceChanged: {
         /* Make sure the current mode is up to date. */
         stereoMode = FolderListing.currentFileStereoMode
-        /* Reset video settings. */
+
+        /* Reset video position and speed. */
         seek(0);
-        /* Reset speed. */
         media.playbackRate = 1.0;
+
         /* Reset the zoom to fit. */
         zoom = -1
     }
 
+    /* Wrap video properties for use in UI. */
     property alias videoPosition: media.position
     property alias videoDuration: media.duration
     property alias videoVolume: media.volume
 
-    property string mediaInfo: FolderListing.currentFileInfo + (FolderListing.currentFileIsVideo ?
-                                   "<br>Duration: " + timeString(media.metaData.duration) +
-                                   "<h2>Video Info:</h2>" +
-                                   "Codec: " + media.metaData.videoCodec +
-                                   "<br>Frame Rate: " + media.metaData.videoFrameRate +
-                                   "<br>Bit Rate: " + media.metaData.videoBitRate +
-                                   (media.metaData.resolution ? "<br>Resolution: " + media.metaData.resolution.width + "x" + media.metaData.resolution.height : "") +
-                                   "<br>Pixel Format: " + media.metaData.pixelFormat +
-                                   "<h2>Audio Info:</h2>" +
-                                   "Codec: " + media.metaData.audioCodec +
-                                   "<br>Bit Rate: " + media.metaData.audioBitRate
-                                 : "<br>Resolution: " + image.width + "x" + image.height)
+    readonly property string mediaInfo: FolderListing.currentFileInfo + (FolderListing.currentFileIsVideo ?
+                                   qsTr("<br>Duration: ") + timeString(media.metaData.duration) +
+                                   qsTr("<h2>Video Info:</h2>") +
+                                   qsTr("Codec: ") + media.metaData.videoCodec +
+                                   qsTr("<br>Frame Rate: ") + media.metaData.videoFrameRate +
+                                   qsTr("<br>Bit Rate: ") + media.metaData.videoBitRate +
+                                   (media.metaData.resolution ? qsTr("<br>Resolution: ") + media.metaData.resolution.width + "x" + media.metaData.resolution.height : "") +
+                                   qsTr("<br>Pixel Format: ") + media.metaData.pixelFormat +
+                                   qsTr("<h2>Audio Info:</h2>") +
+                                   qsTr("Codec: ") + media.metaData.audioCodec +
+                                   qsTr("<br>Bit Rate: ") + media.metaData.audioBitRate
+                                 : qsTr("<br>Resolution: ") + image.width + "x" + image.height)
                                  + "<hr>"
 
     /* The size of the full image/video in its raw form, no stereo accounted for. */
     readonly property size sourceSize: FolderListing.currentFileIsVideo ? Qt.size(vid.width, vid.height) : image.sourceSize
     /* The size of a single eye of stereo video/image. */
-    readonly property size stereoSize: FolderListing.currentFileIsVideo ? Qt.size(vidWrapper.width, vidWrapper.height) : Qt.size(imageContainer.width, imageContainer.height)
+    readonly property size stereoSize: FolderListing.currentFileIsVideo ? Qt.size(vidWrapper.width, vidWrapper.height) :
+                                                                          Qt.size(image.width, image.height)
 
     property int stereoMode: FolderListing.currentFileStereoMode
 
@@ -157,7 +164,7 @@ Item {
                 source: FolderListing.currentFileIsVideo ? "" : root.source
 
                 /* If zoom is negative we scale to fit, otherwise just use the value of zoom. */
-                scale: (zoom < 0) ? Math.min(root.width / image.width, root.height / image.height) : zoom
+                scale: targetScale
             }
         }
     }
@@ -168,10 +175,11 @@ Item {
 
         anchors.centerIn: parent
 
+        /* Calculate the size difference for side by side and top bottom source modes. */
         width: (stereoMode === SourceMode.SidebySide || stereoMode === SourceMode.SidebySideAnamorphic) ? vid.width / 2 : vid.width
         height: (stereoMode === SourceMode.TopBottom || stereoMode === SourceMode.TopBottomAnamorphic) ? vid.height / 2 : vid.height
 
-        scale: (zoom < 0) ? Math.min(root.width / width, root.height / height) : zoom
+        scale: targetScale
 
         MediaPlayer {
             id: media
@@ -213,11 +221,12 @@ Item {
         acceptedButtons: Qt.MiddleButton | Qt.ForwardButton | Qt.BackButton
 
         /* Reset zoom on wheel double-click. */
-        onDoubleClicked: if (mouse.button === Qt.MiddleButton) zoom = (zoom === -1) ? 1 : -1;
+        onDoubleClicked: if (mouse.button === Qt.MiddleButton) zoom = (zoom === -1) ? 1 : -1
 
         onWheel: {
             /* Don't zoom or seek if covered. */
             if (!fileBrowser.visible) {
+                /* For videos, the mouse wheel seeks the video. */
                 if (FolderListing.currentFileIsVideo) {
                     if (wheel.angleDelta.y > 0)
                         media.seekForward()
@@ -226,13 +235,13 @@ Item {
                 } else if (wheel.angleDelta.y != 0) {
                     /* If zoom-to-fit is active retrieve the current scale before zooming in or out. */
                     if (zoom < 0)
-                        zoom = image.scale
+                        zoom = targetScale
 
-                    zoom += wheel.angleDelta.y * image.scale * 0.001
+                    zoom += wheel.angleDelta.y * zoom * 0.001
                     zoom = Math.max(0.2, Math.min(zoom, 4.0))
                 }
 
-                /* Sideways scroll goes through files. */
+                /* Sideways scroll goes through files, unless a video is open. */
                 if (!FolderListing.currentFileIsVideo && wheel.angleDelta.x > 0)
                     FolderListing.openPrevious()
                 if (!FolderListing.currentFileIsVideo && wheel.angleDelta.x < 0)
@@ -240,6 +249,7 @@ Item {
             }
         }
         onClicked: {
+            /* Thumb buttons go through files. */
             if (mouse.button === Qt.BackButton)
                 FolderListing.openPrevious()
             if (mouse.button === Qt.ForwardButton)
@@ -257,7 +267,7 @@ Item {
         onPinchStarted: {
             /* If zoom-to-fit is active retrieve the current scale before zooming in or out. */
             if (zoom < 0)
-                zoom = image.scale
+                zoom = targetScale
 
             startZoom = zoom
         }
@@ -270,4 +280,3 @@ Item {
         }
     }
 }
-

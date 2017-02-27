@@ -8,8 +8,8 @@ Popup {
 
     padding: 0
 
-    property real cellWidth: 320
-    property real cellHeight: 240
+    readonly property real cellWidth: 320
+    readonly property real cellHeight: 240
 
     property url startingFolder
 
@@ -381,4 +381,3 @@ Popup {
         onCurrentDirChanged: grid.currentIndex = -1
     }
 }
-

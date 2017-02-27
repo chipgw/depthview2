@@ -15,7 +15,7 @@ ToolBar {
 
     property bool forceOpen
 
-    property bool isMenuOpen: fileMenu.visible || modeMenu.visible
+    readonly property bool isMenuOpen: fileMenu.visible || modeMenu.visible
 
     function closeMenus() {
         fileMenu.close()
