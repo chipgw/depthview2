@@ -4,6 +4,7 @@
 #include <QTimer>
 #include <QUrl>
 #include <QAbstractListModel>
+#include <QSqlDatabase>
 #include <dvenums.hpp>
 
 class QSettings;
@@ -29,6 +30,8 @@ class DVFolderListing : public QAbstractListModel {
 
     bool m_fileBrowserOpen;
 
+    QSqlDatabase m_fileDataDB;
+
     Q_PROPERTY(QString currentFile READ currentFile NOTIFY currentFileChanged)
     Q_PROPERTY(QUrl currentURL READ currentURL NOTIFY currentFileChanged)
 
@@ -36,7 +39,8 @@ class DVFolderListing : public QAbstractListModel {
     Q_PROPERTY(bool currentFileIsStereoImage READ isCurrentFileStereoImage NOTIFY currentFileChanged)
     Q_PROPERTY(bool currentFileIsImage READ isCurrentFileImage NOTIFY currentFileChanged)
     Q_PROPERTY(bool currentFileIsVideo READ isCurrentFileVideo NOTIFY currentFileChanged)
-    Q_PROPERTY(DVSourceMode::Type currentFileStereoMode READ currentFileStereoMode NOTIFY currentFileChanged)
+    Q_PROPERTY(DVSourceMode::Type currentFileStereoMode READ currentFileStereoMode WRITE setCurrentFileStereoMode NOTIFY currentFileStereoModeChanged)
+    Q_PROPERTY(bool currentFileStereoSwap READ currentFileStereoSwap WRITE setCurrentFileStereoSwap NOTIFY currentFileStereoSwapChanged)
     Q_PROPERTY(qint64 currentFileSize READ currentFileSize NOTIFY currentFileChanged)
     Q_PROPERTY(QString currentFileInfo READ currentFileInfo NOTIFY currentFileChanged)
 
@@ -122,20 +126,31 @@ public:
         IsVideoRole,
         FileSizeRole,
         FileCreatedRole,
-        FileStereoModeRole
+        FileStereoModeRole,
+        FileStereoSwapRole
     };
+
+    QSqlRecord getRecordForFile(const QFileInfo& file, bool create = false) const;
 
     bool isCurrentFileStereoImage() const;
     bool isCurrentFileImage() const;
     bool isCurrentFileVideo() const;
+
     DVSourceMode::Type currentFileStereoMode() const;
+    void setCurrentFileStereoMode(DVSourceMode::Type mode);
+
+    bool currentFileStereoSwap() const;
+    void setCurrentFileStereoSwap(bool swap);
+
     qint64 currentFileSize();
     QString currentFileInfo();
 
     bool isFileStereoImage(const QFileInfo& file) const;
     bool isFileImage(const QFileInfo& file) const;
     bool isFileVideo(const QFileInfo& file) const;
+
     DVSourceMode::Type fileStereoMode(const QFileInfo& file) const;
+    bool fileStereoSwap(const QFileInfo& file) const;
 
     QHash<int, QByteArray> roleNames() const;
 
@@ -162,4 +177,7 @@ signals:
     void bookmarksChanged();
 
     void fileBrowserOpenChanged();
+
+    void currentFileStereoModeChanged();
+    void currentFileStereoSwapChanged();
 };

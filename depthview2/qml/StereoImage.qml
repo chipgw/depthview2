@@ -12,6 +12,7 @@ Item {
     property alias sourceSize: img.sourceSize
     property alias imageMode: shader.stereoMode
     property alias status: img.status
+    property alias swap: shader.swap
 
     Image {
         id: img

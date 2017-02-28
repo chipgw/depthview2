@@ -101,6 +101,8 @@ Popup {
                             /* The image should only be stored at the needed size. */
                             sourceSize: Qt.size((imageMode === SourceMode.SidebySide) ? parent.width * 2 : parent.width,
                                                 (imageMode === SourceMode.TopBottom) ? parent.height * 2 : parent.height)
+
+                            swap: fileStereoSwap
                         }
                     }
 

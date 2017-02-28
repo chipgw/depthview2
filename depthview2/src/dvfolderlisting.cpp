@@ -2,11 +2,26 @@
 #include <QStorageInfo>
 #include <QSettings>
 #include <QDateTime>
+#include <QSqlQuery>
+#include <QSqlRecord>
+#include <QSqlError>
 
 DVFolderListing::DVFolderListing(QObject *parent, QSettings& s) : QAbstractListModel(parent),
     settings(s), currentHistory(-1), driveTimer(this), m_fileBrowserOpen(false) {
     if (settings.contains("Bookmarks"))
         m_bookmarks = settings.value("Bookmarks").toStringList();
+
+    QString path = settings.fileName();
+    path.remove(path.lastIndexOf('.'), path.length()).append(".db");
+    m_fileDataDB = QSqlDatabase::addDatabase("QSQLITE");
+    m_fileDataDB.setDatabaseName(path);
+
+    if (!m_fileDataDB.open())
+       qWarning("Error opening database!");
+
+    QSqlQuery query(m_fileDataDB);
+    if (!query.exec("create table files (path string, stereoMode integer, stereoSwap bool)"))
+        qWarning("Error creating table! %s", qPrintable(query.lastError().text()));
 
     initDir(QDir::currentPath());
 
@@ -27,6 +42,10 @@ DVFolderListing::DVFolderListing(QObject *parent, QSettings& s) : QAbstractListM
 
     m_currentDir.setFilter(QDir::AllDirs | QDir::NoDotAndDotDot | QDir::Files);
     m_currentDir.setSorting(QDir::DirsFirst | QDir::Name | QDir::IgnoreCase);
+
+    /* When the file changes, the stereo settings change. */
+    connect(this, &DVFolderListing::currentFileChanged, this, &DVFolderListing::currentFileStereoModeChanged);
+    connect(this, &DVFolderListing::currentFileChanged, this, &DVFolderListing::currentFileStereoSwapChanged);
 
     /* TODO - Figure out a way to detect when there is actually a change rather than just putting it on a timer. */
     connect(&driveTimer, &QTimer::timeout, this, &DVFolderListing::storageDevicePathsChanged);
@@ -247,6 +266,33 @@ QStringList DVFolderListing::bookmarks() const {
     return m_bookmarks;
 }
 
+QSqlRecord DVFolderListing::getRecordForFile(const QFileInfo& file, bool create) const {
+    if (file.exists()) {
+        QSqlQuery query(m_fileDataDB);
+        query.prepare("SELECT * FROM files WHERE path = (:path)");
+        query.bindValue(":path", file.canonicalFilePath());
+
+        if (query.exec() && query.next())
+            return query.record();
+
+        /* If it didn't exist, optionally create it. */
+        if (create) {
+            query.prepare("INSERT INTO files (path, stereoMode, stereoSwap) VALUES (:path, :mode, :swap)");
+            query.bindValue(":path", file.canonicalFilePath());
+            /* Get the default values for the stereoMode and stereoSwap variables. */
+            query.bindValue(":mode", fileStereoMode(file));
+            query.bindValue(":swap", fileStereoSwap(file));
+
+            if (query.exec())
+                return query.record();
+
+            qWarning("Unable to create record for file! %s", qPrintable(query.lastError().text()));
+        }
+    }
+
+    return QSqlRecord();
+}
+
 bool DVFolderListing::isCurrentFileStereoImage() const {
     return isFileStereoImage(m_currentFile);
 }
@@ -256,9 +302,45 @@ bool DVFolderListing::isCurrentFileImage() const {
 bool DVFolderListing::isCurrentFileVideo() const {
     return isFileVideo(m_currentFile);
 }
+
 DVSourceMode::Type DVFolderListing::currentFileStereoMode() const {
     return fileStereoMode(m_currentFile);
 }
+void DVFolderListing::setCurrentFileStereoMode(DVSourceMode::Type mode) {
+    /* Get or create the record for the selected file. */
+    QSqlRecord record = getRecordForFile(m_currentFile, true);
+
+    QSqlQuery query(m_fileDataDB);
+    query.prepare("UPDATE files SET stereoMode = :mode WHERE path = :path");
+    query.bindValue(":mode", mode);
+    /* Use the record's path value. */
+    query.bindValue(":path", record.value(0));
+
+    if (!query.exec())
+        qWarning("Unable to update record for file! %s", qPrintable(query.lastError().text()));
+
+    emit currentFileStereoModeChanged();
+}
+
+bool DVFolderListing::currentFileStereoSwap() const {
+    return fileStereoSwap(m_currentFile);
+}
+void DVFolderListing::setCurrentFileStereoSwap(bool swap) {
+    /* Get or create the record for the selected file. */
+    QSqlRecord record = getRecordForFile(m_currentFile, true);
+
+    QSqlQuery query(m_fileDataDB);
+    query.prepare("UPDATE files SET stereoSwap = :swap WHERE path = :path");
+    query.bindValue(":swap", swap);
+    /* Use the record's path value. */
+    query.bindValue(":path", record.value(0));
+
+    if (!query.exec())
+        qWarning("Unable to update record for file! %s", qPrintable(query.lastError().text()));
+
+    emit currentFileStereoSwapChanged();
+}
+
 qint64 DVFolderListing::currentFileSize() {
     return m_currentFile.size();
 }
@@ -285,13 +367,26 @@ bool DVFolderListing::isFileImage(const QFileInfo& info) const {
 bool DVFolderListing::isFileVideo(const QFileInfo& info) const {
     return !info.isDir() && videoSuffixes.contains(info.suffix(), Qt::CaseInsensitive);
 }
-DVSourceMode::Type DVFolderListing::fileStereoMode(const QFileInfo& info) const {
+DVSourceMode::Type DVFolderListing::fileStereoMode(const QFileInfo& file) const {
     /* Directories are side-by-side because of their thumbnail. */
-    if(info.isDir() || stereoImageSuffixes.contains(info.suffix(), Qt::CaseInsensitive))
+    if(file.isDir() || stereoImageSuffixes.contains(file.suffix(), Qt::CaseInsensitive))
         return DVSourceMode::SidebySide;
+
+    QSqlRecord record = getRecordForFile(file);
+
+    if (!record.isEmpty())
+        return record.value("stereoMode").value<DVSourceMode::Type>();
 
     /* TODO - Try to find a way to detect the mode. */
     return DVSourceMode::Mono;
+}
+bool DVFolderListing::fileStereoSwap(const QFileInfo& file) const {
+    QSqlRecord record = getRecordForFile(file);
+
+    if (record.isEmpty())
+        return !isFileStereoImage(file);
+
+    return record.value("stereoSwap").toBool();
 }
 
 QHash<int, QByteArray> DVFolderListing::roleNames() const {
@@ -305,6 +400,7 @@ QHash<int, QByteArray> DVFolderListing::roleNames() const {
     names[FileSizeRole]         = "fileSize";
     names[FileCreatedRole]      = "fileCreated";
     names[FileStereoModeRole]   = "fileStereoMode";
+    names[FileStereoSwapRole]   = "fileStereoSwap";
 
     return names;
 }
@@ -340,6 +436,9 @@ QVariant DVFolderListing::data(const QModelIndex& index, int role) const {
             break;
         case FileStereoModeRole:
             data = fileStereoMode(info);
+            break;
+        case FileStereoSwapRole:
+            data = fileStereoSwap(info);
             break;
         }
     }

@@ -123,12 +123,12 @@ ToolBar {
                                     text: model.text
 
                                     checkable: true
-                                    checked: image.stereoMode === model.mode
+                                    checked: FolderListing.currentFileStereoMode === model.mode
                                     font: uiTextFont
 
                                     onCheckedChanged:
                                         if (checked) {
-                                            image.stereoMode = model.mode
+                                            FolderListing.currentFileStereoMode = model.mode
                                             sourceMode.close()
                                         }
                                 }
@@ -223,7 +223,7 @@ ToolBar {
                             image.zoom = -1;
 
                         /* Either way, update the checked state of both buttons.
-                                 * (If checked was set to false via mouse but the zoom is still -1 this will set it to true again.) */
+                         * (If checked was set to false via mouse but the zoom is still -1 this will set it to true again.) */
                         updateZoom()
                     }
                 }
@@ -241,7 +241,7 @@ ToolBar {
                             image.zoom = 1;
 
                         /* Either way, update the checked state of both buttons.
-                                 * (If checked was set to false via mouse but the zoom is still 1 this will set it to true again.) */
+                         * (If checked was set to false via mouse but the zoom is still 1 this will set it to true again.) */
                         updateZoom()
                     }
                 }

@@ -40,9 +40,6 @@ Item {
     property url source: FolderListing.currentURL
 
     onSourceChanged: {
-        /* Make sure the current mode is up to date. */
-        stereoMode = FolderListing.currentFileStereoMode
-
         /* Reset video position and speed. */
         seek(0);
         media.playbackRate = 1.0;
@@ -76,7 +73,7 @@ Item {
     readonly property size stereoSize: FolderListing.currentFileIsVideo ? Qt.size(vidWrapper.width, vidWrapper.height) :
                                                                           Qt.size(image.width, image.height)
 
-    property int stereoMode: FolderListing.currentFileStereoMode
+    readonly property int stereoMode: FolderListing.currentFileStereoMode
 
     function seek(offset) {
         if (FolderListing.currentFileIsVideo)
@@ -165,6 +162,8 @@ Item {
 
                 /* If zoom is negative we scale to fit, otherwise just use the value of zoom. */
                 scale: targetScale
+
+                swap: FolderListing.currentFileStereoSwap
             }
         }
     }
@@ -206,8 +205,7 @@ Item {
             target: vid
             stereoMode: root.stereoMode
 
-            /* Videos tend to be the other way around from images... */
-            swap: true
+            swap: FolderListing.currentFileStereoSwap
         }
     }
     BusyIndicator {
