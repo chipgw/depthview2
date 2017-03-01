@@ -121,14 +121,27 @@ bool DVWindow::event(QEvent* e) {
             QPoint pos = mapFromGlobal(QCursor::pos());
 
             /* Generate a new coordinate on screen. */
-            pos.setX(qBound(1, pos.x(), width()-1));
-            pos.setY(qBound(1, pos.y(), height()-1));
+            pos.setX(qBound(1, pos.x(), qmlSize.width()-1));
+            pos.setY(qBound(1, pos.y(), qmlSize.height()-1));
 
             /* Will generate a new event. */
             QCursor::setPos(mapToGlobal(pos));
         }
         break;
     case QEvent::MouseMove:
+        /* If holding the mouse, make sure it's inside the QML render area. */
+        if (holdMouse && !QRect(QPoint(), qmlSize).contains(mapFromGlobal(QCursor::pos()), true)) {
+            QPoint pos = mapFromGlobal(QCursor::pos());
+
+            /* Generate a new coordinate on screen. */
+            pos.setX(qBound(1, pos.x(), qmlSize.width()-1));
+            pos.setY(qBound(1, pos.y(), qmlSize.height()-1));
+
+            /* Will generate a new event. */
+            QCursor::setPos(mapToGlobal(pos));
+
+            break;
+        }
         /* We also emit a special signal for this one so that the fake cursor
          * can be set to the right position without having a MouseArea that absorbs events. */
         emit qmlCommunication->mouseMoved(static_cast<QMouseEvent*>(e)->localPos());
