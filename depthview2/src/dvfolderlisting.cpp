@@ -93,9 +93,9 @@ void DVFolderListing::openPrevious() {
     }
 }
 
-QString DVFolderListing::bytesToString(qint64 bytes) {
+QString DVFolderListing::bytesToString(qint64 bytes) const {
     int unit;
-    const char* units[] = {"Bytes", "kB", "MB", "GB"};
+    const QString units[] = {tr("Bytes"), tr("kB"), tr("MB"), tr("GB")};
 
     /* Multiply by 10 to have one decimal point. */
     bytes *= 10;
@@ -341,21 +341,22 @@ void DVFolderListing::setCurrentFileStereoSwap(bool swap) {
     emit currentFileStereoSwapChanged();
 }
 
-qint64 DVFolderListing::currentFileSize() {
+qint64 DVFolderListing::currentFileSize() const {
     return m_currentFile.size();
 }
-QString DVFolderListing::currentFileInfo() {
-    QString info = "<h1>Media Info:</h1>" + m_currentFile.absoluteFilePath() +
-                   "<br>Type: " + (isCurrentFileStereoImage() ? "Stereo Image" :
-                                   isCurrentFileVideo() ? "Video" : "Image") +
-                   "<br>File Size: " + bytesToString(m_currentFile.size()) +
-                   "<br>Date Created: " + m_currentFile.created().toString();
+QString DVFolderListing::currentFileInfo() const {
+    QString info = tr("<h1>Media Info:</h1>%1<br>Type: %2<br>File Size: %3<br>Date Created: %4")
+            .arg(m_currentFile.absoluteFilePath()).arg(fileTypeString(m_currentFile))
+            .arg(bytesToString(m_currentFile.size())).arg(m_currentFile.created().toString());
 
     QString owner = m_currentFile.owner();
     if (!owner.isEmpty())
-        info += "<br>Owner: " + owner;
+        info += tr("<br>Owner: ") + owner;
 
     return info;
+}
+QString DVFolderListing::fileTypeString(const QFileInfo& file) const {
+    return file.isDir() ? tr("Folder") : isFileStereoImage(file) ? tr("Stereo Image") : isFileVideo(file) ? tr("Video") : tr("Image");
 }
 
 bool DVFolderListing::isFileStereoImage(const QFileInfo& info) const {
@@ -401,6 +402,7 @@ QHash<int, QByteArray> DVFolderListing::roleNames() const {
     names[FileCreatedRole]      = "fileCreated";
     names[FileStereoModeRole]   = "fileStereoMode";
     names[FileStereoSwapRole]   = "fileStereoSwap";
+    names[FileTypeStringRole]   = "fileTypeString";
 
     return names;
 }
@@ -439,6 +441,9 @@ QVariant DVFolderListing::data(const QModelIndex& index, int role) const {
             break;
         case FileStereoSwapRole:
             data = fileStereoSwap(info);
+            break;
+        case FileTypeStringRole:
+            data = fileTypeString(info);
             break;
         }
     }

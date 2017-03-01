@@ -56,10 +56,9 @@ Popup {
                         y: fakeCursor.height
                         visible: mouseArea.containsMouse
 
-                        text: qsTr("Type: ") + (fileIsDir ? qsTr("Folder") :
-                                                            ((fileIsVideo ? qsTr("Video") : qsTr("Image")) + "<br>" +
-                                                             /* Only show size when not a directory. */
-                                                             qsTr("Size: ") + FolderListing.bytesToString(fileSize))) + "<br>" +
+                        text: qsTr("Type: ") + fileTypeString + "<br>" +
+                              /* Only show size when not a directory. */
+                              (fileIsDir ? "" : qsTr("Size: ") + FolderListing.bytesToString(fileSize) + "<br>") +
                               qsTr("Created: ") + fileCreated + "<br>" +
                               FolderListing.decodeURL(fileURL)
 

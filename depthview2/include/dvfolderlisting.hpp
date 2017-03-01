@@ -115,7 +115,7 @@ public:
     Q_INVOKABLE void openNext();
     Q_INVOKABLE void openPrevious();
 
-    Q_INVOKABLE QString bytesToString(qint64 bytes);
+    Q_INVOKABLE QString bytesToString(qint64 bytes) const;
 
     /* Begin Model stuff... */
     enum Roles {
@@ -127,7 +127,8 @@ public:
         FileSizeRole,
         FileCreatedRole,
         FileStereoModeRole,
-        FileStereoSwapRole
+        FileStereoSwapRole,
+        FileTypeStringRole
     };
 
     QSqlRecord getRecordForFile(const QFileInfo& file, bool create = false) const;
@@ -142,8 +143,9 @@ public:
     bool currentFileStereoSwap() const;
     void setCurrentFileStereoSwap(bool swap);
 
-    qint64 currentFileSize();
-    QString currentFileInfo();
+    qint64 currentFileSize() const;
+    QString currentFileInfo() const;
+    QString fileTypeString(const QFileInfo& file) const;
 
     bool isFileStereoImage(const QFileInfo& file) const;
     bool isFileImage(const QFileInfo& file) const;
