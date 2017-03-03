@@ -1,7 +1,7 @@
 import QtQuick 2.5
 import QtQuick.Layouts 1.2
 import DepthView 2.0
-import QtQuick.Controls 2.0
+import QtQuick.Controls 2.1
 import QtQuick.Window 2.2
 import QtAV 1.6
 
@@ -52,7 +52,7 @@ Rectangle {
             forceOpen: (root.height - fakeCursor.y) < 128 || touchTimer.running
         }
     }
-    Popup {
+    Dialog {
         id: aboutBox
 
         /* Anchors don't work on popups because they are appended to the window content item. */
@@ -65,16 +65,18 @@ Rectangle {
             text: qsTr("<h1>DepthView %1
                   </h1><p>DepthView is a basic application for viewing stereo 3D image and video files.</p>
                   <p>DepthView website: <a href=\"https://github.com/chipgw/depthview2\">github.com/chipgw/depthview2</a></p>
-                  <p>Please report any bugs at: <a href=\"https://github.com/chipgw/depthview2/issues\">github.com/chipgw/depthview2/issues</a></p>
-                  <hr>").arg(DepthView.versionString())
+                  <p>Please report any bugs at: <a href=\"https://github.com/chipgw/depthview2/issues\">github.com/chipgw/depthview2/issues</a></p>")
+                  .arg(DepthView.versionString())
 
             /* Allow clicking links in the window. */
             onLinkActivated: Qt.openUrlExternally(link)
 
             textFormat: Text.RichText
         }
+
+        standardButtons: Dialog.Close
     }
-    Popup {
+    Dialog {
         id: mediaInfoBox
 
         /* No anchors for some reason... */
@@ -87,7 +89,10 @@ Rectangle {
 
             textFormat: Text.RichText
         }
+
+        standardButtons: Dialog.Close
     }
+
     FileBrowser {
         id: fileBrowser
 
@@ -203,7 +208,7 @@ Rectangle {
         if (FolderListing.fileBrowserOpen)
             fileBrowser.cancel()
         if (settingsPopup.visible)
-            settingsPopup.cancel()
+            settingsPopup.reject()
 
         aboutBox.close()
         mediaInfoBox.close()

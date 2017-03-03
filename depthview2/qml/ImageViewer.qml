@@ -65,7 +65,6 @@ Item {
                                    qsTr("Codec: ") + media.metaData.audioCodec +
                                    qsTr("<br>Bit Rate: ") + media.metaData.audioBitRate
                                  : qsTr("<br>Resolution: ") + image.width + "x" + image.height)
-                                 + "<hr>"
 
     /* The size of the full image/video in its raw form, no stereo accounted for. */
     readonly property size sourceSize: FolderListing.currentFileIsVideo ? Qt.size(vid.width, vid.height) : image.sourceSize
