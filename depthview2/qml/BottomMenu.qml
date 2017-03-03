@@ -1,7 +1,7 @@
 import QtQuick 2.5
 import QtQuick.Layouts 1.2
 import DepthView 2.0
-import QtQuick.Controls 2.0
+import QtQuick.Controls 2.1
 import QtAV 1.6
 
 ToolBar {
@@ -96,7 +96,6 @@ ToolBar {
                 anchors.left: parent.left
 
                 ToolButton {
-                    visible: !FolderListing.currentFileIsStereoImage
                     onClicked: sourceMode.open()
 
                     font: googleMaterialFont
@@ -108,8 +107,37 @@ ToolBar {
                         id: sourceMode
                         y: -height
 
+                        MenuItem {
+                            id: stereoSwapMenuItem
+                            text: qsTr("Swap Stereo")
+                            font: uiTextFont
+
+                            checkable: true
+
+                            onCheckedChanged: FolderListing.currentFileStereoSwap = checked
+                        }
+
+                        Connections {
+                            target: FolderListing
+
+                            onCurrentFileStereoSwapChanged: stereoSwapMenuItem.checked = FolderListing.currentFileStereoSwap
+                        }
+
+                        ButtonGroup {
+                            buttons: sourceModeColumn.children
+                        }
+
                         /* This layout avoids a situation where they all end up jumbled one on top of the other for some reason... */
                         ColumnLayout {
+                            id: sourceModeColumn
+
+                            /* Hide and give a height of 0 when the file is a stereo image.
+                             * Stereo images are always side by side, but access to swap might still be needed sometimes. */
+                            visible: !FolderListing.currentFileIsStereoImage
+                            height: visible ? implicitHeight : 0
+
+                            MenuSeparator { }
+
                             Repeater {
                                 model: ListModel {
                                     ListElement { text: qsTr("Side-by-Side"); mode: SourceMode.SidebySide }

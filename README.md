@@ -1,6 +1,6 @@
 DepthView
 =========
-is a viewer for stereoscopic 3D images and video. It runs on Windows and Linux, with experimental Android support.
+is a viewer for stereoscopic 3D images and video. It runs on Windows and Linux, with experimental macOS and Android support.
 
 This is a complete rewrite of [DepthView] using QML and OpenGL.
 
@@ -22,7 +22,7 @@ Supported File Formats
 
 Dependencies
 ------------
-* [Qt] 5.7 or newer.
+* [Qt] 5.8 or newer.
 * [QtAV]
 * [OpenVR] \(Optional for VR support\)
 
