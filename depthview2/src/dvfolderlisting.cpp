@@ -307,6 +307,9 @@ DVSourceMode::Type DVFolderListing::currentFileStereoMode() const {
     return fileStereoMode(m_currentFile);
 }
 void DVFolderListing::setCurrentFileStereoMode(DVSourceMode::Type mode) {
+    if (mode == currentFileStereoMode())
+        return;
+
     /* Get or create the record for the selected file. */
     QSqlRecord record = getRecordForFile(m_currentFile, true);
 
@@ -326,6 +329,9 @@ bool DVFolderListing::currentFileStereoSwap() const {
     return fileStereoSwap(m_currentFile);
 }
 void DVFolderListing::setCurrentFileStereoSwap(bool swap) {
+    if (swap == currentFileStereoSwap())
+        return;
+
     /* Get or create the record for the selected file. */
     QSqlRecord record = getRecordForFile(m_currentFile, true);
 
@@ -385,7 +391,7 @@ bool DVFolderListing::fileStereoSwap(const QFileInfo& file) const {
     QSqlRecord record = getRecordForFile(file);
 
     if (record.isEmpty())
-        return !isFileStereoImage(file);
+        return isFileStereoImage(file);
 
     return record.value("stereoSwap").toBool();
 }

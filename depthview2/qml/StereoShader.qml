@@ -31,17 +31,17 @@ ShaderEffect {
                 rightCoord.x /= 2.0;
 
                 if (swap)
-                    rightCoord.x += 0.5;
-                else
                     leftCoord.x += 0.5;
+                else
+                    rightCoord.x += 0.5;
             } else if (isTB) {
                 leftCoord.y /= 2.0;
                 rightCoord.y /= 2.0;
 
                 if (swap)
-                    rightCoord.y += 0.5;
-                else
                     leftCoord.y += 0.5;
+                else
+                    rightCoord.y += 0.5;
             }
             gl_Position = qt_Matrix * qt_Vertex;
         }"
