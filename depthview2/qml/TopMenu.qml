@@ -1,7 +1,7 @@
 import QtQuick 2.5
 import QtQuick.Layouts 1.2
 import DepthView 2.0
-import QtQuick.Controls 2.0
+import QtQuick.Controls 2.1
 
 ToolBar {
     id: topMenu
@@ -86,8 +86,14 @@ ToolBar {
                 id: modeMenu
                 y: parent.height
 
+                ButtonGroup {
+                    buttons: modeListColumn.children
+                }
+
                 /* This layout avoids a situation where they all end up jumbled one on top of the other for some reason... */
                 ColumnLayout {
+                    id: modeListColumn
+
                     Repeater {
                         id: modeList
                         model: ListModel {
@@ -113,6 +119,10 @@ ToolBar {
                                 }
                         }
                     }
+
+                    /* Separate the built-in modes from the plugins. */
+                    MenuSeparator { }
+
                     Repeater {
                         id: pluginModeList
                         model: DepthView.pluginModes
