@@ -183,7 +183,7 @@ Rectangle {
         onActivated: FolderListing.openPrevious()
     }
     Shortcut {
-        sequence: "Space"
+        sequence: "P"
         context: Qt.ApplicationShortcut
 
         enabled: FolderListing.currentFileIsVideo
@@ -201,6 +201,12 @@ Rectangle {
         context: Qt.ApplicationShortcut
 
         onActivated: DepthView.fullscreen = !DepthView.fullscreen
+    }
+    Shortcut {
+        sequence: StandardKey.Preferences
+        context: Qt.ApplicationShortcut
+
+        onActivated: settingsPopup.open()
     }
 
     function closePopups() {
@@ -227,7 +233,7 @@ Rectangle {
 
     /* The popup close policy escape shortcut isn't working, so take care of it here. */
     Shortcut {
-        sequence: "Esc"
+        sequence: StandardKey.Cancel
         context: Qt.ApplicationShortcut
         onActivated: closePopups()
     }
