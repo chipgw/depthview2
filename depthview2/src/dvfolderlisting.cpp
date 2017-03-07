@@ -11,6 +11,7 @@ DVFolderListing::DVFolderListing(QObject *parent, QSettings& s) : QAbstractListM
     if (settings.contains("Bookmarks"))
         m_bookmarks = settings.value("Bookmarks").toStringList();
 
+    /* Use the path of the settings file to get the path for the database. */
     QString path = settings.fileName();
     path.remove(path.lastIndexOf('.'), path.length()).append(".db");
     m_fileDataDB = QSqlDatabase::addDatabase("QSQLITE");
@@ -19,9 +20,12 @@ DVFolderListing::DVFolderListing(QObject *parent, QSettings& s) : QAbstractListM
     if (!m_fileDataDB.open())
        qWarning("Error opening database!");
 
-    QSqlQuery query(m_fileDataDB);
-    if (!query.exec("create table files (path string, stereoMode integer, stereoSwap bool)"))
-        qWarning("Error creating table! %s", qPrintable(query.lastError().text()));
+    /* Check to see if the table exists. */
+    if (m_fileDataDB.record("files").isEmpty()) {
+        /* TODO - Handle potential changes/additions to database fields. */
+        QSqlQuery query("create table files (path string, stereoMode integer, stereoSwap bool)");
+        if (query.lastError().isValid()) qWarning("Error creating table! %s", qPrintable(query.lastError().text()));
+    }
 
     initDir(QDir::currentPath());
 
