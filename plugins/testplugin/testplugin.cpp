@@ -5,9 +5,7 @@
 #include <QQuickItem>
 #include <QQmlContext>
 
-bool TestPlugin::init(QOpenGLExtraFunctions* f, QQmlContext* qmlContext) {
-    Q_UNUSED(f)
-
+bool TestPlugin::init(QOpenGLExtraFunctions*, QQmlContext* qmlContext) {
     Q_INIT_RESOURCE(testplugin);
 
     shader = new QOpenGLShaderProgram;
@@ -64,9 +62,7 @@ bool TestPlugin::deinit() {
     return true;
 }
 
-bool TestPlugin::render(const QString& drawModeName, QOpenGLExtraFunctions* f) {
-    Q_UNUSED(drawModeName)
-
+bool TestPlugin::render(const QString&, QOpenGLExtraFunctions* f) {
     if (logRenderStart.isValid() && logRenderStart.read().toBool())
         qDebug("Plugin rendering start.");
 
@@ -102,9 +98,7 @@ bool TestPlugin::render(const QString& drawModeName, QOpenGLExtraFunctions* f) {
     return true;
 }
 
-void TestPlugin::frameSwapped(QOpenGLExtraFunctions* f) {
-    Q_UNUSED(f)
-
+void TestPlugin::frameSwapped(QOpenGLExtraFunctions*) {
     if (logFrameSwap.isValid() && logFrameSwap.read().toBool())
         qDebug("Plugin frame swapped.");
 }
@@ -127,8 +121,7 @@ QSize TestPlugin::getRenderSize(const QSize& windowSize) {
     return windowSize * (ok ? sizeFactor : 1.0);
 }
 
-bool TestPlugin::pollInput(DVInputInterface* inputInterface) {
-    Q_UNUSED(inputInterface)
+bool TestPlugin::pollInput(DVInputInterface*) {
     return false;
 }
 

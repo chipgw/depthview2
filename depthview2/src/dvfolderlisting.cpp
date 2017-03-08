@@ -460,8 +460,7 @@ QVariant DVFolderListing::data(const QModelIndex& index, int role) const {
     return data;
 }
 
-int DVFolderListing::rowCount(const QModelIndex& parent) const {
-    Q_UNUSED(parent)
+int DVFolderListing::rowCount(const QModelIndex&) const {
     return m_currentDir.count();
 }
 

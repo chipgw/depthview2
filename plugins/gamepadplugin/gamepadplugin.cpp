@@ -148,82 +148,66 @@ void GamepadPlugin::gamepadConnected(int deviceId) {
         gamepad.setDeviceId(deviceId);
 }
 
-void GamepadPlugin::buttonAChanged(bool value) {
-    Q_UNUSED(value)
+void GamepadPlugin::buttonAChanged(bool) {
     buttonAJustChanged = true;
 }
 
-void GamepadPlugin::buttonBChanged(bool value) {
-    Q_UNUSED(value)
+void GamepadPlugin::buttonBChanged(bool) {
     buttonBJustChanged = true;
 }
 
-void GamepadPlugin::buttonCenterChanged(bool value) {
-    Q_UNUSED(value)
+void GamepadPlugin::buttonCenterChanged(bool) {
     buttonCenterJustChanged = true;
 }
 
-void GamepadPlugin::buttonDownChanged(bool value) {
-    Q_UNUSED(value)
+void GamepadPlugin::buttonDownChanged(bool) {
     buttonDownJustChanged = true;
 }
 
-void GamepadPlugin::buttonGuideChanged(bool value) {
-    Q_UNUSED(value)
+void GamepadPlugin::buttonGuideChanged(bool) {
     buttonGuideJustChanged = true;
 }
 
-void GamepadPlugin::buttonL1Changed(bool value) {
-    Q_UNUSED(value)
+void GamepadPlugin::buttonL1Changed(bool) {
     buttonL1JustChanged = true;
 }
 
-void GamepadPlugin::buttonL3Changed(bool value) {
-    Q_UNUSED(value)
+void GamepadPlugin::buttonL3Changed(bool) {
     buttonL3JustChanged = true;
 }
 
-void GamepadPlugin::buttonLeftChanged(bool value) {
-    Q_UNUSED(value)
+void GamepadPlugin::buttonLeftChanged(bool) {
     buttonLeftJustChanged = true;
 }
 
-void GamepadPlugin::buttonR1Changed(bool value) {
-    Q_UNUSED(value)
+void GamepadPlugin::buttonR1Changed(bool) {
     buttonR1JustChanged = true;
 }
 
-void GamepadPlugin::buttonR3Changed(bool value) {
-    Q_UNUSED(value)
+void GamepadPlugin::buttonR3Changed(bool) {
     buttonR3JustChanged = true;
 }
 
-void GamepadPlugin::buttonRightChanged(bool value) {
-    Q_UNUSED(value)
+void GamepadPlugin::buttonRightChanged(bool) {
     buttonRightJustChanged = true;
 }
 
-void GamepadPlugin::buttonSelectChanged(bool value) {
-    Q_UNUSED(value)
+void GamepadPlugin::buttonSelectChanged(bool) {
     buttonSelectJustChanged = true;
 }
 
-void GamepadPlugin::buttonStartChanged(bool value) {
-    Q_UNUSED(value)
+void GamepadPlugin::buttonStartChanged(bool) {
     buttonStartJustChanged = true;
 }
 
-void GamepadPlugin::buttonUpChanged(bool value) {
-    Q_UNUSED(value)
+void GamepadPlugin::buttonUpChanged(bool) {
     buttonUpJustChanged = true;
 }
 
-void GamepadPlugin::buttonXChanged(bool value) {
-    Q_UNUSED(value)
+void GamepadPlugin::buttonXChanged(bool) {
     buttonXJustChanged = true;
 }
 
-void GamepadPlugin::buttonYChanged(bool value) {
-    Q_UNUSED(value)
+void GamepadPlugin::buttonYChanged(bool) {
     buttonYJustChanged = true;
 }

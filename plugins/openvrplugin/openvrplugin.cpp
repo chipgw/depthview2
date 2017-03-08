@@ -9,8 +9,7 @@
 #include <QDebug>
 #include <cmath>
 
-bool OpenVRPlugin::init(QOpenGLExtraFunctions* f, QQmlContext* qmlContext) {
-    Q_UNUSED(f)
+bool OpenVRPlugin::init(QOpenGLExtraFunctions*, QQmlContext* qmlContext) {
     Q_INIT_RESOURCE(openvrplugin);
 
     if (!vr::VR_IsHmdPresent()) {
@@ -274,9 +273,7 @@ bool OpenVRPlugin::initVR() {
     return true;
 }
 
-bool OpenVRPlugin::render(const QString& drawModeName, QOpenGLExtraFunctions* f) {
-    Q_UNUSED(drawModeName)
-
+bool OpenVRPlugin::render(const QString&, QOpenGLExtraFunctions* f) {
     if (vrSystem == nullptr && !initVR())
         return false;
 
@@ -426,9 +423,7 @@ bool OpenVRPlugin::render(const QString& drawModeName, QOpenGLExtraFunctions* f)
     return true;
 }
 
-void OpenVRPlugin::frameSwapped(QOpenGLExtraFunctions* f) {
-    Q_UNUSED(f)
-
+void OpenVRPlugin::frameSwapped(QOpenGLExtraFunctions*) {
     if (vrSystem != nullptr)
         vr::VRCompositor()->WaitGetPoses(trackedDevicePose, vr::k_unMaxTrackedDeviceCount, nullptr, 0);
 }
@@ -489,8 +484,7 @@ void OpenVRPlugin::updateScreen() {
     }
 }
 
-bool OpenVRPlugin::pollInput(DVInputInterface* inputInterface) {
-    Q_UNUSED(inputInterface)
+bool OpenVRPlugin::pollInput(DVInputInterface*) {
     /* TODO - Use tracked motion controllers... */
     return false;
 }
