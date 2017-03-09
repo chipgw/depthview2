@@ -113,6 +113,12 @@ Dialog {
 
                         onClicked: DepthView.registerFileTypes()
                     }
+                    Button {
+                        text: qsTr("Reset Database")
+
+                        /* TODO - Confirm. */
+                        onClicked: FolderListing.resetFileDatabase()
+                    }
                 }
             }
 

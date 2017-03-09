@@ -121,7 +121,9 @@ ToolBar {
                     }
 
                     /* Separate the built-in modes from the plugins. */
-                    MenuSeparator { }
+                    MenuSeparator {
+                        visible: DepthView.pluginModes.length > 0
+                    }
 
                     Repeater {
                         id: pluginModeList

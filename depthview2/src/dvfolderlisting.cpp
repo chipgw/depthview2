@@ -23,8 +23,7 @@ DVFolderListing::DVFolderListing(QObject *parent, QSettings& s) : QAbstractListM
     /* Check to see if the table exists. */
     if (m_fileDataDB.record("files").isEmpty()) {
         /* TODO - Handle potential changes/additions to database fields. */
-        QSqlQuery query("create table files (path string, stereoMode integer, stereoSwap bool)");
-        if (query.lastError().isValid()) qWarning("Error creating table! %s", qPrintable(query.lastError().text()));
+        resetFileDatabase();
     }
 
     initDir(QDir::currentPath());
@@ -488,4 +487,14 @@ void DVFolderListing::setFileBrowserOpen(bool open) {
         m_fileBrowserOpen = open;
         emit fileBrowserOpenChanged();
     }
+}
+
+void DVFolderListing::resetFileDatabase() {
+    if (!m_fileDataDB.record("files").isEmpty()) {
+        QSqlQuery query("DROP TABLE files");
+        if (query.lastError().isValid()) qWarning("Error deleting old table! %s", qPrintable(query.lastError().text()));
+    }
+
+    QSqlQuery query("create table files (path string, stereoMode integer, stereoSwap bool)");
+    if (query.lastError().isValid()) qWarning("Error creating table! %s", qPrintable(query.lastError().text()));
 }

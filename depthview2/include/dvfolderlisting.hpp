@@ -167,6 +167,8 @@ public:
     bool fileBrowserOpen() const;
     void setFileBrowserOpen(bool open);
 
+    Q_INVOKABLE void resetFileDatabase();
+
 signals:
     /* No argument because they are used as NOTIFY for multiple properties. */
     void currentFileChanged();
