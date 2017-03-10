@@ -5,6 +5,7 @@ import DepthView 2.0
 
 Popup {
     id: root
+    modal: true
 
     padding: 0
 

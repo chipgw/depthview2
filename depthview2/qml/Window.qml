@@ -54,6 +54,7 @@ Rectangle {
     }
     Dialog {
         id: aboutBox
+        modal: true
 
         /* Anchors don't work on popups because they are appended to the window content item. */
         x: (parent.width - width) / 2
@@ -78,6 +79,7 @@ Rectangle {
     }
     Dialog {
         id: mediaInfoBox
+        modal: true
 
         /* No anchors for some reason... */
         x: (parent.width - width) / 2
@@ -220,15 +222,6 @@ Rectangle {
         mediaInfoBox.close()
         topMenu.closeMenus()
         bottomMenu.closeMenus()
-    }
-
-    MouseArea {
-        /* Popup close policy is borked with a touchscreen, so we do it ourselves. */
-        anchors.fill: parent
-
-        enabled: aboutBox.visible || mediaInfoBox.visible || topMenu.isMenuOpen || bottomMenu.isMenuOpen || settingsPopup.visible
-
-        onClicked: closePopups()
     }
 
     /* The popup close policy escape shortcut isn't working, so take care of it here. */

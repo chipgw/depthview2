@@ -213,7 +213,7 @@ void DVWindow::doCommandLine(QCommandLineParser& parser) {
     if(parser.isSet("d") && !folderListing->initDir(parser.value("d")))
         warning += tr("<p>Invalid directory \"%1\" passed to \"--startdir\" argument!</p>").arg(parser.value("d"));
 
-    if(parser.isSet("r")){
+    if(parser.isSet("r")) {
         const QString& renderer = parser.value("r");
 
         int mode = qmlCommunication->getModes().indexOf(renderer);
@@ -233,8 +233,7 @@ void DVWindow::doCommandLine(QCommandLineParser& parser) {
         QFileInfo file(arg);
 
         /* The file extension is checked by openFile(). */
-        if (file.exists() && folderListing->openFile(file))
-            break;
+        if (file.exists() && folderListing->openFile(file)) break;
     }
 
     /* If there weren't any warnings we don't show the dialog. */

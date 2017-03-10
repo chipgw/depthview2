@@ -5,6 +5,7 @@ import DepthView 2.0
 
 Dialog {
     id: root
+    modal: true
 
     function reset() {
         for (var i = 0; i < swipe.contentModel.count; ++i)

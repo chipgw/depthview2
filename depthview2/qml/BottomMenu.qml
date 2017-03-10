@@ -106,6 +106,7 @@ ToolBar {
                     Menu {
                         id: sourceMode
                         y: -height
+                        modal: true
 
                         MenuItem {
                             id: stereoSwapMenuItem
@@ -225,6 +226,7 @@ ToolBar {
                     Popup {
                         id: volumePopup
                         y: -height
+                        modal: true
 
                         Slider {
                             orientation: Qt.Vertical
