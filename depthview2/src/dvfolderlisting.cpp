@@ -287,7 +287,8 @@ QSqlRecord DVFolderListing::getRecordForFile(const QFileInfo& file, bool create)
             query.bindValue(":swap", fileStereoSwap(file));
 
             if (query.exec())
-                return query.record();
+                /* The INSERT query does not return a record, so use this function again to retrieve the record. */
+                return getRecordForFile(file);
 
             qWarning("Unable to create record for file! %s", qPrintable(query.lastError().text()));
         }
