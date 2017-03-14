@@ -29,14 +29,7 @@ DVQmlCommunication::DVQmlCommunication(QWindow* parent, QSettings& s) : QObject(
 }
 
 void DVQmlCommunication::postQmlInit() {
-    if (settings.contains("PluginMode")) {
-        /* Check to make sure the plugin mode is a valid loaded plugin before setting. */
-        QString mode = settings.value("PluginMode").toString();
-        if (pluginModes.contains(mode))
-            emit pluginModeChanged(m_pluginMode = mode);
-        else
-            qWarning("Invalid plugin mode \"%s\" set in settings file!", qPrintable(mode));
-    }
+    /* UNUSED */
 }
 
 DVDrawMode::Type DVQmlCommunication::drawMode() const {
@@ -132,59 +125,6 @@ void DVQmlCommunication::setGreyFac(qreal fac) {
     }
 }
 
-QString DVQmlCommunication::pluginMode() const {
-    return m_pluginMode;
-}
-
-void DVQmlCommunication::setPluginMode(const QString& mode) {
-    /* Only set if valid. */
-    if (mode != m_pluginMode && pluginModes.contains(mode)) {
-        m_pluginMode = mode;
-        settings.setValue("PluginMode", mode);
-        emit pluginModeChanged(mode);
-    }
-}
-
-void DVQmlCommunication::addPluginMode(const QString& mode, QQuickItem* config) {
-    pluginModes[mode] = config;
-    emit pluginModesChanged();
-}
-
-void DVQmlCommunication::addInputPluginConfig(QQuickItem* config) {
-    inputPluginConfig.append(config);
-    emit pluginModesChanged();
-}
-
-QStringList DVQmlCommunication::getPluginModes() const {
-    return pluginModes.keys();
-}
-
-QQuickItem* DVQmlCommunication::getPluginConfigMenu() const {
-    return pluginModes.contains(m_pluginMode) ? pluginModes[m_pluginMode] : nullptr;
-}
-
-QObjectList DVQmlCommunication::getPluginConfigMenus() const {
-    QObjectList list;
-
-    for (QQuickItem* item : pluginModes.values())
-        list.append((QObject*)item);
-    for (QQuickItem* item : inputPluginConfig)
-        list.append((QObject*)item);
-
-    return list;
-}
-
-QStringList DVQmlCommunication::getModes() const {
-    return QStringList() << "Anaglyph"
-                         << "Side-by-Side"
-                         << "Top/Bottom"
-                         << "Interlaced Horizontal"
-                         << "Interlaced Vertical"
-                         << "Checkerboard"
-                         << "Mono"
-                         << pluginModes.keys();
-}
-
 bool DVQmlCommunication::swapEyes() const {
     return m_swapEyes;
 }
@@ -205,36 +145,6 @@ QString DVQmlCommunication::buildType() {
 
 QString DVQmlCommunication::buildCompiler() {
     return version::compiler;
-}
-
-void DVQmlCommunication::savePluginSettings(QString pluginTitle, QObject* settingsObject) {
-    /* Remove spaces from the plugin title. */
-    pluginTitle.remove(' ');
-
-    settings.beginGroup(pluginTitle);
-
-    /* Go through all properties of the item excluding the first one, which is the objectName property of QObject. */
-    for (int i = 1; i < settingsObject->metaObject()->propertyCount(); ++i)
-        settings.setValue(settingsObject->metaObject()->property(i).name(), settingsObject->metaObject()->property(i).read(settingsObject));
-
-    settings.endGroup();
-}
-
-void DVQmlCommunication::loadPluginSettings(QString pluginTitle, QObject* settingsObject) {
-    /* Remove spaces from the plugin title. */
-    pluginTitle.remove(' ');
-
-    /* If the group doesn't already exist, do nothing. */
-    if (!settings.childGroups().contains(pluginTitle))
-        return;
-
-    settings.beginGroup(pluginTitle);
-
-    /* Go through each setting in the group. */
-    for (const QString& key : settings.allKeys())
-        settingsObject->setProperty(key.toLocal8Bit().data(), settings.value(key));
-
-    settings.endGroup();
 }
 
 bool DVQmlCommunication::saveWindowState() const {

@@ -124,24 +124,24 @@ ToolBar {
 
                     /* Separate the built-in modes from the plugins. */
                     MenuSeparator {
-                        visible: DepthView.pluginModes.length > 0
+                        visible: PluginManager.pluginModes.length > 0
                     }
 
                     Repeater {
                         id: pluginModeList
-                        model: DepthView.pluginModes
+                        model: PluginManager.pluginModes
 
                         MenuItem {
                             text: modelData
                             checkable: true
                             font: uiTextFont
 
-                            checked: DepthView.drawMode === DrawMode.Plugin && DepthView.pluginMode === modelData
+                            checked: DepthView.drawMode === DrawMode.Plugin && PluginManager.pluginMode === modelData
 
                             onCheckedChanged:
                                 /* When checked we set the mode to Plugin and use the button text as the plugin mode. */
                                 if (checked) {
-                                    DepthView.pluginMode = modelData
+                                    PluginManager.pluginMode = modelData
                                     DepthView.drawMode = DrawMode.Plugin
                                     modeMenu.close()
                                 }

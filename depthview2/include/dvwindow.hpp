@@ -9,8 +9,7 @@
 /* DepthView forward declarations. */
 class DVQmlCommunication;
 class DVFolderListing;
-class DVInputPlugin;
-class DVRenderPlugin;
+class DVPluginManager;
 
 /* Qt forward declarations. */
 class QQuickRenderControl;
@@ -106,6 +105,7 @@ private:
 
     DVQmlCommunication* qmlCommunication;
     DVFolderListing* folderListing;
+    DVPluginManager* pluginManager;
     QtAV::AVPlayer* player;
 
     QSettings settings;
@@ -125,26 +125,4 @@ private:
     void loadShaders();
     void loadShader(QOpenGLShaderProgram& shader, const char* vshader, const char* fshader);
     void createFBO();
-
-    QDir pluginsDir;
-
-    /* Any loaded plugins. */
-    QMap<QString, struct DVPluginInfo*> plugins;
-    /* Any inited plugins of the specific type. */
-    QList<DVRenderPlugin*> renderPlugins;
-    QList<DVInputPlugin*> inputPlugins;
-
-    /* Load static and dynamic plugins and init them. */
-    void loadPlugins();
-    bool loadPlugin(const QString& pluginName);
-    bool initPlugin(const QString& pluginName);
-    /* Call deinit() of all loaded plugins, so as to garbage collect anything they created. */
-    void unloadPlugins();
-
-    /* Functions that get the current plugin and interface with it. */
-    DVRenderPlugin* getCurrentRenderPlugin();
-    bool doPluginRender();
-    void getPluginSize();
-    void pluginOnFrameSwapped();
-    void doPluginInput();
 };

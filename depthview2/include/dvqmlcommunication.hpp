@@ -6,7 +6,6 @@
 
 class QWindow;
 class QSettings;
-class QQuickItem;
 
 class DVQmlCommunication : public QObject {
     Q_OBJECT
@@ -21,13 +20,6 @@ class DVQmlCommunication : public QObject {
     Q_PROPERTY(qreal greyFac READ greyFac WRITE setGreyFac NOTIFY greyFacChanged)
 
     Q_PROPERTY(bool fullscreen READ fullscreen WRITE setFullscreen NOTIFY fullscreenChanged)
-
-    Q_PROPERTY(QString pluginMode READ pluginMode WRITE setPluginMode NOTIFY pluginModeChanged)
-    Q_PROPERTY(QStringList pluginModes READ getPluginModes NOTIFY pluginModesChanged)
-    Q_PROPERTY(QStringList modes READ getModes NOTIFY pluginModesChanged)
-
-    Q_PROPERTY(QQuickItem* pluginConfigMenu READ getPluginConfigMenu NOTIFY pluginModeChanged)
-    Q_PROPERTY(QList<QObject*> pluginConfigMenus READ getPluginConfigMenus NOTIFY pluginModesChanged)
 
     Q_PROPERTY(bool swapEyes READ swapEyes WRITE setSwapEyes NOTIFY swapEyesChanged)
 
@@ -64,26 +56,12 @@ public:
     bool fullscreen() const;
     void setFullscreen(bool fullscreen);
 
-    QString pluginMode() const;
-    void setPluginMode(const QString& mode);
-
-    void addPluginMode(const QString& mode, QQuickItem* config);
-    void addInputPluginConfig(QQuickItem* config);
-    QStringList getPluginModes() const;
-    QStringList getModes() const;
-    QQuickItem* getPluginConfigMenu() const;
-    QObjectList getPluginConfigMenus() const;
-
     bool swapEyes() const;
     void setSwapEyes(bool swap);
 
     Q_INVOKABLE QString versionString();
     Q_INVOKABLE QString buildType();
     Q_INVOKABLE QString buildCompiler();
-
-    /* QObject should be const, but QML does not know how to do const. */
-    Q_INVOKABLE void savePluginSettings(QString pluginTitle, QObject* settingsObject);
-    Q_INVOKABLE void loadPluginSettings(QString pluginTitle, QObject* settingsObject);
 
     bool saveWindowState() const;
     void setSaveWindowState(bool save);
@@ -110,9 +88,6 @@ signals:
     void greyFacChanged(qreal fac);
 
     void fullscreenChanged(bool fullscreen);
-
-    void pluginModeChanged(QString mode);
-    void pluginModesChanged();
 
     void swapEyesChanged();
 
@@ -165,9 +140,6 @@ private:
 
     QWindow* owner;
 
-    QString m_pluginMode;
-    QMap<QString, QQuickItem*> pluginModes;
-    QList<QQuickItem*> inputPluginConfig;
     Qt::WindowState lastWindowState;
 
     bool m_swapEyes;

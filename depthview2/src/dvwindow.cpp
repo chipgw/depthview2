@@ -3,6 +3,7 @@
 #include "dvqmlcommunication.hpp"
 #include "dvfolderlisting.hpp"
 #include "dvthumbnailprovider.hpp"
+#include "dvpluginmanager.hpp"
 #include <QApplication>
 #include <QQuickRenderControl>
 #include <QQuickWindow>
@@ -13,6 +14,7 @@
 #include <QMessageBox>
 #include <QMimeData>
 #include <QOpenGLFramebufferObject>
+#include <AVPlayer.h>
 
 /* This class is needed for making forwarded keyboard events be recognized by QML. */
 class RenderControl : public QQuickRenderControl {
@@ -38,6 +40,7 @@ public:
 DVWindow::DVWindow() : QOpenGLWindow(), settings(SETTINGS_ARGS), renderFBO(nullptr) {
     qmlCommunication = new DVQmlCommunication(this, settings);
     folderListing = new DVFolderListing(this, settings);
+    pluginManager = new DVPluginManager(this, settings);
 
     /* Use the class defined above. */
     qmlRenderControl = new RenderControl(this);
@@ -50,6 +53,7 @@ DVWindow::DVWindow() : QOpenGLWindow(), settings(SETTINGS_ARGS), renderFBO(nullp
 
     qmlEngine->rootContext()->setContextProperty("DepthView", qmlCommunication);
     qmlEngine->rootContext()->setContextProperty("FolderListing", folderListing);
+    qmlEngine->rootContext()->setContextProperty("PluginManager", pluginManager);
 
     /* When the Qt.quit() function is called in QML, close this window. */
     connect(qmlEngine, &QQmlEngine::quit, this, &DVWindow::close);
@@ -76,7 +80,7 @@ DVWindow::DVWindow() : QOpenGLWindow(), settings(SETTINGS_ARGS), renderFBO(nullp
 }
 
 DVWindow::~DVWindow() {
-    unloadPlugins();
+    pluginManager->unloadPlugins();
 
     delete renderFBO;
 
@@ -101,7 +105,7 @@ void DVWindow::updateQmlSize() {
         qmlSize.setHeight(qmlSize.height() / 2);
 
     if (qmlCommunication->drawMode() == DVDrawMode::Plugin)
-        getPluginSize();
+        qmlSize = pluginManager->getPluginSize(qmlSize);
 
     /* Don't recreate fbo unless it's null or its size is wrong. */
     if(renderFBO == nullptr || renderFBO->size() != qmlSize)
@@ -216,13 +220,13 @@ void DVWindow::doCommandLine(QCommandLineParser& parser) {
     if(parser.isSet("r")) {
         const QString& renderer = parser.value("r");
 
-        int mode = qmlCommunication->getModes().indexOf(renderer);
+        int mode = pluginManager->getModes().indexOf(renderer);
 
         if(mode == -1)
             warning += tr("<p>Invalid renderer \"%1\" passed to \"--renderer\" argument!</p>").arg(renderer);
 
         if (mode >= DVDrawMode::Plugin) {
-            qmlCommunication->setPluginMode(renderer);
+            pluginManager->setPluginMode(renderer);
             qmlCommunication->initDrawMode(DVDrawMode::Plugin);
         } else {
             qmlCommunication->initDrawMode(DVDrawMode::Type(mode));
@@ -239,4 +243,106 @@ void DVWindow::doCommandLine(QCommandLineParser& parser) {
     /* If there weren't any warnings we don't show the dialog. */
     if(!warning.isEmpty())
         QMessageBox::warning(nullptr, tr("Invalid Command Line!"), warning);
+}
+
+DVInputMode::Type DVWindow::inputMode() const {
+    return folderListing->fileBrowserOpen() ? DVInputMode::FileBrowser : folderListing->isCurrentFileVideo() ? DVInputMode::VideoPlayer : DVInputMode::ImageViewer;
+}
+
+void DVWindow::up() {
+    emit qmlCommunication->up();
+}
+void DVWindow::down() {
+    emit qmlCommunication->down();
+}
+void DVWindow::left() {
+    emit qmlCommunication->left();
+}
+void DVWindow::right() {
+    emit qmlCommunication->right();
+}
+
+void DVWindow::accept() {
+    emit qmlCommunication->accept();
+}
+
+void DVWindow::cancel() {
+    emit qmlCommunication->cancel();
+}
+
+void DVWindow::openFileBrowser() {
+    folderListing->setFileBrowserOpen(true);
+}
+
+void DVWindow::goBack() {
+    if (folderListing->fileBrowserOpen() && folderListing->canGoBack())
+        folderListing->goBack();
+}
+
+void DVWindow::goForward() {
+    if (folderListing->fileBrowserOpen() && folderListing->canGoForward())
+        folderListing->goForward();
+}
+
+void DVWindow::goUp() {
+    if (folderListing->fileBrowserOpen() && folderListing->canGoUp())
+        folderListing->goUp();
+}
+
+void DVWindow::fileInfo() {
+    emit qmlCommunication->fileInfo();
+}
+
+void DVWindow::nextFile() {
+    folderListing->openNext();
+}
+
+void DVWindow::previousFile() {
+    folderListing->openPrevious();
+}
+
+//void DVWindow::setMousePosition(QPoint pos, bool relative = false) {
+//}
+
+//void DVWindow::sendMouseClick(Qt::MouseButton button) {
+//}
+
+void DVWindow::playVideo() {
+    player->play();
+}
+
+void DVWindow::pauseVideo() {
+    player->pause();
+}
+
+void DVWindow::playPauseVideo() {
+    player->togglePause();
+}
+
+void DVWindow::seekBack() {
+    player->seekBackward();
+}
+
+void DVWindow::seekForward() {
+    player->seekForward();
+}
+
+void DVWindow::seekAmount(qint64 msec) {
+    player->seek(msec);
+}
+
+void DVWindow::volumeUp() {
+    player->audio()->setVolume(qMin(player->audio()->volume() + 0.1, 1.0));
+}
+
+void DVWindow::volumeDown() {
+    player->audio()->setVolume(qMax(player->audio()->volume() - 0.1, 0.0));
+}
+
+void DVWindow::mute() {
+    player->audio()->setMute(!player->audio()->isMute());
+}
+
+void DVWindow::setVolume(qreal volume) {
+    player->audio()->setVolume(volume);
 }

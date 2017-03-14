@@ -5,12 +5,12 @@ QT += qml quick widgets sql av quickcontrols2
 SOURCES += src/main.cpp \
     src/dvwindow.cpp \
     src/dvwindow_gl.cpp \
-    src/dvwindow_plugin.cpp \
     src/dvqmlcommunication.cpp \
     src/version.cpp \
     src/dvfolderlisting.cpp \
     src/dvthumbnailprovider.cpp \
-    src/fileassociation.cpp
+    src/fileassociation.cpp \
+    src/dvpluginmanager.cpp
 
 RESOURCES += qml.qrc
 
@@ -30,7 +30,8 @@ HEADERS += \
     include/dvfolderlisting.hpp \
     include/dvinputinterface.hpp \
     include/dvthumbnailprovider.hpp \
-    include/fileassociation.hpp
+    include/fileassociation.hpp \
+    include/dvpluginmanager.hpp
 
 INCLUDEPATH += include
 

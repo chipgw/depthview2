@@ -1,6 +1,7 @@
 #include "dvwindow.hpp"
 #include "dvqmlcommunication.hpp"
 #include "dvfolderlisting.hpp"
+#include "dvpluginmanager.hpp"
 #include <QQuickRenderControl>
 #include <QQuickWindow>
 #include <QQuickItem>
@@ -33,7 +34,7 @@ void DVWindow::initializeGL() {
 
     loadShaders();
 
-    loadPlugins();
+    pluginManager->loadPlugins(qmlEngine, context());
 
     QQmlComponent rootComponent(qmlEngine);
 
@@ -64,6 +65,7 @@ void DVWindow::initializeGL() {
 
     qmlCommunication->postQmlInit();
     folderListing->postQmlInit();
+    pluginManager->postQmlInit();
 
     /* The setGeometry() and setState() calls may try to set the qmlRoot geometry,
      * which means this needs to be done after QML is all set up. */
@@ -78,7 +80,7 @@ void DVWindow::initializeGL() {
 
 void DVWindow::paintGL() {
     /* Get input from the plugins. */
-    doPluginInput();
+    pluginManager->doPluginInput(this);
 
     /* So QML doesn't freak out because of stuff we did last frame. */
     qmlWindow->resetOpenGLState();
@@ -144,7 +146,7 @@ void DVWindow::paintGL() {
         shaderMono.setUniformValue("left", true);
         break;
     case DVDrawMode::Plugin:
-        if (doPluginRender())
+        if (pluginManager->doPluginRender())
             /* If it worked, return from here to avoid the default fullscreen quad. */
             return;
     default:
@@ -184,8 +186,13 @@ void DVWindow::onFrameSwapped() {
     /* In case one of the plugins needs to do something OpenGL related. */
     makeCurrent();
 
-    if (qmlCommunication->drawMode() == DVDrawMode::Plugin)
-        pluginOnFrameSwapped();
+    if (qmlCommunication->drawMode() == DVDrawMode::Plugin) {
+        /* Make sure the render size is up to date. */
+        /* TODO - A signal from the plugin would likely be more efficient... */
+        updateQmlSize();
+
+        holdMouse = pluginManager->onFrameSwapped();
+    }
 
     update();
 }

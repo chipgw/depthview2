@@ -196,7 +196,7 @@ Dialog {
             }
 
             Repeater {
-                model: DepthView.pluginConfigMenus
+                model: PluginManager.pluginConfigMenus
 
                 Flickable {
                     /* Use the title property from the provided item. */
@@ -206,7 +206,7 @@ Dialog {
                         try {
                             /* If the plugin has a settings object, load it. */
                             if (modelData.settings)
-                                DepthView.loadPluginSettings(title, modelData.settings)
+                                PluginManager.loadPluginSettings(title, modelData.settings)
 
                             modelData.reset()
                         } catch (e) {
@@ -220,7 +220,7 @@ Dialog {
 
                             /* If the plugin has a settings object, save it. */
                             if (modelData.settings)
-                                DepthView.savePluginSettings(title, modelData.settings)
+                                PluginManager.savePluginSettings(title, modelData.settings)
                         } catch (e) {
                             console.warn(title, "did not apply correctly!", e)
                         }
