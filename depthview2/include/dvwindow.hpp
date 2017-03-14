@@ -3,6 +3,7 @@
 #include <QOpenGLWindow>
 #include <QOpenGLShaderProgram>
 #include <QSettings>
+#include <QDir>
 #include "dvinputinterface.hpp"
 
 /* DepthView forward declarations. */
@@ -125,12 +126,18 @@ private:
     void loadShader(QOpenGLShaderProgram& shader, const char* vshader, const char* fshader);
     void createFBO();
 
+    QDir pluginsDir;
+
     /* Any loaded plugins. */
+    QMap<QString, struct DVPluginInfo*> plugins;
+    /* Any inited plugins of the specific type. */
     QList<DVRenderPlugin*> renderPlugins;
     QList<DVInputPlugin*> inputPlugins;
 
     /* Load static and dynamic plugins and init them. */
     void loadPlugins();
+    bool loadPlugin(const QString& pluginName);
+    bool initPlugin(const QString& pluginName);
     /* Call deinit() of all loaded plugins, so as to garbage collect anything they created. */
     void unloadPlugins();
 

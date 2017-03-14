@@ -11,12 +11,21 @@
 #include <QApplication>
 #include <QOpenGLContext>
 #include <QPluginLoader>
-#include <QDir>
 #include <AVPlayer.h>
+
+struct DVPluginInfo {
+    QQmlContext* context = nullptr;
+
+    DVRenderPlugin* renderPlugin = nullptr;
+    DVInputPlugin* inputPlugin = nullptr;
+
+    bool loaded = false;
+    bool inited = false;
+};
 
 void DVWindow::loadPlugins() {
     /* Start with the path the application is in. */
-    QDir pluginsDir(qApp->applicationDirPath());
+    pluginsDir.cd(qApp->applicationDirPath());
 
     /* Plugins start with "dv2_" on Windows and "libdv2_" on Linux. */
     pluginsDir.setNameFilters(QStringList({"dv2_*", "libdv2_*"}));
@@ -51,49 +60,76 @@ void DVWindow::loadPlugins() {
         /* If the file isn't a valid library for this platform, don't bother. */
         if (!QLibrary::isLibrary(filename)) continue;
 
-        QPluginLoader loader(pluginsDir.absoluteFilePath(filename));
-        QObject *obj = loader.instance();
+        loadPlugin(filename);
 
-        if (obj == nullptr) {
-            qDebug("\"%s\" is not a plugin. %s", qPrintable(filename), qPrintable(loader.errorString()));
-            continue;
-        }
-
-        /* If it can be cast to the plugin type it is a valid plugin, otherwise it will be null. */
-        DVRenderPlugin* renderPlugin = qobject_cast<DVRenderPlugin*>(obj);
-        DVInputPlugin* inputPlugin = qobject_cast<DVInputPlugin*>(obj);
-
-        QQmlContext* pluginContext = new QQmlContext(qmlEngine, this);
-
-        if (renderPlugin != nullptr) {
-            qDebug("Found render plugin: \"%s\"", qPrintable(filename));
-
-            if (renderPlugin->init(context()->extraFunctions(), pluginContext)) {
-                for (const QString& mode : renderPlugin->drawModeNames())
-                    qmlCommunication->addPluginMode(mode, renderPlugin->getConfigMenuObject());
-
-                renderPlugins.append(renderPlugin);
-
-                qDebug("Loaded plugin: \"%s\"", qPrintable(filename));
-
-                continue;
-            }
-        } else if (inputPlugin != nullptr) {
-            qDebug("Found input plugin: \"%s\"", qPrintable(filename));
-
-            if (inputPlugin->init(pluginContext)) {
-                inputPlugins.append(inputPlugin);
-                qmlCommunication->addInputPluginConfig(inputPlugin->getConfigMenuObject());
-
-                qDebug("Loaded plugin: \"%s\"", qPrintable(filename));
-
-                continue;
-            }
-        }
-        qDebug("Plugin: \"%s\" failed to init.", qPrintable(filename));
-        delete pluginContext;
+        /* TODO - Make an interface to control which plugins are enabled and only init thoser. */
+        initPlugin(filename);
     }
     qDebug("Done loading plugins.");
+}
+
+bool DVWindow::loadPlugin(const QString& pluginName) {
+    DVPluginInfo* plugin = new DVPluginInfo;
+
+    QPluginLoader loader(pluginsDir.absoluteFilePath(pluginName));
+    QObject *obj = loader.instance();
+
+    if (obj == nullptr) {
+        qDebug("\"%s\" is not a plugin. %s", qPrintable(pluginName), qPrintable(loader.errorString()));
+        return false;
+    }
+
+    /* If it can be cast to the plugin type it is a valid plugin, otherwise it will be null. */
+    plugin->renderPlugin = qobject_cast<DVRenderPlugin*>(obj);
+    plugin->inputPlugin = qobject_cast<DVInputPlugin*>(obj);
+
+    plugin->loaded = plugin->renderPlugin != nullptr || plugin->inputPlugin != nullptr;
+
+    if (plugin->renderPlugin != nullptr)
+        qDebug("Found render plugin: \"%s\"", qPrintable(pluginName));
+    else if (plugin->inputPlugin != nullptr)
+        qDebug("Found input plugin: \"%s\"", qPrintable(pluginName));
+
+    if (plugin->loaded)
+        return *plugins.insert(pluginName, plugin);
+    else
+        delete plugin;
+
+    return false;
+}
+
+bool DVWindow::initPlugin(const QString &pluginName) {
+    DVPluginInfo* plugin = plugins[pluginName];
+    plugin->context = new QQmlContext(qmlEngine, this);
+
+    if (plugin->renderPlugin != nullptr) {
+        qDebug("Found render plugin: \"%s\"", qPrintable(pluginName));
+
+        if (plugin->renderPlugin->init(context()->extraFunctions(), plugin->context)) {
+            for (const QString& mode : plugin->renderPlugin->drawModeNames())
+                qmlCommunication->addPluginMode(mode, plugin->renderPlugin->getConfigMenuObject());
+
+            /* Add to the list of usable render plugins. */
+            renderPlugins.append(plugin->renderPlugin);
+
+            plugin->inited = true;
+        }
+    } else if (plugin->inputPlugin != nullptr) {
+        qDebug("Found input plugin: \"%s\"", qPrintable(pluginName));
+
+        if (plugin->inputPlugin->init(plugin->context)) {
+            /* Add to the list of usable input plugins. */
+            inputPlugins.append(plugin->inputPlugin);
+
+            /* Let QML use the plugin configuration item. */
+            qmlCommunication->addInputPluginConfig(plugin->inputPlugin->getConfigMenuObject());
+
+            plugin->inited = true;
+        }
+    }
+
+    qDebug(plugin->inited ? "Loaded plugin: \"%s\"" : "Plugin: \"%s\" failed to init.", qPrintable(pluginName));
+    return plugin->inited;
 }
 
 void DVWindow::unloadPlugins() {
