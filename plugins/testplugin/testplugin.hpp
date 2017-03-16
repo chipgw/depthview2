@@ -8,7 +8,7 @@ class QOpenGLShaderProgram;
 
 class TestPlugin : public QObject, public DVRenderPlugin {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID DVRenderPlugin_iid)
+    Q_PLUGIN_METADATA(IID DVRenderPlugin_iid FILE "testplugin.json")
     Q_INTERFACES(DVRenderPlugin)
 
     QQuickItem* configMenuObject;

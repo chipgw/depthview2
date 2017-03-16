@@ -338,12 +338,12 @@ QObjectList DVPluginManager::getPluginConfigMenus() const {
 QHash<int, QByteArray> DVPluginManager::roleNames() const {
     QHash<int, QByteArray> names;
 
-    names[PluginFileNameRole]   = "pluginFileName";
-    names[PluginDisplayNameRole] = "pluginDisplayName";
-    names[PluginDescriptionRole] = "pluginDescription";
-    names[PluginVersionRole]    = "pluginVersion";
-    names[PluginTypeRole]       = "pluginType";
-    names[PluginEnabledRole]    = "pluginEnabled";
+    names[PluginFileNameRole]       = "pluginFileName";
+    names[PluginDisplayNameRole]    = "pluginDisplayName";
+    names[PluginDescriptionRole]    = "pluginDescription";
+    names[PluginVersionRole]        = "pluginVersion";
+    names[PluginTypeRole]           = "pluginType";
+    names[PluginEnabledRole]        = "pluginEnabled";
 
     return names;
 }
@@ -354,18 +354,21 @@ QVariant DVPluginManager::data(const QModelIndex& index, int role) const {
     if (int(plugins.size()) > index.row()) {
         auto plugin = (plugins.begin() +index.row());
 
+        QJsonObject metaData = plugin.value()->loader.metaData().value("MetaData").toObject();
+
         /* Set the return value based on the role. */
         switch (role) {
         case PluginFileNameRole:
             data = plugin.key();
             break;
         case PluginDisplayNameRole:
-            /* TODO - An actual display name... */
-            data = plugin.value()->loader.metaData().value("className");
+            data = metaData.value("displayName");
             break;
         case PluginDescriptionRole:
-            /* TODO - Use an actual description value... */
-            data = QJsonDocument(plugin.value()->loader.metaData()).toJson();
+            data = metaData.value("description");
+            break;
+        case PluginVersionRole:
+            data = metaData.value("version");
             break;
         case PluginTypeRole:
             if (plugin.value()->pluginType == DVPluginType::RenderPlugin)

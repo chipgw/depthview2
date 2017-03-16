@@ -48,6 +48,7 @@ Dialog {
 
     Item {
         anchors.fill: parent
+        clip: true
 
         SwipeView {
             id: swipe
@@ -212,7 +213,7 @@ Dialog {
                 /* Only enable panning when the item is tall enough. */
                 interactive: contentHeight > height
 
-                Column {
+                ColumnLayout {
                     id: pluginsContent
                     width: parent.width
 
@@ -221,15 +222,17 @@ Dialog {
 
                         /* TODO - Make this look nice... */
                         GroupBox {
+                            font: uiTextFont
                             title: pluginDisplayName
-                            width: pluginsContent.width
+                            Layout.preferredWidth: pluginsContent.width
 
-                            Column {
+                            RowLayout {
+                                width: parent.width
+
                                 Text {
-                                    text: "<b>" + pluginType + ",</b> " + pluginFileName
-                                }
-                                Text {
-                                    text: pluginDescription
+                                    font: uiTextFont
+                                    Layout.fillWidth: true
+                                    text: "<b>" + pluginType + ",</b> " + pluginFileName + "<br><br>" + pluginDescription
                                 }
                                 CheckBox {
                                     text: "Enabled"

@@ -9,7 +9,7 @@ class QOpenGLShaderProgram;
 
 class GamepadPlugin : public QObject, public DVInputPlugin {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID DVInputPlugin_iid)
+    Q_PLUGIN_METADATA(IID DVInputPlugin_iid FILE "gamepadplugin.json")
     Q_INTERFACES(DVInputPlugin)
 
     QQuickItem* configMenuObject;

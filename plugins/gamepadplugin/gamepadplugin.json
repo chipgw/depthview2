@@ -1,0 +1,5 @@
+{
+    "displayName": "Gamepad Plugin",
+    "description": "Add support for controller input using the Qt Gamepad library.",
+    "version": "1.0"
+}

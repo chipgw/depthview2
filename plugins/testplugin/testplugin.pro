@@ -22,3 +22,6 @@ DESTDIR       = ../../depthview2/plugins
 INCLUDEPATH += ../../depthview2/include
 
 RESOURCES += testplugin.qrc
+
+DISTFILES += \
+    testplugin.json

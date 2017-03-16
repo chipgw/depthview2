@@ -37,3 +37,6 @@ LIBS += -L$$PWD/../../../openvr/lib/linux32/ -L$$PWD/../../../openvr/lib/linux64
 
 INCLUDEPATH += $$PWD/../../../openvr/headers
 DEPENDPATH += $$PWD/../../../openvr/headers
+
+DISTFILES += \
+    openvrplugin.json

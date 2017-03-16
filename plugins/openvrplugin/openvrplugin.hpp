@@ -14,7 +14,7 @@ class QOpenGLFramebufferObject;
 
 class OpenVRPlugin : public QObject, public DVRenderPlugin {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID DVRenderPlugin_iid)
+    Q_PLUGIN_METADATA(IID DVRenderPlugin_iid FILE "openvrplugin.json")
     Q_INTERFACES(DVRenderPlugin)
 
 public:
