@@ -2,6 +2,7 @@
 #include "dvpluginmanager.hpp"
 #include "dvinputplugin.hpp"
 #include "dvrenderplugin.hpp"
+#include "dvenums.hpp"
 #include <QQuickItem>
 #include <QQmlContext>
 #include <QMetaObject>
@@ -13,6 +14,10 @@
 struct DVPluginInfo {
     QQmlContext* context = nullptr;
 
+    QPluginLoader loader;
+
+    DVPluginType::Type pluginType = DVPluginType::InvalidPlugin;
+
     DVRenderPlugin* renderPlugin = nullptr;
     DVInputPlugin* inputPlugin = nullptr;
 
@@ -20,7 +25,7 @@ struct DVPluginInfo {
     bool inited = false;
 };
 
-DVPluginManager::DVPluginManager(QObject* parent, QSettings& s) : QObject(parent), settings(s) {
+DVPluginManager::DVPluginManager(QObject* parent, QSettings& s) : QAbstractListModel(parent), settings(s) {
 
 }
 
@@ -71,33 +76,52 @@ void DVPluginManager::loadPlugins(QQmlEngine* engine, QOpenGLContext* context) {
 
     qDebug("Loading plugins from \"%s\"...", qPrintable(pluginsDir.absolutePath()));
 
+    /* Tell the model system that we're going to be changing all the things. */
+    beginResetModel();
+
     /* Try to load all files in the directory using the filters defined above. */
     for (const QString& filename : pluginsDir.entryList()) {
         /* If the file isn't a valid library for this platform, don't bother. */
         if (!QLibrary::isLibrary(filename)) continue;
 
-        loadPlugin(filename);
+        DVPluginInfo* plugin = new DVPluginInfo;
+        plugin->loader.setFileName(pluginsDir.absoluteFilePath(filename));
 
-        /* TODO - Make an interface to control which plugins are enabled and only init those. */
-        initPlugin(filename);
+        QString iid = plugin->loader.metaData().value("IID").toString();
+        if (iid == DVRenderPlugin_iid)
+            plugin->pluginType = DVPluginType::RenderPlugin;
+        else if (iid == DVInputPlugin_iid)
+            plugin->pluginType = DVPluginType::InputPlugin;
+        else {
+            qDebug("\"%s\" is not a valid plugin. Invalid IID \"%s\"!", qPrintable(filename), qPrintable(iid));
+            delete plugin;
+            continue;
+        }
+
+        plugins.insert(filename, plugin);
     }
+
     qDebug("Done loading plugins.");
+
+
+    /* Tell the model system that we've finished changing all the things. */
+    endResetModel();
 }
 
 bool DVPluginManager::loadPlugin(const QString& pluginName) {
-    DVPluginInfo* plugin = new DVPluginInfo;
-
-    QPluginLoader loader(pluginsDir.absoluteFilePath(pluginName));
-    QObject *obj = loader.instance();
+    DVPluginInfo* plugin = plugins[pluginName];
+    plugin->loader.load();
+    QObject *obj = plugin->loader.instance();
 
     if (obj == nullptr) {
-        qDebug("\"%s\" is not a plugin. %s", qPrintable(pluginName), qPrintable(loader.errorString()));
+        qDebug("\"%s\" is not a plugin. %s", qPrintable(pluginName), qPrintable(plugin->loader.errorString()));
         return false;
     }
 
-    /* If it can be cast to the plugin type it is a valid plugin, otherwise it will be null. */
-    plugin->renderPlugin = qobject_cast<DVRenderPlugin*>(obj);
-    plugin->inputPlugin = qobject_cast<DVInputPlugin*>(obj);
+    if (plugin->pluginType == DVPluginType::RenderPlugin)
+        plugin->renderPlugin = qobject_cast<DVRenderPlugin*>(obj);
+    else if (plugin->pluginType == DVPluginType::InputPlugin)
+        plugin->inputPlugin = qobject_cast<DVInputPlugin*>(obj);
 
     plugin->loaded = plugin->renderPlugin != nullptr || plugin->inputPlugin != nullptr;
 
@@ -106,37 +130,42 @@ bool DVPluginManager::loadPlugin(const QString& pluginName) {
     else if (plugin->inputPlugin != nullptr)
         qDebug("Found input plugin: \"%s\"", qPrintable(pluginName));
 
-    if (plugin->loaded)
-        return *plugins.insert(pluginName, plugin);
-
-    delete plugin;
-
-    return false;
+    return plugin->loaded;
 }
 
-bool DVPluginManager::initPlugin(const QString &pluginName) {
+bool DVPluginManager::initRenderPlugin(const QString &pluginName) {
     DVPluginInfo* plugin = plugins[pluginName];
+
+    if (plugin->pluginType != DVPluginType::RenderPlugin)
+        return false;
+
     plugin->context = new QQmlContext(qmlEngine, this);
 
-    if (plugin->renderPlugin != nullptr) {
-        qDebug("Found render plugin: \"%s\"", qPrintable(pluginName));
+    if (plugin->renderPlugin != nullptr && plugin->renderPlugin->init(openglContext->extraFunctions(), plugin->context)) {
+        /* Add to the list of usable render plugins. */
+        renderPlugins.append(plugin->renderPlugin);
+        pluginModes.append(plugin->renderPlugin->drawModeNames());
 
-        if (plugin->renderPlugin->init(openglContext->extraFunctions(), plugin->context)) {
-            /* Add to the list of usable render plugins. */
-            renderPlugins.append(plugin->renderPlugin);
-            pluginModes.append(plugin->renderPlugin->drawModeNames());
+        plugin->inited = true;
+    }
 
-            plugin->inited = true;
-        }
-    } else if (plugin->inputPlugin != nullptr) {
-        qDebug("Found input plugin: \"%s\"", qPrintable(pluginName));
+    qDebug(plugin->inited ? "Loaded plugin: \"%s\"" : "Plugin: \"%s\" failed to init.", qPrintable(pluginName));
+    return plugin->inited;
+}
 
-        if (plugin->inputPlugin->init(plugin->context)) {
-            /* Add to the list of usable input plugins. */
-            inputPlugins.append(plugin->inputPlugin);
+bool DVPluginManager::initInputPlugin(const QString &pluginName) {
+    DVPluginInfo* plugin = plugins[pluginName];
 
-            plugin->inited = true;
-        }
+    if (plugin->pluginType != DVPluginType::InputPlugin)
+        return false;
+
+    plugin->context = new QQmlContext(qmlEngine, this);
+
+    if (plugin->inputPlugin != nullptr && plugin->inputPlugin->init(plugin->context)) {
+        /* Add to the list of usable input plugins. */
+        inputPlugins.append(plugin->inputPlugin);
+
+        plugin->inited = true;
     }
 
     qDebug(plugin->inited ? "Loaded plugin: \"%s\"" : "Plugin: \"%s\" failed to init.", qPrintable(pluginName));
@@ -144,15 +173,41 @@ bool DVPluginManager::initPlugin(const QString &pluginName) {
 }
 
 void DVPluginManager::unloadPlugins() {
+    /* Tell the model system that we're going to be changing all the things. */
+    beginResetModel();
+
     /* Deinit any/all loaded plugins. */
     for (DVRenderPlugin* plugin : renderPlugins)
         plugin->deinit();
     for (DVInputPlugin* plugin : inputPlugins)
         plugin->deinit();
+    /* TODO - Perhaps these should be deleted? Or will they be reused? (Probably not...) */
+    for (DVPluginInfo* plugin : plugins)
+        plugin->inited = false;
 
     /* Clear the list. Not that it should be used anymore... */
     renderPlugins.clear();
     inputPlugins.clear();
+
+    /* Tell the model system that we've finished changing all the things. */
+    endResetModel();
+}
+
+bool DVPluginManager::enablePlugin(QString pluginFileName) {
+    /* Tell the model system that we're going to be changing all the things. */
+    beginResetModel();
+
+    /* TODO - Store whether or not the plugin should be loaded automatically. */
+
+    bool loaded = loadPlugin(pluginFileName) &&
+            (initRenderPlugin(pluginFileName) || initInputPlugin(pluginFileName));
+
+    /* Tell the model system that we've finished changing all the things. */
+    endResetModel();
+
+    emit pluginModesChanged();
+
+    return loaded;
 }
 
 void DVPluginManager::savePluginSettings(QString pluginTitle, QObject* settingsObject) {
@@ -278,4 +333,56 @@ QObjectList DVPluginManager::getPluginConfigMenus() const {
         list.append((QObject*)item->getConfigMenuObject());
 
     return list;
+}
+
+QHash<int, QByteArray> DVPluginManager::roleNames() const {
+    QHash<int, QByteArray> names;
+
+    names[PluginFileNameRole]   = "pluginFileName";
+    names[PluginDisplayNameRole] = "pluginDisplayName";
+    names[PluginDescriptionRole] = "pluginDescription";
+    names[PluginVersionRole]    = "pluginVersion";
+    names[PluginTypeRole]       = "pluginType";
+    names[PluginEnabledRole]    = "pluginEnabled";
+
+    return names;
+}
+#include <QJsonDocument>
+QVariant DVPluginManager::data(const QModelIndex& index, int role) const {
+    QVariant data;
+
+    if (int(plugins.size()) > index.row()) {
+        auto plugin = (plugins.begin() +index.row());
+
+        /* Set the return value based on the role. */
+        switch (role) {
+        case PluginFileNameRole:
+            data = plugin.key();
+            break;
+        case PluginDisplayNameRole:
+            /* TODO - An actual display name... */
+            data = plugin.value()->loader.metaData().value("className");
+            break;
+        case PluginDescriptionRole:
+            /* TODO - Use an actual description value... */
+            data = QJsonDocument(plugin.value()->loader.metaData()).toJson();
+            break;
+        case PluginTypeRole:
+            if (plugin.value()->pluginType == DVPluginType::RenderPlugin)
+                data = tr("Render Plugin");
+            else if (plugin.value()->pluginType == DVPluginType::InputPlugin)
+                data = tr("Input Plugin");
+            else
+                data = tr("Invalid plugin");
+            break;
+        case PluginEnabledRole:
+            data = plugin.value()->loaded;
+            break;
+        }
+    }
+    return data;
+}
+
+int DVPluginManager::rowCount(const QModelIndex&) const {
+    return plugins.size();
 }

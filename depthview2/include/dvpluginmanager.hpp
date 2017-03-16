@@ -2,6 +2,7 @@
 
 #include <QList>
 #include <QDir>
+#include <QAbstractListModel>
 
 class DVInputPlugin;
 class DVRenderPlugin;
@@ -12,7 +13,7 @@ class QSettings;
 class QQmlEngine;
 class QOpenGLContext;
 
-class DVPluginManager : public QObject {
+class DVPluginManager : public QAbstractListModel {
     Q_OBJECT
 
     QSettings& settings;
@@ -43,11 +44,14 @@ public:
     void postQmlInit();
 
     /* Load static and dynamic plugins and init them. */
-    void loadPlugins(QQmlEngine* engine, QOpenGLContext *context);
+    void loadPlugins(QQmlEngine* engine, QOpenGLContext* context);
     bool loadPlugin(const QString& pluginName);
-    bool initPlugin(const QString& pluginName);
+    bool initRenderPlugin(const QString& pluginName);
+    bool initInputPlugin(const QString& pluginName);
     /* Call deinit() of all loaded plugins, so as to garbage collect anything they created. */
     void unloadPlugins();
+
+    Q_INVOKABLE bool enablePlugin(QString pluginFileName);
 
     /* Functions that get the current plugin and interface with it. */
     DVRenderPlugin* getCurrentRenderPlugin() const;
@@ -70,6 +74,24 @@ public:
     /* QObject should be const, but QML does not know how to do const. */
     Q_INVOKABLE void savePluginSettings(QString pluginTitle, QObject* settingsObject);
     Q_INVOKABLE void loadPluginSettings(QString pluginTitle, QObject* settingsObject);
+
+    /* Begin model stuff. */
+    enum Roles {
+        PluginFileNameRole = Qt::UserRole+1,
+        PluginDisplayNameRole,
+        PluginDescriptionRole,
+        PluginVersionRole,
+        PluginTypeRole,
+        PluginEnabledRole
+    };
+
+    QHash<int, QByteArray> roleNames() const;
+
+    /* The function that gives QML the different properties for a given file in the current dir. */
+    QVariant data(const QModelIndex &index, int role) const;
+
+    /* How many files are in the current dir? */
+    int rowCount(const QModelIndex& parent) const;
 
 signals:
     void pluginModeChanged(QString mode);

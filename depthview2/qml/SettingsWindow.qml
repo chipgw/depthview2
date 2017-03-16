@@ -195,6 +195,53 @@ Dialog {
                 }
             }
 
+            Flickable {
+                /* TODO - Both of these functions are useless ATM,
+                 * either the buttons should be disabled or these should do something... */
+                function reset() {
+                }
+
+                function apply() {
+                }
+
+                readonly property string title: qsTr("Plugin Management")
+
+                ScrollBar.vertical: ScrollBar { }
+                contentHeight: pluginsContent.childrenRect.height
+
+                /* Only enable panning when the item is tall enough. */
+                interactive: contentHeight > height
+
+                Column {
+                    id: pluginsContent
+                    width: parent.width
+
+                    Repeater {
+                        model: PluginManager
+
+                        /* TODO - Make this look nice... */
+                        GroupBox {
+                            title: pluginDisplayName
+                            width: pluginsContent.width
+
+                            Column {
+                                Text {
+                                    text: "<b>" + pluginType + ",</b> " + pluginFileName
+                                }
+                                Text {
+                                    text: pluginDescription
+                                }
+                                CheckBox {
+                                    text: "Enabled"
+                                    checked: pluginEnabled
+                                    onClicked: PluginManager.enablePlugin(pluginFileName)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             Repeater {
                 model: PluginManager.pluginConfigMenus
 

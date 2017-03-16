@@ -45,3 +45,8 @@ DV_ENUM(DVInputMode,
         ImageViewer,
         VideoPlayer,
         FileBrowser);
+
+DV_ENUM(DVPluginType,
+        InvalidPlugin,
+        RenderPlugin,
+        InputPlugin);
