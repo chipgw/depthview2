@@ -11,17 +11,8 @@ DVFolderListing::DVFolderListing(QObject *parent, QSettings& s) : QAbstractListM
     if (settings.contains("Bookmarks"))
         m_bookmarks = settings.value("Bookmarks").toStringList();
 
-    /* Use the path of the settings file to get the path for the database. */
-    QString path = settings.fileName();
-    path.remove(path.lastIndexOf('.'), path.length()).append(".db");
-    m_fileDataDB = QSqlDatabase::addDatabase("QSQLITE");
-    m_fileDataDB.setDatabaseName(path);
-
-    if (!m_fileDataDB.open())
-       qWarning("Error opening database!");
-
     /* Check to see if the table exists. */
-    if (m_fileDataDB.record("files").isEmpty()) {
+    if (QSqlDatabase::database().record("files").isEmpty()) {
         /* TODO - Handle potential changes/additions to database fields. */
         resetFileDatabase();
     }
@@ -271,7 +262,7 @@ QStringList DVFolderListing::bookmarks() const {
 
 QSqlRecord DVFolderListing::getRecordForFile(const QFileInfo& file, bool create) const {
     if (file.exists()) {
-        QSqlQuery query(m_fileDataDB);
+        QSqlQuery query;
         query.prepare("SELECT * FROM files WHERE path = (:path)");
         query.bindValue(":path", file.canonicalFilePath());
 
@@ -317,7 +308,7 @@ void DVFolderListing::setCurrentFileStereoMode(DVSourceMode::Type mode) {
     /* Get or create the record for the selected file. */
     QSqlRecord record = getRecordForFile(m_currentFile, true);
 
-    QSqlQuery query(m_fileDataDB);
+    QSqlQuery query;
     query.prepare("UPDATE files SET stereoMode = :mode WHERE path = :path");
     query.bindValue(":mode", mode);
     /* Use the record's path value. */
@@ -339,7 +330,7 @@ void DVFolderListing::setCurrentFileStereoSwap(bool swap) {
     /* Get or create the record for the selected file. */
     QSqlRecord record = getRecordForFile(m_currentFile, true);
 
-    QSqlQuery query(m_fileDataDB);
+    QSqlQuery query;
     query.prepare("UPDATE files SET stereoSwap = :swap WHERE path = :path");
     query.bindValue(":swap", swap);
     /* Use the record's path value. */
@@ -491,7 +482,7 @@ void DVFolderListing::setFileBrowserOpen(bool open) {
 }
 
 void DVFolderListing::resetFileDatabase() {
-    if (!m_fileDataDB.record("files").isEmpty()) {
+    if (!QSqlDatabase::database().record("files").isEmpty()) {
         QSqlQuery query("DROP TABLE files");
         if (query.lastError().isValid()) qWarning("Error deleting old table! %s", qPrintable(query.lastError().text()));
     }

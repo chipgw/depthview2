@@ -14,6 +14,7 @@
 #include <QMessageBox>
 #include <QMimeData>
 #include <QOpenGLFramebufferObject>
+#include <QSqlDatabase>
 #include <AVPlayer.h>
 
 /* This class is needed for making forwarded keyboard events be recognized by QML. */
@@ -38,6 +39,15 @@ public:
 #endif
 
 DVWindow::DVWindow() : QOpenGLWindow(), settings(SETTINGS_ARGS), renderFBO(nullptr) {
+    /* Use the path of the settings file to get the path for the database. */
+    QString path = settings.fileName();
+    path.remove(path.lastIndexOf('.'), path.length()).append(".db");
+    QSqlDatabase dataDB = QSqlDatabase::addDatabase("QSQLITE");
+    dataDB.setDatabaseName(path);
+
+    if (!dataDB.open())
+       qWarning("Error opening database!");
+
     qmlCommunication = new DVQmlCommunication(this, settings);
     folderListing = new DVFolderListing(this, settings);
     pluginManager = new DVPluginManager(this, settings);

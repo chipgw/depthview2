@@ -10,6 +10,10 @@
 #include <QOpenGLContext>
 #include <QPluginLoader>
 #include <QSettings>
+#include <QSqlDatabase>
+#include <QSqlQuery>
+#include <QSqlError>
+#include <algorithm>
 
 struct DVPluginInfo {
     QQmlContext* context = nullptr;
@@ -26,7 +30,11 @@ struct DVPluginInfo {
 };
 
 DVPluginManager::DVPluginManager(QObject* parent, QSettings& s) : QAbstractListModel(parent), settings(s) {
-
+    /* Check to see if the table exists. */
+    if (QSqlDatabase::database().record("plugins").isEmpty()) {
+        /* TODO - Handle potential changes/additions to database fields. */
+        resetPluginDatabase();
+    }
 }
 
 void DVPluginManager::postQmlInit() {
@@ -99,6 +107,17 @@ void DVPluginManager::loadPlugins(QQmlEngine* engine, QOpenGLContext* context) {
         }
 
         plugins.insert(filename, plugin);
+
+        QSqlRecord pluginRecord = getRecordForPlugin(filename);
+
+        if (!pluginRecord.isEmpty() && pluginRecord.value("enabled").toBool()) {
+            loadPlugin(filename);
+
+            if (plugin->pluginType == DVPluginType::RenderPlugin)
+                initRenderPlugin(filename);
+            else if (plugin->pluginType == DVPluginType::InputPlugin)
+                initInputPlugin(filename);
+        }
     }
 
     qDebug("Done loading plugins.");
@@ -194,20 +213,18 @@ void DVPluginManager::unloadPlugins() {
 }
 
 bool DVPluginManager::enablePlugin(QString pluginFileName) {
-    /* Tell the model system that we're going to be changing all the things. */
-    beginResetModel();
+    if (loadPlugin(pluginFileName) && (initRenderPlugin(pluginFileName) || initInputPlugin(pluginFileName))) {
+        /* If it loaded correctly remember to load it on startup. */
+        storePluginEnabled(pluginFileName, true);
 
-    /* TODO - Store whether or not the plugin should be loaded automatically. */
+        QModelIndex changedIndex = createIndex(std::distance(plugins.begin(), plugins.find(pluginFileName)), 0);
+        emit dataChanged(changedIndex, changedIndex);
+        emit pluginModesChanged();
 
-    bool loaded = loadPlugin(pluginFileName) &&
-            (initRenderPlugin(pluginFileName) || initInputPlugin(pluginFileName));
+        return true;
+    }
 
-    /* Tell the model system that we've finished changing all the things. */
-    endResetModel();
-
-    emit pluginModesChanged();
-
-    return loaded;
+    return false;
 }
 
 void DVPluginManager::savePluginSettings(QString pluginTitle, QObject* settingsObject) {
@@ -388,4 +405,60 @@ QVariant DVPluginManager::data(const QModelIndex& index, int role) const {
 
 int DVPluginManager::rowCount(const QModelIndex&) const {
     return plugins.size();
+}
+
+void DVPluginManager::resetPluginDatabase() {
+    if (!QSqlDatabase::database().record("plugins").isEmpty()) {
+        QSqlQuery query("DROP TABLE plugins");
+        if (query.lastError().isValid()) qWarning("Error deleting old table! %s", qPrintable(query.lastError().text()));
+    }
+
+    QSqlQuery query("create table plugins (filename string, enabled bool)");
+    if (query.lastError().isValid()) qWarning("Error creating table! %s", qPrintable(query.lastError().text()));
+}
+
+QSqlRecord DVPluginManager::getRecordForPlugin(const QString& pluginName, bool create) const {
+    if (plugins.contains(pluginName)) {
+        QSqlQuery query;
+        query.prepare("SELECT * FROM plugins WHERE filename = (:filename)");
+        query.bindValue(":filename", pluginName);
+
+        if (query.exec() && query.next())
+            return query.record();
+
+        /* If it didn't exist, optionally create it. */
+        if (create) {
+            query.prepare("INSERT INTO plugins (filename, enabled) VALUES (:filename, :enabled)");
+            query.bindValue(":filename", pluginName);
+            query.bindValue(":enabled", false);
+
+            if (query.exec())
+                /* The INSERT query does not return a record, so use this function again to retrieve the record. */
+                return getRecordForPlugin(pluginName);
+
+            qWarning("Unable to create record for plugin! %s", qPrintable(query.lastError().text()));
+        }
+    }
+
+    return QSqlRecord();
+}
+
+void DVPluginManager::storePluginEnabled(const QString& pluginName, bool enable) {
+    /* Get or create the record for the selected file. */
+    QSqlRecord record = getRecordForPlugin(pluginName, true);
+
+    if (record.value("enabled").toBool() == enable)
+        return;
+
+    QSqlQuery query;
+    query.prepare("UPDATE plugins SET enabled = :enabled WHERE filename = :filename");
+    query.bindValue(":enabled", enable);
+    /* Use the record's path value. */
+    query.bindValue(":filename", record.value(0));
+
+    if (!query.exec())
+        qWarning("Unable to update record for file! %s", qPrintable(query.lastError().text()));
+
+    /* The model uses whether or not the plugin is currently loaded to provide the "pluginEnabled" property,
+     * so this doesn't emit the dataChanged() signal, enablePlugin() does that... */
 }

@@ -3,6 +3,7 @@
 #include <QList>
 #include <QDir>
 #include <QAbstractListModel>
+#include <QSqlRecord>
 
 class DVInputPlugin;
 class DVRenderPlugin;
@@ -31,6 +32,10 @@ class DVPluginManager : public QAbstractListModel {
 
     /* Store a list of render modes supported by loaded plugins. */
     QList<QString> pluginModes;
+
+    QSqlRecord getRecordForPlugin(const QString& pluginName, bool create = false) const;
+    void resetPluginDatabase();
+    void storePluginEnabled(const QString &pluginName, bool enable);
 
     Q_PROPERTY(QString pluginMode READ pluginMode WRITE setPluginMode NOTIFY pluginModeChanged)
     Q_PROPERTY(QStringList pluginModes READ getPluginModes NOTIFY pluginModesChanged)

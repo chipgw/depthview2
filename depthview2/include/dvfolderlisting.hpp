@@ -4,7 +4,7 @@
 #include <QTimer>
 #include <QUrl>
 #include <QAbstractListModel>
-#include <QSqlDatabase>
+#include <QSqlRecord>
 #include <dvenums.hpp>
 
 class QSettings;
@@ -29,8 +29,6 @@ class DVFolderListing : public QAbstractListModel {
     QTimer driveTimer;
 
     bool m_fileBrowserOpen;
-
-    QSqlDatabase m_fileDataDB;
 
     Q_PROPERTY(QString currentFile READ currentFile NOTIFY currentFileChanged)
     Q_PROPERTY(QUrl currentURL READ currentURL NOTIFY currentFileChanged)
