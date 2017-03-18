@@ -27,6 +27,8 @@ struct DVPluginInfo {
 
     bool loaded = false;
     bool inited = false;
+
+    QString errorString;
 };
 
 DVPluginManager::DVPluginManager(QObject* parent, QSettings& s) : QAbstractListModel(parent), settings(s) {
@@ -133,7 +135,8 @@ bool DVPluginManager::loadPlugin(const QString& pluginName) {
     QObject *obj = plugin->loader.instance();
 
     if (obj == nullptr) {
-        qDebug("\"%s\" is not a plugin. %s", qPrintable(pluginName), qPrintable(plugin->loader.errorString()));
+        plugin->errorString = "Unable to load \"" + pluginName + "\" as a plugin. " + plugin->loader.errorString();
+        qWarning("%s", qPrintable(plugin->errorString));
         return false;
     }
 
@@ -165,11 +168,14 @@ bool DVPluginManager::initRenderPlugin(const QString &pluginName) {
         renderPlugins.append(plugin->renderPlugin);
         pluginModes.append(plugin->renderPlugin->drawModeNames());
 
-        plugin->inited = true;
+        qDebug("Loaded plugin: \"%s\"", qPrintable(pluginName));
+        return plugin->inited = true;
     }
 
-    qDebug(plugin->inited ? "Loaded plugin: \"%s\"" : "Plugin: \"%s\" failed to init.", qPrintable(pluginName));
-    return plugin->inited;
+    /* TODO - Get an error message from the plugin. */
+    plugin->errorString = "Plugin \"" + pluginName + "\" failed to init.";
+    qWarning("%s", qPrintable(plugin->errorString));
+    return false;
 }
 
 bool DVPluginManager::initInputPlugin(const QString &pluginName) {
@@ -184,11 +190,14 @@ bool DVPluginManager::initInputPlugin(const QString &pluginName) {
         /* Add to the list of usable input plugins. */
         inputPlugins.append(plugin->inputPlugin);
 
-        plugin->inited = true;
+        qDebug("Loaded plugin: \"%s\"", qPrintable(pluginName));
+        return plugin->inited = true;
     }
 
-    qDebug(plugin->inited ? "Loaded plugin: \"%s\"" : "Plugin: \"%s\" failed to init.", qPrintable(pluginName));
-    return plugin->inited;
+    /* TODO - Get an error message from the plugin. */
+    plugin->errorString = "Plugin \"" + pluginName + "\" failed to init.";
+    qWarning("%s", qPrintable(plugin->errorString));
+    return false;
 }
 
 void DVPluginManager::unloadPlugins() {
@@ -217,14 +226,15 @@ bool DVPluginManager::enablePlugin(QString pluginFileName) {
         /* If it loaded correctly remember to load it on startup. */
         storePluginEnabled(pluginFileName, true);
 
-        QModelIndex changedIndex = createIndex(std::distance(plugins.begin(), plugins.find(pluginFileName)), 0);
-        emit dataChanged(changedIndex, changedIndex);
         emit pluginModesChanged();
-
-        return true;
     }
 
-    return false;
+    auto plugin = plugins.find(pluginFileName);
+    QModelIndex changedIndex = createIndex(std::distance(plugins.begin(), plugin), 0);
+    /* Emit this signal to update the pluginEnabled value if it worked and the pluginError value if it didn't. */
+    emit dataChanged(changedIndex, changedIndex);
+
+    return plugin.value()->inited;
 }
 
 void DVPluginManager::savePluginSettings(QString pluginTitle, QObject* settingsObject) {
@@ -361,6 +371,7 @@ QHash<int, QByteArray> DVPluginManager::roleNames() const {
     names[PluginVersionRole]        = "pluginVersion";
     names[PluginTypeRole]           = "pluginType";
     names[PluginEnabledRole]        = "pluginEnabled";
+    names[PluginErrorRole]          = "pluginError";
 
     return names;
 }
@@ -369,7 +380,7 @@ QVariant DVPluginManager::data(const QModelIndex& index, int role) const {
     QVariant data;
 
     if (int(plugins.size()) > index.row()) {
-        auto plugin = (plugins.begin() +index.row());
+        auto plugin = (plugins.begin() + index.row());
 
         QJsonObject metaData = plugin.value()->loader.metaData().value("MetaData").toObject();
 
@@ -397,6 +408,9 @@ QVariant DVPluginManager::data(const QModelIndex& index, int role) const {
             break;
         case PluginEnabledRole:
             data = plugin.value()->loaded;
+            break;
+        case PluginErrorRole:
+            data = plugin.value()->errorString;
             break;
         }
     }

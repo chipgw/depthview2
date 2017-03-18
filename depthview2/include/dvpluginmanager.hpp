@@ -87,7 +87,8 @@ public:
         PluginDescriptionRole,
         PluginVersionRole,
         PluginTypeRole,
-        PluginEnabledRole
+        PluginEnabledRole,
+        PluginErrorRole
     };
 
     QHash<int, QByteArray> roleNames() const;

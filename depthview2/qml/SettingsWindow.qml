@@ -232,12 +232,16 @@ Dialog {
                                 Text {
                                     font: uiTextFont
                                     Layout.fillWidth: true
-                                    text: "<b>" + pluginType + ",</b> " + pluginFileName + "<br><br>" + pluginDescription
+                                    text: ("<b>" + pluginType + ",</b> " + pluginFileName + "<br><br>" + pluginDescription) +
+                                          ((pluginError.length > 0) ? ("<br><br><font color=\"red\">" + pluginError + "</font>") : "")
+
+                                    wrapMode: Text.WordWrap
                                 }
                                 CheckBox {
                                     text: "Enabled"
                                     checked: pluginEnabled
                                     onClicked: PluginManager.enablePlugin(pluginFileName)
+                                    enabled: pluginError.length < 1
                                 }
                             }
                         }
