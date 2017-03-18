@@ -375,7 +375,7 @@ QHash<int, QByteArray> DVPluginManager::roleNames() const {
 
     return names;
 }
-#include <QJsonDocument>
+
 QVariant DVPluginManager::data(const QModelIndex& index, int role) const {
     QVariant data;
 
