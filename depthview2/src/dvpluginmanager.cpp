@@ -222,14 +222,19 @@ void DVPluginManager::unloadPlugins() {
 }
 
 bool DVPluginManager::enablePlugin(QString pluginFileName) {
-    if (loadPlugin(pluginFileName) && (initRenderPlugin(pluginFileName) || initInputPlugin(pluginFileName))) {
+    auto plugin = plugins.find(pluginFileName);
+
+    if (plugin.value()->loaded && plugin.value()->inited)
+        /* Plugin is already enabled. */
+        return true;
+
+    if ((plugin.value()->loaded || loadPlugin(pluginFileName)) && (initRenderPlugin(pluginFileName) || initInputPlugin(pluginFileName))) {
         /* If it loaded correctly remember to load it on startup. */
         storePluginEnabled(pluginFileName, true);
 
         emit pluginModesChanged();
     }
 
-    auto plugin = plugins.find(pluginFileName);
     QModelIndex changedIndex = createIndex(std::distance(plugins.begin(), plugin), 0);
     /* Emit this signal to update the pluginEnabled value if it worked and the pluginError value if it didn't. */
     emit dataChanged(changedIndex, changedIndex);
@@ -407,7 +412,7 @@ QVariant DVPluginManager::data(const QModelIndex& index, int role) const {
                 data = tr("Invalid plugin");
             break;
         case PluginEnabledRole:
-            data = plugin.value()->loaded;
+            data = plugin.value()->loaded && plugin.value()->inited;
             break;
         case PluginErrorRole:
             data = plugin.value()->errorString;

@@ -240,7 +240,7 @@ Dialog {
                                 CheckBox {
                                     text: "Enabled"
                                     checked: pluginEnabled
-                                    onClicked: PluginManager.enablePlugin(pluginFileName)
+                                    onClicked: if (checked) PluginManager.enablePlugin(pluginFileName)
                                     enabled: pluginError.length < 1
                                 }
                             }
