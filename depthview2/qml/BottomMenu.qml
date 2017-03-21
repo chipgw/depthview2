@@ -115,13 +115,13 @@ ToolBar {
 
                             checkable: true
 
-                            onCheckedChanged: FolderListing.currentFileStereoSwap = checked
+                            onCheckedChanged: FolderListing.currentFileStereoSwap = (checked !== FolderListing.currentFileIsStereoImage)
                         }
 
                         Connections {
                             target: FolderListing
 
-                            onCurrentFileStereoSwapChanged: stereoSwapMenuItem.checked = FolderListing.currentFileStereoSwap
+                            onCurrentFileStereoSwapChanged: stereoSwapMenuItem.checked = (FolderListing.currentFileStereoSwap !== FolderListing.currentFileIsStereoImage)
                         }
 
                         ButtonGroup {
