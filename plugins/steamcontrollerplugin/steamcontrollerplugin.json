@@ -1,0 +1,5 @@
+{
+    "displayName": "Steam Controller Plugin",
+    "description": "Adds support for input using a Steam Controller.",
+    "version": "1.0"
+}

@@ -1,0 +1,81 @@
+"In Game Actions"
+{
+    "actions"
+    {
+        "FileBrowser"
+        {
+            "title" "#Set_FileBrowser"
+            "StickPadGyro"
+            {
+            }
+            "AnalogTrigger"
+            {
+            }
+            "Button"
+            {
+                "filebrowser_accept"    "#Menu_Accept"
+                "filebrowser_cancel"    "#Menu_Cancel"
+                "filebrowser_up"        "#Menu_Up"
+                "filebrowser_down"      "#Menu_Down"
+                "filebrowser_left"      "#Menu_Left"
+                "filebrowser_right"     "#Menu_Right"
+            }
+        }
+        "ImageControls"
+        {
+            "title" "#Set_Image"
+            "StickPadGyro"
+            {
+            }
+            "AnalogTrigger"
+            {
+            }
+            "Button"
+            {
+                "img_next"       "#Image_Next"
+                "img_prev"       "#Image_Prev"
+                "img_open"       "#Open_File"
+            }
+        }
+        "VideoControls"
+        {
+            "title" "#Set_Video"
+            "StickPadGyro"
+            {
+            }
+            "AnalogTrigger"
+            {
+            }
+            "Button"
+            {
+                "vid_next"        "#Image_Next"
+                "vid_prev"        "#Image_Prev"
+                "vid_open"        "#Open_File"
+                "vid_play"        "#Video_Play"
+                "vid_pause"       "#Video_Pause"
+                "vid_togglepause" "#Video_TogglePause"
+            }
+        }
+    }
+    "localization"
+    {
+        "english"
+        {
+            "Set_FileBrowser"   "File Browser"
+            "Set_Image"         "Image Controls"
+            "Set_Video"         "Video Controls"
+            "Open_File"         "Open File"
+            "Image_Next"        "Next Image"
+            "Image_Prev"        "Previous Image"
+            "Video_Play"        "Play"
+            "Video_Pause"       "Pause"
+            "Video_TogglePause" "Play/Pause"
+            "Menu_Accept"       "Accept"
+            "Menu_Up"           "Up"
+            "Menu_Down"         "Down"
+            "Menu_Left"         "Left"
+            "Menu_Right"        "Right"
+            "Menu_Cancel"       "Cancel"
+        }
+    }
+}
