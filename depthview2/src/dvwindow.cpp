@@ -311,6 +311,14 @@ void DVWindow::previousFile() {
     folderListing->openPrevious();
 }
 
+void DVWindow::zoomActual() {
+    emit qmlCommunication->zoomActual();
+}
+
+void DVWindow::zoomFit() {
+    emit qmlCommunication->zoomFit();
+}
+
 //void DVWindow::setMousePosition(QPoint pos, bool relative = false) {
 //}
 

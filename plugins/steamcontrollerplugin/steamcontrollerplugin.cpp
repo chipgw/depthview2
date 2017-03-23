@@ -34,17 +34,22 @@ bool SteamControllerPlugin::init(QQmlContext* qmlContext) {
         return false;
 
     fileBrowserActionSet = SteamController()->GetActionSetHandle("FileBrowser");
-    fileBrowserActions += Action { SteamController()->GetDigitalActionHandle("filebrowser_accept"), &DVInputInterface::accept };
-    fileBrowserActions += Action { SteamController()->GetDigitalActionHandle("filebrowser_cancel"), &DVInputInterface::cancel };
-    fileBrowserActions += Action { SteamController()->GetDigitalActionHandle("filebrowser_up"), &DVInputInterface::up };
-    fileBrowserActions += Action { SteamController()->GetDigitalActionHandle("filebrowser_down"), &DVInputInterface::down };
-    fileBrowserActions += Action { SteamController()->GetDigitalActionHandle("filebrowser_left"), &DVInputInterface::left };
-    fileBrowserActions += Action { SteamController()->GetDigitalActionHandle("filebrowser_right"), &DVInputInterface::right };
+    fileBrowserActions += Action { SteamController()->GetDigitalActionHandle("browser_accept"), &DVInputInterface::accept };
+    fileBrowserActions += Action { SteamController()->GetDigitalActionHandle("browser_cancel"), &DVInputInterface::cancel };
+    fileBrowserActions += Action { SteamController()->GetDigitalActionHandle("browser_up"), &DVInputInterface::up };
+    fileBrowserActions += Action { SteamController()->GetDigitalActionHandle("browser_down"), &DVInputInterface::down };
+    fileBrowserActions += Action { SteamController()->GetDigitalActionHandle("browser_left"), &DVInputInterface::left };
+    fileBrowserActions += Action { SteamController()->GetDigitalActionHandle("browser_right"), &DVInputInterface::right };
+    fileBrowserActions += Action { SteamController()->GetDigitalActionHandle("browser_goup"), &DVInputInterface::goUp };
+    fileBrowserActions += Action { SteamController()->GetDigitalActionHandle("browser_goback"), &DVInputInterface::goBack };
+    fileBrowserActions += Action { SteamController()->GetDigitalActionHandle("browser_goforward"), &DVInputInterface::goForward };
 
     imageViewerActionSet = SteamController()->GetActionSetHandle("ImageControls");
     imageViewerActions += Action { SteamController()->GetDigitalActionHandle("img_next"), &DVInputInterface::nextFile };
     imageViewerActions += Action { SteamController()->GetDigitalActionHandle("img_prev"), &DVInputInterface::previousFile };
     imageViewerActions += Action { SteamController()->GetDigitalActionHandle("img_open"), &DVInputInterface::openFileBrowser };
+    imageViewerActions += Action { SteamController()->GetDigitalActionHandle("img_zoomactual"), &DVInputInterface::zoomActual };
+    imageViewerActions += Action { SteamController()->GetDigitalActionHandle("img_zoomfit"), &DVInputInterface::zoomFit };
 
     videoPlayerActionSet = SteamController()->GetActionSetHandle("VideoControls");
     videoPlayerActions += Action { SteamController()->GetDigitalActionHandle("vid_next"), &DVInputInterface::nextFile };
@@ -53,7 +58,13 @@ bool SteamControllerPlugin::init(QQmlContext* qmlContext) {
     videoPlayerActions += Action { SteamController()->GetDigitalActionHandle("vid_play"), &DVInputInterface::playVideo };
     videoPlayerActions += Action { SteamController()->GetDigitalActionHandle("vid_pause"), &DVInputInterface::pauseVideo };
     videoPlayerActions += Action { SteamController()->GetDigitalActionHandle("vid_togglepause"), &DVInputInterface::playPauseVideo };
+    videoPlayerActions += Action { SteamController()->GetDigitalActionHandle("vid_volup"), &DVInputInterface::volumeUp };
+    videoPlayerActions += Action { SteamController()->GetDigitalActionHandle("vid_voldown"), &DVInputInterface::volumeDown };
+    videoPlayerActions += Action { SteamController()->GetDigitalActionHandle("vid_mute"), &DVInputInterface::mute };
+    videoPlayerActions += Action { SteamController()->GetDigitalActionHandle("vid_seekback"), &DVInputInterface::seekBack };
+    videoPlayerActions += Action { SteamController()->GetDigitalActionHandle("vid_seekforward"), &DVInputInterface::seekForward };
 
+    /* Call once to detect controllers. */
     SteamAPI_RunCallbacks();
 
     controllerCount = SteamController()->GetConnectedControllers(controllers);

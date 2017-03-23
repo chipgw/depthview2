@@ -7,18 +7,27 @@
             "title" "#Set_FileBrowser"
             "StickPadGyro"
             {
+                "filebrowser_mouse"
+                {
+                    "title"       "#Mouse_Move"
+                    "input_mode"  "absolute_mouse"
+                    "os_mouse"    "1"
+                }
             }
             "AnalogTrigger"
             {
             }
             "Button"
             {
-                "filebrowser_accept"    "#Menu_Accept"
-                "filebrowser_cancel"    "#Menu_Cancel"
-                "filebrowser_up"        "#Menu_Up"
-                "filebrowser_down"      "#Menu_Down"
-                "filebrowser_left"      "#Menu_Left"
-                "filebrowser_right"     "#Menu_Right"
+                "browser_accept"    "#Menu_Accept"
+                "browser_cancel"    "#Menu_Cancel"
+                "browser_up"        "#Menu_Up"
+                "browser_down"      "#Menu_Down"
+                "browser_left"      "#Menu_Left"
+                "browser_right"     "#Menu_Right"
+                "browser_goup"      "#Browser_GoUp"
+                "browser_goback"    "#Browser_GoBack"
+                "browser_goforward" "#Browser_GoForward"
             }
         }
         "ImageControls"
@@ -26,15 +35,23 @@
             "title" "#Set_Image"
             "StickPadGyro"
             {
+                "imagecontrols_mouse"
+                {
+                    "title"       "#Mouse_Move"
+                    "input_mode"  "absolute_mouse"
+                    "os_mouse"    "1"
+                }
             }
             "AnalogTrigger"
             {
             }
             "Button"
             {
-                "img_next"       "#Image_Next"
-                "img_prev"       "#Image_Prev"
-                "img_open"       "#Open_File"
+                "img_prev"       "#File_Prev"
+                "img_next"       "#File_Next"
+                "img_open"       "#File_Open"
+                "img_zoomactual" "#Image_ZoomActual"
+                "img_zoomfit"    "#Image_ZoomFit"
             }
         }
         "VideoControls"
@@ -42,18 +59,29 @@
             "title" "#Set_Video"
             "StickPadGyro"
             {
+                "videocontrols_mouse"
+                {
+                    "title"       "#Mouse_Move"
+                    "input_mode"  "absolute_mouse"
+                    "os_mouse"    "1"
+                }
             }
             "AnalogTrigger"
             {
             }
             "Button"
             {
-                "vid_next"        "#Image_Next"
-                "vid_prev"        "#Image_Prev"
-                "vid_open"        "#Open_File"
+                "vid_prev"        "#File_Prev"
+                "vid_next"        "#File_Next"
+                "vid_open"        "#File_Open"
                 "vid_play"        "#Video_Play"
                 "vid_pause"       "#Video_Pause"
                 "vid_togglepause" "#Video_TogglePause"
+                "vid_volup"       "#Video_VolUp"
+                "vid_voldown"     "#Video_VolDown"
+                "vid_mute"        "#Video_Mute"
+                "vid_seekback"    "#Video_SeekBack"
+                "vid_seekforward" "#Video_SeekForward"
             }
         }
     }
@@ -64,18 +92,29 @@
             "Set_FileBrowser"   "File Browser"
             "Set_Image"         "Image Controls"
             "Set_Video"         "Video Controls"
-            "Open_File"         "Open File"
-            "Image_Next"        "Next Image"
-            "Image_Prev"        "Previous Image"
+            "File_Open"         "Open File"
+            "File_Prev"         "Previous File"
+            "File_Next"         "Next File"
+            "Image_ZoomActual"  "Zoom Actual"
+            "Image_ZoomFit"     "Zoom Fit"
             "Video_Play"        "Play"
             "Video_Pause"       "Pause"
             "Video_TogglePause" "Play/Pause"
+            "Video_VolUp"       "Increase Volume"
+            "Video_VolDown"     "Decrease Volume"
+            "Video_Mute"        "Mute"
+            "Video_SeekBack"    "Jump Backward"
+            "Video_SeekForward" "Jump Forward"
             "Menu_Accept"       "Accept"
             "Menu_Up"           "Up"
             "Menu_Down"         "Down"
             "Menu_Left"         "Left"
             "Menu_Right"        "Right"
             "Menu_Cancel"       "Cancel"
+            "Mouse_Move"        "Mouse Move"
+            "Browser_GoUp"      "Go Up"
+            "Browser_GoBack"    "Go Back"
+            "Browser_GoForward" "Go Forward"
         }
     }
 }

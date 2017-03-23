@@ -64,6 +64,9 @@ public:
     void nextFile();
     void previousFile();
 
+    void zoomActual();
+    void zoomFit();
+
     /* Video controls. */
     void playVideo();
     void pauseVideo();

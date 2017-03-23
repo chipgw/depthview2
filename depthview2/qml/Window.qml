@@ -158,6 +158,9 @@ Rectangle {
 
         onFileInfo: mediaInfoBox.open()
 
+        onZoomActual: image.zoom = 1
+        onZoomFit: image.zoom = -1
+
         onCancel: closePopups()
     }
 

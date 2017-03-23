@@ -122,6 +122,9 @@ signals:
     /* Show the file info popup. */
     void fileInfo();
 
+    void zoomActual();
+    void zoomFit();
+
     /* ------------------------------------------- *
      * End signals for DVInputInterface functions. *
      * ------------------------------------------- */

@@ -34,6 +34,9 @@ public:
     virtual void nextFile() = 0;
     virtual void previousFile() = 0;
 
+    virtual void zoomActual() = 0;
+    virtual void zoomFit() = 0;
+
 //    /* Move the mouse to the specified location (in window coordinates) or by the specified amount (if relative is true). */
 //    virtual void setMousePosition(QPoint pos, bool relative = false) = 0;
 
