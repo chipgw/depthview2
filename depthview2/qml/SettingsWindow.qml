@@ -28,6 +28,12 @@ Dialog {
             else if (button === standardButton(DialogButtonBox.Reset))
                 swipe.currentItem.reset()
         }
+
+        Component.onCompleted: {
+            /* Disable the buttons if there is no function for them to call. */
+            standardButton(DialogButtonBox.Apply).enabled = Qt.binding(function() { return swipe.currentItem.apply !== undefined })
+            standardButton(DialogButtonBox.Reset).enabled = Qt.binding(function() { return swipe.currentItem.reset !== undefined })
+        }
     }
 
     /* Use the reset function to init values. */
@@ -197,14 +203,6 @@ Dialog {
             }
 
             Flickable {
-                /* TODO - Both of these functions are useless ATM,
-                 * either the buttons should be disabled or these should do something... */
-                function reset() {
-                }
-
-                function apply() {
-                }
-
                 readonly property string title: qsTr("Plugin Management")
 
                 ScrollBar.vertical: ScrollBar { }
@@ -291,6 +289,9 @@ Dialog {
                         modelData.parent = contentItem
                         /* Make the component inherit the contentItem's width. */
                         modelData.width = Qt.binding(function() { return contentItem.width })
+
+                        /* In case they were not part of the global reset, such as when a plugin is first enabled. */
+                        reset()
                     }
                 }
             }
