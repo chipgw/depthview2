@@ -9,14 +9,16 @@ Dialog {
 
     function reset() {
         for (var i = 0; i < swipe.contentModel.count; ++i)
-            swipe.contentModel.get(i).reset();
+            if (swipe.contentModel.get(i).reset !== undefined)
+                swipe.contentModel.get(i).reset();
     }
 
     onRejected: reset()
 
     onAccepted: {
         for (var i = 0; i < swipe.contentModel.count; ++i)
-            swipe.contentModel.get(i).apply();
+            if (swipe.contentModel.get(i).apply !== undefined)
+                swipe.contentModel.get(i).apply();
     }
 
     footer: DialogButtonBox {
