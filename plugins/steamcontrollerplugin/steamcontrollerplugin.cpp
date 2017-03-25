@@ -93,34 +93,26 @@ QQuickItem* SteamControllerPlugin::getConfigMenuObject() {
 bool SteamControllerPlugin::pollInput(DVInputInterface* inputInterface) {
     DVInputMode::Type mode = inputInterface->inputMode();
 
-    SteamAPI_RunCallbacks();
-
     if (controllerCount == 0)
         return false;
 
     switch (mode) {
     case DVInputMode::FileBrowser:
-        if (SteamController()->GetCurrentActionSet(controllers[0]) != fileBrowserActionSet)
-            SteamController()->ActivateActionSet(controllers[0], fileBrowserActionSet);
-
-        handleActions(inputInterface, fileBrowserActions);
-
+        SteamController()->ActivateActionSet(controllers[0], fileBrowserActionSet);
         break;
     case DVInputMode::ImageViewer:
-        if (SteamController()->GetCurrentActionSet(controllers[0]) != imageViewerActionSet)
-            SteamController()->ActivateActionSet(controllers[0], imageViewerActionSet);
-
-        handleActions(inputInterface, imageViewerActions);
-
+        SteamController()->ActivateActionSet(controllers[0], imageViewerActionSet);
         break;
     case DVInputMode::VideoPlayer:
-        if (SteamController()->GetCurrentActionSet(controllers[0]) != videoPlayerActionSet)
-            SteamController()->ActivateActionSet(controllers[0], videoPlayerActionSet);
-
-        handleActions(inputInterface, videoPlayerActions);
-
+        SteamController()->ActivateActionSet(controllers[0], videoPlayerActionSet);
         break;
     }
+
+    SteamAPI_RunCallbacks();
+
+    handleActions(inputInterface, fileBrowserActions);
+    handleActions(inputInterface, imageViewerActions);
+    handleActions(inputInterface, videoPlayerActions);
 
     return false;
 }
@@ -132,8 +124,9 @@ void SteamControllerPlugin::handleActions(DVInputInterface* inputInterface, QLis
         /* Get the new state. */
         action.current = SteamController()->GetDigitalActionData(controllers[0], action.handle);
 
-        /* If the butten was pressed between last and current, call the function. */
-        if (action.current.bState && !action.last.bState)
+        /* If the action went from disabled to enabled and was active for both last & current, call the function.
+         * Checking both last & current prevents held down buttons (e.g. the one that caused the change) from having an effect. */
+        if (action.current.bState && !action.last.bState && action.last.bActive && action.current.bActive)
             (inputInterface->*action.func)();
     }
 }
