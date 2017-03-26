@@ -11,11 +11,7 @@ DVFolderListing::DVFolderListing(QObject *parent, QSettings& s) : QAbstractListM
     if (settings.contains("Bookmarks"))
         m_bookmarks = settings.value("Bookmarks").toStringList();
 
-    /* Check to see if the table exists. */
-    if (QSqlDatabase::database().record("files").isEmpty()) {
-        /* TODO - Handle potential changes/additions to database fields. */
-        resetFileDatabase();
-    }
+    setupFileDatabase();
 
     initDir(QDir::currentPath());
 
@@ -271,11 +267,8 @@ QSqlRecord DVFolderListing::getRecordForFile(const QFileInfo& file, bool create)
 
         /* If it didn't exist, optionally create it. */
         if (create) {
-            query.prepare("INSERT INTO files (path, stereoMode, stereoSwap) VALUES (:path, :mode, :swap)");
+            query.prepare("INSERT INTO files (path) VALUES (:path)");
             query.bindValue(":path", file.canonicalFilePath());
-            /* Get the default values for the stereoMode and stereoSwap variables. */
-            query.bindValue(":mode", fileStereoMode(file));
-            query.bindValue(":swap", fileStereoSwap(file));
 
             if (query.exec())
                 /* The INSERT query does not return a record, so use this function again to retrieve the record. */
@@ -369,6 +362,7 @@ bool DVFolderListing::isFileImage(const QFileInfo& info) const {
 bool DVFolderListing::isFileVideo(const QFileInfo& info) const {
     return !info.isDir() && videoSuffixes.contains(info.suffix(), Qt::CaseInsensitive);
 }
+
 DVSourceMode::Type DVFolderListing::fileStereoMode(const QFileInfo& file) const {
     /* Directories are side-by-side because of their thumbnail. */
     if(file.isDir() || stereoImageSuffixes.contains(file.suffix(), Qt::CaseInsensitive))
@@ -376,19 +370,26 @@ DVSourceMode::Type DVFolderListing::fileStereoMode(const QFileInfo& file) const 
 
     QSqlRecord record = getRecordForFile(file);
 
-    if (!record.isEmpty())
-        return record.value("stereoMode").value<DVSourceMode::Type>();
+    if (!record.isEmpty()) {
+        QVariant value = record.value("stereoMode");
+        if (!value.isNull())
+            return value.value<DVSourceMode::Type>();
+    }
 
     /* TODO - Try to find a way to detect the mode. */
     return DVSourceMode::Mono;
 }
+
 bool DVFolderListing::fileStereoSwap(const QFileInfo& file) const {
     QSqlRecord record = getRecordForFile(file);
 
-    if (record.isEmpty())
-        return isFileStereoImage(file);
+    if (!record.isEmpty()) {
+        QVariant value = record.value("stereoSwap");
+        if (!value.isNull())
+            return value.toBool();
+    }
 
-    return record.value("stereoSwap").toBool();
+    return isFileStereoImage(file);
 }
 
 QHash<int, QByteArray> DVFolderListing::roleNames() const {
@@ -481,12 +482,38 @@ void DVFolderListing::setFileBrowserOpen(bool open) {
     }
 }
 
+void DVFolderListing::setupFileDatabase() {
+    QSqlRecord table = QSqlDatabase::database().record("files");
+    /* Check to see if the table exists. */
+    if (table.isEmpty()) {
+        /* Don't bother setting up the fields here, as that might as well just be left to the stuff below. */
+        QSqlQuery query("create table files");
+        if (query.lastError().isValid()) qWarning("Error creating table! %s", qPrintable(query.lastError().text()));
+    }
+
+    if (!table.contains("path")) {
+        QSqlQuery query("ALTER TABLE files ADD path string");
+        if (query.lastError().isValid()) qWarning("Error setting up table! %s", qPrintable(query.lastError().text()));
+    }
+
+    if (!table.contains("stereoMode")) {
+        QSqlQuery query("ALTER TABLE files ADD stereoMode integer");
+        if (query.lastError().isValid()) qWarning("Error setting up table! %s", qPrintable(query.lastError().text()));
+    }
+
+    if (!table.contains("stereoSwap")) {
+        QSqlQuery query("ALTER TABLE files ADD stereoSwap bool");
+        if (query.lastError().isValid()) qWarning("Error setting up table! %s", qPrintable(query.lastError().text()));
+    }
+}
+
 void DVFolderListing::resetFileDatabase() {
+    /* First we delete the old table. */
     if (!QSqlDatabase::database().record("files").isEmpty()) {
         QSqlQuery query("DROP TABLE files");
         if (query.lastError().isValid()) qWarning("Error deleting old table! %s", qPrintable(query.lastError().text()));
     }
 
-    QSqlQuery query("create table files (path string, stereoMode integer, stereoSwap bool)");
-    if (query.lastError().isValid()) qWarning("Error creating table! %s", qPrintable(query.lastError().text()));
+    /* Then we set up the new one. */
+    setupFileDatabase();
 }

@@ -165,6 +165,7 @@ public:
     bool fileBrowserOpen() const;
     void setFileBrowserOpen(bool open);
 
+    void setupFileDatabase();
     Q_INVOKABLE void resetFileDatabase();
 
 signals:
