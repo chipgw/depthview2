@@ -37,12 +37,6 @@ public:
     virtual void zoomActual() = 0;
     virtual void zoomFit() = 0;
 
-//    /* Move the mouse to the specified location (in window coordinates) or by the specified amount (if relative is true). */
-//    virtual void setMousePosition(QPoint pos, bool relative = false) = 0;
-
-//    /* Send a fake mouse click event to the window. */
-//    virtual void sendMouseClick(Qt::MouseButton button) = 0;
-
     /* Video controls. */
     virtual void playVideo() = 0;
     virtual void pauseVideo() = 0;

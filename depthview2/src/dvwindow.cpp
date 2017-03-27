@@ -319,12 +319,6 @@ void DVWindow::zoomFit() {
     emit qmlCommunication->zoomFit();
 }
 
-//void DVWindow::setMousePosition(QPoint pos, bool relative = false) {
-//}
-
-//void DVWindow::sendMouseClick(Qt::MouseButton button) {
-//}
-
 void DVWindow::playVideo() {
     player->play();
 }

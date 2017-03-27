@@ -6,8 +6,6 @@ import DepthView 2.0
 Item {
     id: root
 
-    visible: !FolderListing.currentFileIsSurround
-
     property real zoom: -1
 
     /* The actual scale value to be applied to the image/video, if zoom is -1 calculate the size-to-fit scale. */
@@ -171,6 +169,8 @@ Item {
                 /* If zoom is negative we scale to fit, otherwise just use the value of zoom. */
                 scale: targetScale
 
+                visible: !FolderListing.currentFileIsSurround
+
                 swap: FolderListing.currentFileStereoSwap
             }
         }
@@ -178,7 +178,7 @@ Item {
 
     Item {
         id: vidWrapper
-        visible: FolderListing.currentFileIsVideo
+        visible: FolderListing.currentFileIsVideo && !FolderListing.currentFileIsSurround
 
         anchors.centerIn: parent
 
