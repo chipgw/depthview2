@@ -19,5 +19,7 @@
         <file>qml/BottomMenu.qml</file>
         <file>qml/VideoProgressBar.qml</file>
         <file>qml/LabeledSlider.qml</file>
+        <file>glsl/sphere.fsh</file>
+        <file>glsl/sphere.vsh</file>
     </qresource>
 </RCC>

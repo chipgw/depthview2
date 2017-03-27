@@ -38,7 +38,7 @@ public:
 #define SETTINGS_ARGS QSettings::IniFormat, QSettings::UserScope, QApplication::organizationName(), QApplication::applicationName()
 #endif
 
-DVWindow::DVWindow() : QOpenGLWindow(), settings(SETTINGS_ARGS), renderFBO(nullptr) {
+DVWindow::DVWindow() : QOpenGLWindow(), settings(SETTINGS_ARGS), renderFBO(nullptr), sphereTris(QOpenGLBuffer::IndexBuffer) {
     /* Use the path of the settings file to get the path for the database. */
     QString path = settings.fileName();
     path.remove(path.lastIndexOf('.'), path.length()).append(".db");

@@ -36,6 +36,7 @@ DVFolderListing::DVFolderListing(QObject *parent, QSettings& s) : QAbstractListM
     /* When the file changes, the stereo settings change. */
     connect(this, &DVFolderListing::currentFileChanged, this, &DVFolderListing::currentFileStereoModeChanged);
     connect(this, &DVFolderListing::currentFileChanged, this, &DVFolderListing::currentFileStereoSwapChanged);
+    connect(this, &DVFolderListing::currentFileChanged, this, &DVFolderListing::currentFileSurroundChanged);
 
     /* TODO - Figure out a way to detect when there is actually a change rather than just putting it on a timer. */
     connect(&driveTimer, &QTimer::timeout, this, &DVFolderListing::storageDevicePathsChanged);
@@ -290,6 +291,27 @@ bool DVFolderListing::isCurrentFileImage() const {
 bool DVFolderListing::isCurrentFileVideo() const {
     return isFileVideo(m_currentFile);
 }
+bool DVFolderListing::isCurrentFileSurround() const {
+    return isFileSurround(m_currentFile);
+}
+void DVFolderListing::setCurrentFileSurround(bool surround) {
+    if (surround == isCurrentFileSurround())
+        return;
+
+    /* Get or create the record for the selected file. */
+    QSqlRecord record = getRecordForFile(m_currentFile, true);
+
+    QSqlQuery query;
+    query.prepare("UPDATE files SET surround = :mode WHERE path = :path");
+    query.bindValue(":mode", surround);
+    /* Use the record's path value. */
+    query.bindValue(":path", record.value(0));
+
+    if (!query.exec())
+        qWarning("Unable to update record for file! %s", qPrintable(query.lastError().text()));
+
+    emit currentFileSurroundChanged();
+}
 
 DVSourceMode::Type DVFolderListing::currentFileStereoMode() const {
     return fileStereoMode(m_currentFile);
@@ -363,6 +385,22 @@ bool DVFolderListing::isFileVideo(const QFileInfo& info) const {
     return !info.isDir() && videoSuffixes.contains(info.suffix(), Qt::CaseInsensitive);
 }
 
+bool DVFolderListing::isFileSurround(const QFileInfo &file) const {
+    /* Directories and stereo images are nevver surround. */
+    if (file.isDir() || stereoImageSuffixes.contains(file.suffix(), Qt::CaseInsensitive))
+        return false;
+
+    QSqlRecord record = getRecordForFile(file);
+
+    if (!record.isEmpty()) {
+        QVariant value = record.value("surround");
+        if (!value.isNull())
+            return value.toBool();
+    }
+
+    return false;
+}
+
 DVSourceMode::Type DVFolderListing::fileStereoMode(const QFileInfo& file) const {
     /* Directories are side-by-side because of their thumbnail. */
     if(file.isDir() || stereoImageSuffixes.contains(file.suffix(), Qt::CaseInsensitive))
@@ -400,6 +438,7 @@ QHash<int, QByteArray> DVFolderListing::roleNames() const {
     names[IsDirRole]            = "fileIsDir";
     names[IsImageRole]          = "fileIsImage";
     names[IsVideoRole]          = "fileIsVideo";
+    names[IsSurroundRole]       = "fileIsSurround";
     names[FileSizeRole]         = "fileSize";
     names[FileCreatedRole]      = "fileCreated";
     names[FileStereoModeRole]   = "fileStereoMode";
@@ -503,6 +542,11 @@ void DVFolderListing::setupFileDatabase() {
 
     if (!table.contains("stereoSwap")) {
         QSqlQuery query("ALTER TABLE files ADD stereoSwap bool");
+        if (query.lastError().isValid()) qWarning("Error setting up table! %s", qPrintable(query.lastError().text()));
+    }
+
+    if (!table.contains("surround")) {
+        QSqlQuery query("ALTER TABLE files ADD surround bool");
         if (query.lastError().isValid()) qWarning("Error setting up table! %s", qPrintable(query.lastError().text()));
     }
 }

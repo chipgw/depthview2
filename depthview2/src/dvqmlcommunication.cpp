@@ -8,9 +8,10 @@
 #include <QSettings>
 #include <QQuickStyle>
 #include <QProcess>
+#include <QQuickItem>
 
 DVQmlCommunication::DVQmlCommunication(QWindow* parent, QSettings& s) : QObject(parent),
-    settings(s), owner(parent), lastWindowState(Qt::WindowNoState), m_swapEyes(false) {
+    settings(s), owner(parent), lastWindowState(Qt::WindowNoState), m_swapEyes(false), imageTarget(nullptr) {
     /* We need to detect when the window state changes sowe can updatethe fullscreen property accordingly. */
     connect(owner, &QWindow::windowStateChanged, this, &DVQmlCommunication::ownerWindowStateChanged);
 
@@ -193,6 +194,25 @@ void DVQmlCommunication::setUiTheme(QString theme) {
             QProcess::startDetached(QApplication::applicationFilePath());
             QApplication::quit();
         }
+    }
+}
+
+QQuickItem *DVQmlCommunication::openImageTarget() {
+    return imageTarget;
+}
+
+QSGTextureProvider *DVQmlCommunication::openImageTexture() {
+    if (imageTarget && imageTarget->isTextureProvider())
+        return imageTarget->textureProvider();
+
+    return nullptr;
+}
+
+void DVQmlCommunication::setOpenImageTarget(QQuickItem *target) {
+    if (target != imageTarget) {
+        imageTarget = target;
+        qDebug("%s", imageTarget->metaObject()->className());
+        emit openImageTargetChanged();
     }
 }
 

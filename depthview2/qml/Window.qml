@@ -5,9 +5,8 @@ import QtQuick.Controls 2.1
 import QtQuick.Window 2.2
 import QtAV 1.6
 
-Rectangle {
+Item {
     id: root
-    color: "black"
 
     FontLoader {
         id: googleMaterialFontLoader

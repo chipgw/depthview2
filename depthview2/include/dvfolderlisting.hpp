@@ -37,6 +37,7 @@ class DVFolderListing : public QAbstractListModel {
     Q_PROPERTY(bool currentFileIsStereoImage READ isCurrentFileStereoImage NOTIFY currentFileChanged)
     Q_PROPERTY(bool currentFileIsImage READ isCurrentFileImage NOTIFY currentFileChanged)
     Q_PROPERTY(bool currentFileIsVideo READ isCurrentFileVideo NOTIFY currentFileChanged)
+    Q_PROPERTY(bool currentFileIsSurround READ isCurrentFileSurround WRITE setCurrentFileSurround NOTIFY currentFileSurroundChanged)
     Q_PROPERTY(DVSourceMode::Type currentFileStereoMode READ currentFileStereoMode WRITE setCurrentFileStereoMode NOTIFY currentFileStereoModeChanged)
     Q_PROPERTY(bool currentFileStereoSwap READ currentFileStereoSwap WRITE setCurrentFileStereoSwap NOTIFY currentFileStereoSwapChanged)
     Q_PROPERTY(qint64 currentFileSize READ currentFileSize NOTIFY currentFileChanged)
@@ -122,6 +123,7 @@ public:
         IsDirRole,
         IsImageRole,
         IsVideoRole,
+        IsSurroundRole,
         FileSizeRole,
         FileCreatedRole,
         FileStereoModeRole,
@@ -134,6 +136,9 @@ public:
     bool isCurrentFileStereoImage() const;
     bool isCurrentFileImage() const;
     bool isCurrentFileVideo() const;
+
+    bool isCurrentFileSurround() const;
+    void setCurrentFileSurround(bool surround);
 
     DVSourceMode::Type currentFileStereoMode() const;
     void setCurrentFileStereoMode(DVSourceMode::Type mode);
@@ -148,6 +153,7 @@ public:
     bool isFileStereoImage(const QFileInfo& file) const;
     bool isFileImage(const QFileInfo& file) const;
     bool isFileVideo(const QFileInfo& file) const;
+    bool isFileSurround(const QFileInfo& file) const;
 
     DVSourceMode::Type fileStereoMode(const QFileInfo& file) const;
     bool fileStereoSwap(const QFileInfo& file) const;
@@ -183,4 +189,5 @@ signals:
 
     void currentFileStereoModeChanged();
     void currentFileStereoSwapChanged();
+    void currentFileSurroundChanged();
 };

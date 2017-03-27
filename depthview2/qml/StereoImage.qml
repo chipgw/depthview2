@@ -14,6 +14,8 @@ Item {
     property alias status: img.status
     property alias swap: shader.swap
 
+    readonly property alias sourceImage: img
+
     Image {
         id: img
         asynchronous: true

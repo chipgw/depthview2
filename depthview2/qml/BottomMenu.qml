@@ -118,10 +118,21 @@ ToolBar {
                             onCheckedChanged: FolderListing.currentFileStereoSwap = (checked !== FolderListing.currentFileIsStereoImage)
                         }
 
+                        MenuItem {
+                            id: surroundMenuItem
+                            text: qsTr("360")
+                            font: uiTextFont
+
+                            checkable: true
+
+                            onCheckedChanged: FolderListing.currentFileIsSurround = checked
+                        }
+
                         Connections {
                             target: FolderListing
 
                             onCurrentFileStereoSwapChanged: stereoSwapMenuItem.checked = (FolderListing.currentFileStereoSwap !== FolderListing.currentFileIsStereoImage)
+                            onCurrentFileSurroundChanged: surroundMenuItem.checked = FolderListing.currentFileIsSurround
                         }
 
                         ButtonGroup {

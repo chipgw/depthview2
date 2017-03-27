@@ -11,7 +11,9 @@
 #include <QOpenGLFramebufferObject>
 #include <QOpenGLContext>
 #include <QOpenGLExtraFunctions>
+#include <QSGTextureProvider>
 #include <AVPlayer.h>
+#include <QtMath>
 
 /* Android in particular may not have this defined. */
 #ifndef GL_COLOR_ATTACHMENT1
@@ -28,11 +30,74 @@
 const GLuint vertex = 0;
 const GLuint uv     = 1;
 
+struct Vertex {
+    QVector3D pos;
+    QVector2D tex;
+    float padding[3];
+};
+
+void makeSphere(uint32_t slices, uint32_t stacks, QOpenGLBuffer& sphereVerts, QOpenGLBuffer& sphereTris, GLuint& sphereTriCount) {
+    QVector<Vertex> verts;
+    QVector<GLuint> triangles;
+
+    /* The amount of rotation needed for each stack, ranging from pole to pole. */
+    qreal vstep = M_PI / stacks;
+    /* The amount of rotation needed for each slice, ranging all the way around the sphere. */
+    qreal hstep = (2.0 * M_PI) / slices;
+
+    /* The offset for the index to connect to in the next stack.  */
+    const GLuint w = slices + 1;
+
+    for (uint32_t v = 0; v <= stacks; ++v) {
+        /* Calculate the height and radius of the stack. */
+        qreal z = qCos(v * vstep);
+        qreal r = qSin(v * vstep);
+
+        for (uint32_t h = 0; h <= slices; ++h) {
+            GLuint current = verts.size();
+
+            Vertex vert;
+            /* Make a circle with the radius of the current stack. */
+            vert.pos = QVector3D(qCos(h * hstep) * r,
+                                 qSin(h * hstep) * r,
+                                 z);
+
+            vert.tex = QVector2D(float(h) / float(slices),
+                                 1.0f - float(v) / float(stacks));
+
+            verts.append(vert);
+
+            if (h != slices && v != stacks) {
+                /* A triangle with the current vertex, the next one, and the one above it. */
+                triangles << current
+                          << current + w
+                          << current + 1;
+
+                /* A triangle with the next vertex, the one above it, and the one above the current. */
+                triangles << current + w + 1
+                          << current + 1
+                          << current + w;
+            }
+        }
+    }
+
+    sphereVerts.create();
+    sphereVerts.bind();
+    sphereVerts.allocate(verts.data(), verts.size() * sizeof(Vertex));
+
+    sphereTris.create();
+    sphereTris.bind();
+    sphereTris.allocate(triangles.data(), triangles.size() * sizeof(GLuint));
+    sphereTriCount = triangles.size();
+}
+
 void DVWindow::initializeGL() {
     QOpenGLExtraFunctions* f = context()->extraFunctions();
     qDebug("GL Vendor: \"%s\", Renderer: \"%s\".", f->glGetString(GL_VENDOR), f->glGetString(GL_RENDERER));
 
     loadShaders();
+
+    makeSphere(256, 128, sphereVerts, sphereTris, sphereTriCount);
 
     pluginManager->loadPlugins(qmlEngine, context());
 
@@ -55,6 +120,8 @@ void DVWindow::initializeGL() {
 
     /* This is the root item, make it so. */
     qmlRoot->setParentItem(qmlWindow->contentItem());
+    qDebug(qmlWindow->contentItem()->metaObject()->className());
+    qmlWindow->setColor(QColor::fromRgba(0));
 
     player = qmlRoot->findChild<QtAV::AVPlayer*>();
     if (player == nullptr)
@@ -94,6 +161,78 @@ void DVWindow::paintGL() {
     qmlWindow->resetOpenGLState();
 
     QOpenGLExtraFunctions* f = context()->extraFunctions();
+
+    /* TODO - Allow plugins to handle surround rendering their own way. (Mainly for VR) */
+    if (qmlCommunication->openImageTexture() && qmlCommunication->openImageTexture()->texture() && folderListing->isCurrentFileSurround()) {
+        f->glEnable(GL_BLEND);
+        f->glBlendFunc(GL_ONE_MINUS_DST_ALPHA, GL_DST_ALPHA);
+
+        renderFBO->bind();
+
+        shaderSphere.bind();
+
+        qmlCommunication->openImageTexture()->texture()->bind();
+        QRectF left = qmlCommunication->openImageTexture()->texture()->normalizedTextureSubRect();
+        QRectF right = left;
+
+        switch (folderListing->currentFileStereoMode()) {
+        case DVSourceMode::TopBottom:
+        case DVSourceMode::TopBottomAnamorphic:
+            left.setHeight(left.height() * 0.5f);
+            right.setHeight(right.height() * 0.5f);
+
+            if (folderListing->currentFileStereoSwap())
+                left.translate(0.0f, left.y() + left.height());
+            else
+                right.translate(0.0f, right.y() + left.height());
+            break;
+        case DVSourceMode::SidebySide:
+        case DVSourceMode::SidebySideAnamorphic:
+            left.setWidth(left.width() * 0.5f);
+            right.setWidth(right.width() * 0.5f);
+
+            if (folderListing->currentFileStereoSwap())
+                left.translate(left.x() + left.width(), 0.0f);
+            else
+                right.translate(right.x() + right.width(), 0.0f);
+            break;
+        case DVSourceMode::Mono:
+            /* Do nothing for mono images. */
+            break;
+        }
+
+        shaderSphere.setUniformValue("leftRect", left.x(), left.y(), left.width(), left.height());
+        shaderSphere.setUniformValue("rightRect", right.x(), right.y(), right.width(), right.height());
+
+        /* TODO - Use zoom to calculate perspective angle and pan to rotate. */
+        QMatrix4x4 mat;
+        mat.perspective(60.0f, float(qmlSize.width()) / float(qmlSize.height()), 0.01f, 1.0f);
+        QTime t;
+        t.start();
+        mat.rotate(90.0f, 1.0f, 0.0f, 0.0f);
+        mat.rotate(t.msecsSinceStartOfDay() / 200.0f, 0.0f, 0.0f, 1.0f);
+        shaderSphere.setUniformValue("cameraMatrix", mat);
+
+        /* Enable the vertex and UV arrays, must be done every frame because of QML resetting things. */
+        f->glEnableVertexAttribArray(vertex);
+        f->glEnableVertexAttribArray(uv);
+
+        sphereVerts.bind();
+        sphereTris.bind();
+
+        /* Set up the attribute buffers once for all planets. */
+        shaderSphere.setAttributeBuffer(int(vertex), GL_FLOAT, offsetof(Vertex, pos), 3, sizeof(Vertex));
+        shaderSphere.setAttributeBuffer(uv,     GL_FLOAT, offsetof(Vertex, tex), 2, sizeof(Vertex));
+
+        f->glDrawElements(GL_TRIANGLES, sphereTriCount, GL_UNSIGNED_INT, nullptr);
+
+        renderFBO->release();
+        sphereVerts.release();
+        sphereTris.release();
+
+        f->glBlendFunc(GL_ONE, GL_ZERO);
+        f->glDisable(GL_BLEND);
+    }
 
     /* Make sure the viewport is the correct size, QML may have changed it. */
     f->glViewport(0, 0, width(), height());
@@ -204,6 +343,7 @@ void DVWindow::loadShaders() {
     loadShader(shaderTopBottom,     ":/glsl/standard.vsh", ":/glsl/topbottom.fsh");
     loadShader(shaderInterlaced,    ":/glsl/standard.vsh", ":/glsl/interlaced.fsh");
     loadShader(shaderMono,          ":/glsl/standard.vsh", ":/glsl/standard.fsh");
+    loadShader(shaderSphere,        ":/glsl/sphere.vsh",   ":/glsl/sphere.fsh");
 }
 
 void DVWindow::loadShader(QOpenGLShaderProgram& shader, const char* vshader, const char* fshader) {

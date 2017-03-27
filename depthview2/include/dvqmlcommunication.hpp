@@ -6,6 +6,8 @@
 
 class QWindow;
 class QSettings;
+class QSGTextureProvider;
+class QQuickItem;
 
 class DVQmlCommunication : public QObject {
     Q_OBJECT
@@ -28,6 +30,8 @@ class DVQmlCommunication : public QObject {
 
     Q_PROPERTY(QString uiTheme READ uiTheme WRITE setUiTheme NOTIFY uiThemeChanged)
     Q_PROPERTY(QStringList uiThemes READ uiThemes)
+
+    Q_PROPERTY(QQuickItem* openImageTarget READ openImageTarget WRITE setOpenImageTarget NOTIFY openImageTargetChanged)
 
 public:
     /* Settings can be set from DVWindow. */
@@ -73,6 +77,10 @@ public:
     QStringList uiThemes() const;
     void setUiTheme(QString theme);
 
+    QQuickItem* openImageTarget();
+    QSGTextureProvider* openImageTexture();
+    void setOpenImageTarget(QQuickItem* target);
+
 #ifdef DV_FILE_ASSOCIATION
     Q_INVOKABLE void registerFileTypes();
 #endif
@@ -90,6 +98,8 @@ signals:
     void fullscreenChanged(bool fullscreen);
 
     void swapEyesChanged();
+
+    void openImageTargetChanged();
 
     /* Settings. */
     void saveWindowStateChanged();
@@ -146,4 +156,6 @@ private:
     Qt::WindowState lastWindowState;
 
     bool m_swapEyes;
+
+    QQuickItem* imageTarget;
 };

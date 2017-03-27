@@ -6,6 +6,8 @@ import DepthView 2.0
 Item {
     id: root
 
+    visible: !FolderListing.currentFileIsSurround
+
     property real zoom: -1
 
     /* The actual scale value to be applied to the image/video, if zoom is -1 calculate the size-to-fit scale. */
@@ -46,6 +48,13 @@ Item {
 
         /* Reset the zoom to fit. */
         zoom = -1
+    }
+
+    Binding {
+        /* Give C++ access to the texture for the currently open image or video. */
+        target: DepthView
+        property: "openImageTarget"
+        value: FolderListing.currentFileIsVideo ? vid : image.sourceImage
     }
 
     /* Wrap video properties for use in UI. */

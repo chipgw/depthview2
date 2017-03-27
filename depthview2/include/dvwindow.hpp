@@ -4,6 +4,7 @@
 #include <QOpenGLShaderProgram>
 #include <QSettings>
 #include <QDir>
+#include <QOpenGLBuffer>
 #include "dvinputinterface.hpp"
 
 /* DepthView forward declarations. */
@@ -119,9 +120,14 @@ private:
     QOpenGLShaderProgram shaderTopBottom;
     QOpenGLShaderProgram shaderInterlaced;
     QOpenGLShaderProgram shaderMono;
+    QOpenGLShaderProgram shaderSphere;
 
     /* The FBO that QML renders to. */
     QOpenGLFramebufferObject* renderFBO;
+
+    QOpenGLBuffer sphereVerts;
+    QOpenGLBuffer sphereTris;
+    GLuint sphereTriCount;
 
     bool holdMouse;
 
