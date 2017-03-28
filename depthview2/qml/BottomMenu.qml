@@ -114,6 +114,7 @@ ToolBar {
                             font: uiTextFont
 
                             checkable: true
+                            checked: FolderListing.currentFileStereoSwap !== FolderListing.currentFileIsStereoImage
 
                             onCheckedChanged: FolderListing.currentFileStereoSwap = (checked !== FolderListing.currentFileIsStereoImage)
                         }
@@ -124,6 +125,7 @@ ToolBar {
                             font: uiTextFont
 
                             checkable: true
+                            checked: FolderListing.currentFileIsSurround
 
                             onCheckedChanged: FolderListing.currentFileIsSurround = checked
                         }
