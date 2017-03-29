@@ -127,6 +127,10 @@ ToolBar {
                             checkable: true
                             checked: FolderListing.currentFileIsSurround
 
+                            /* Surround is not available for *.jps & *.pns files. */
+                            visible: !FolderListing.currentFileIsStereoImage
+                            height: visible ? implicitHeight : 0
+
                             onCheckedChanged: FolderListing.currentFileIsSurround = checked
                         }
 
