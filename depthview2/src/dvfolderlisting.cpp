@@ -526,13 +526,8 @@ void DVFolderListing::setupFileDatabase() {
     /* Check to see if the table exists. */
     if (table.isEmpty()) {
         /* Don't bother setting up the fields here, as that might as well just be left to the stuff below. */
-        QSqlQuery query("create table files");
+        QSqlQuery query("create table files (path string)");
         if (query.lastError().isValid()) qWarning("Error creating table! %s", qPrintable(query.lastError().text()));
-    }
-
-    if (!table.contains("path")) {
-        QSqlQuery query("ALTER TABLE files ADD path string");
-        if (query.lastError().isValid()) qWarning("Error setting up table! %s", qPrintable(query.lastError().text()));
     }
 
     if (!table.contains("stereoMode")) {
