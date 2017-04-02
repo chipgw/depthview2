@@ -100,7 +100,7 @@ ToolBar {
 
                     font: googleMaterialFont
                     /* TODO - I'm not sure this icon is clear enough, but it's the best fit I found.
-                             * Perhaps I should make my own, and make icons for the modes themselves... */
+                     * Perhaps I should make my own, and make icons for the modes themselves... */
                     text: "\ue8b9"
 
                     Menu {

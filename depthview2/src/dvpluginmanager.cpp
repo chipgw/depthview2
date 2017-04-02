@@ -242,6 +242,38 @@ bool DVPluginManager::enablePlugin(QString pluginFileName) {
     return plugin.value()->inited;
 }
 
+bool DVPluginManager::disablePlugin(QString pluginFileName) {
+    auto plugin = plugins.find(pluginFileName);
+
+    /* Remove from auto-load. */
+    storePluginEnabled(pluginFileName, false);
+
+    if (plugin.value()->pluginType == DVPluginType::RenderPlugin) {
+        /* Remove all the draw mode names from the list of available modes. */
+        for (const QString& name : plugin.value()->renderPlugin->drawModeNames())
+            pluginModes.removeAll(name);
+
+        /* Remove the render plugin from the list and deinit it. */
+        renderPlugins.removeAll(plugin.value()->renderPlugin);
+        plugin.value()->renderPlugin->deinit();
+    } else {
+        /* Remove the input plugin from the list and deinit it. */
+        inputPlugins.removeAll(plugin.value()->inputPlugin);
+        plugin.value()->inputPlugin->deinit();
+    }
+    /* The plugin isn't inited any more. */
+    plugin.value()->inited = false;
+
+    /* For render plugins updates the draw mode list, for all plugins removes the config object from the settings window. */
+    emit pluginModesChanged();
+
+    QModelIndex changedIndex = createIndex(std::distance(plugins.begin(), plugin), 0);
+    /* Emit this signal to update the pluginEnabled value if it worked and the pluginError value if it didn't. */
+    emit dataChanged(changedIndex, changedIndex);
+
+    return true;
+}
+
 void DVPluginManager::savePluginSettings(QString pluginTitle, QObject* settingsObject) {
     /* Remove spaces from the plugin title. */
     pluginTitle.remove(' ');

@@ -57,6 +57,7 @@ public:
     void unloadPlugins();
 
     Q_INVOKABLE bool enablePlugin(QString pluginFileName);
+    Q_INVOKABLE bool disablePlugin(QString pluginFileName);
 
     /* Functions that get the current plugin and interface with it. */
     DVRenderPlugin* getCurrentRenderPlugin() const;

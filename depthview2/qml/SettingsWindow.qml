@@ -220,7 +220,6 @@ Dialog {
                     Repeater {
                         model: PluginManager
 
-                        /* TODO - Make this look nice... */
                         GroupBox {
                             font: uiTextFont
                             title: pluginDisplayName
@@ -240,7 +239,9 @@ Dialog {
                                 CheckBox {
                                     text: "Enabled"
                                     checked: pluginEnabled
-                                    onClicked: if (checked) PluginManager.enablePlugin(pluginFileName)
+                                    onClicked:
+                                        if (checked) PluginManager.enablePlugin(pluginFileName)
+                                        else PluginManager.disablePlugin(pluginFileName)
                                     enabled: pluginError.length < 1
                                 }
                             }
