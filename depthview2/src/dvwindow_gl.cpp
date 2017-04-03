@@ -120,7 +120,6 @@ void DVWindow::initializeGL() {
 
     /* This is the root item, make it so. */
     qmlRoot->setParentItem(qmlWindow->contentItem());
-    qDebug(qmlWindow->contentItem()->metaObject()->className());
     qmlWindow->setColor(QColor::fromRgba(0));
 
     player = qmlRoot->findChild<QtAV::AVPlayer*>();
@@ -209,8 +208,8 @@ void DVWindow::paintGL() {
         mat.perspective(60.0f, float(qmlSize.width()) / float(qmlSize.height()), 0.01f, 1.0f);
         QTime t;
         t.start();
-        mat.rotate(90.0f, 1.0f, 0.0f, 0.0f);
-        mat.rotate(t.msecsSinceStartOfDay() / 200.0f, 0.0f, 0.0f, 1.0f);
+        mat.rotate(90 + qmlCommunication->surroundPan().y(), 1.0f, 0.0f, 0.0f);
+        mat.rotate(qmlCommunication->surroundPan().x(), 0.0f, 0.0f, 1.0f);
         shaderSphere.setUniformValue("cameraMatrix", mat);
 
         /* Enable the vertex and UV arrays, must be done every frame because of QML resetting things. */

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QUrl>
+#include <QPoint>
 #include "dvenums.hpp"
 #include "fileassociation.hpp"
 
@@ -32,6 +33,8 @@ class DVQmlCommunication : public QObject {
     Q_PROPERTY(QStringList uiThemes READ uiThemes)
 
     Q_PROPERTY(QQuickItem* openImageTarget READ openImageTarget WRITE setOpenImageTarget NOTIFY openImageTargetChanged)
+
+    Q_PROPERTY(QPoint surroundPan READ surroundPan WRITE setSurroundPan NOTIFY surroundPanChanged)
 
 public:
     /* Settings can be set from DVWindow. */
@@ -81,6 +84,9 @@ public:
     QSGTextureProvider* openImageTexture();
     void setOpenImageTarget(QQuickItem* target);
 
+    QPoint surroundPan() const;
+    void setSurroundPan(QPoint val);
+
 #ifdef DV_FILE_ASSOCIATION
     Q_INVOKABLE void registerFileTypes();
 #endif
@@ -100,6 +106,8 @@ signals:
     void swapEyesChanged();
 
     void openImageTargetChanged();
+
+    void surroundPanChanged();
 
     /* Settings. */
     void saveWindowStateChanged();
@@ -158,4 +166,6 @@ private:
     bool m_swapEyes;
 
     QQuickItem* imageTarget;
+
+    QPoint m_surroundPan;
 };

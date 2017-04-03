@@ -222,14 +222,16 @@ Item {
     }
 
     MouseArea {
+        id: imageMouseArea
+
         anchors.fill: parent
 
-        acceptedButtons: Qt.MiddleButton | Qt.ForwardButton | Qt.BackButton
+        acceptedButtons: Qt.MiddleButton | Qt.ForwardButton | Qt.BackButton | (FolderListing.currentFileIsSurround ? Qt.LeftButton : 0)
 
         /* Reset zoom on wheel double-click. */
         onDoubleClicked: if (mouse.button === Qt.MiddleButton) zoom = (zoom === -1) ? 1 : -1
 
-        onWheel: {
+        onWheel:
             /* Don't zoom or seek if covered. */
             if (!fileBrowser.visible) {
                 /* For videos, the mouse wheel seeks the video. */
@@ -253,13 +255,29 @@ Item {
                 if (!FolderListing.currentFileIsVideo && wheel.angleDelta.x < 0)
                     FolderListing.openNext()
             }
-        }
-        onClicked: {
+
+        onClicked:
             /* Thumb buttons go through files. */
             if (mouse.button === Qt.BackButton)
                 FolderListing.openPrevious()
-            if (mouse.button === Qt.ForwardButton)
+            else if (mouse.button === Qt.ForwardButton)
                 FolderListing.openNext()
+
+        property var surroundPanning: undefined
+
+        onPressed: if (mouse.button === Qt.LeftButton) surroundPanning = Qt.point(mouseX, mouseY)
+        onReleased: if (mouse.button === Qt.LeftButton) surroundPanning = undefined
+
+        Connections {
+            target: DepthView
+
+            onMouseMoved:
+                if (imageMouseArea.surroundPanning != undefined) {
+                    /* TODO - Make sensitivity adjustable or based on the pixel to FOV degree ratio. */
+                    DepthView.surroundPan = Qt.point(DepthView.surroundPan.x - imageMouseArea.surroundPanning.x + pos.x,
+                                                     DepthView.surroundPan.y + imageMouseArea.surroundPanning.y - pos.y)
+                    imageMouseArea.surroundPanning = pos
+                }
         }
     }
 

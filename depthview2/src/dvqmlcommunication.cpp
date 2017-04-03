@@ -211,8 +211,20 @@ QSGTextureProvider *DVQmlCommunication::openImageTexture() {
 void DVQmlCommunication::setOpenImageTarget(QQuickItem *target) {
     if (target != imageTarget) {
         imageTarget = target;
-        qDebug("%s", imageTarget->metaObject()->className());
         emit openImageTargetChanged();
+    }
+}
+
+QPoint DVQmlCommunication::surroundPan() const {
+    return m_surroundPan;
+}
+
+void DVQmlCommunication::setSurroundPan(QPoint val) {
+    if (val != m_surroundPan) {
+        m_surroundPan = val;
+        m_surroundPan.setY(qBound(-89, m_surroundPan.y(), 89));
+
+        emit surroundPanChanged();
     }
 }
 
