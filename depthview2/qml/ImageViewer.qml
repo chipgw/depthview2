@@ -8,8 +8,10 @@ Item {
 
     property real zoom: -1
 
-    /* The actual scale value to be applied to the image/video, if zoom is -1 calculate the size-to-fit scale. */
-    readonly property real targetScale: (zoom < 0) ? Math.min(width / stereoSize.width, height / stereoSize.height) : zoom
+    /* The zoom/scale value that fits the whole image on the screen. */
+    readonly property real fitScale: FolderListing.currentFileIsSurround ? 1 : Math.min(width / stereoSize.width, height / stereoSize.height)
+    /* The actual scale value to be applied to the image/video, if zoom is -1 use the size-to-fit scale. */
+    readonly property real targetScale: (zoom < 0) ? fitScale : zoom
 
     function playPause() {
         if (FolderListing.currentFileIsVideo) {
@@ -271,13 +273,21 @@ Item {
         Connections {
             target: DepthView
 
+            /* The FOV is vertical, so dividing by the root element's height gives us how many degrees are in one pixel of movement. */
+            property real panRate: DepthView.surroundFOV / root.height
+
             onMouseMoved:
                 if (imageMouseArea.surroundPanning != undefined) {
-                    /* TODO - Make sensitivity adjustable or based on the pixel to FOV degree ratio. */
-                    DepthView.surroundPan = Qt.point(DepthView.surroundPan.x - imageMouseArea.surroundPanning.x + pos.x,
-                                                     DepthView.surroundPan.y + imageMouseArea.surroundPanning.y - pos.y)
+                    /* Update the pan value with the mouse delta multiplied by the panning rate. */
+                    DepthView.surroundPan = Qt.point(DepthView.surroundPan.x - panRate * (imageMouseArea.surroundPanning.x - pos.x),
+                                                     DepthView.surroundPan.y + panRate * (imageMouseArea.surroundPanning.y - pos.y))
                     imageMouseArea.surroundPanning = pos
                 }
+        }
+        Binding {
+            target: DepthView
+            property: "surroundFOV"
+            value: 120 * Math.pow(2, -targetScale)
         }
     }
 

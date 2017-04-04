@@ -34,7 +34,8 @@ class DVQmlCommunication : public QObject {
 
     Q_PROPERTY(QQuickItem* openImageTarget READ openImageTarget WRITE setOpenImageTarget NOTIFY openImageTargetChanged)
 
-    Q_PROPERTY(QPoint surroundPan READ surroundPan WRITE setSurroundPan NOTIFY surroundPanChanged)
+    Q_PROPERTY(QPointF surroundPan READ surroundPan WRITE setSurroundPan NOTIFY surroundPanChanged)
+    Q_PROPERTY(qreal surroundFOV READ surroundFOV WRITE setSurroundFOV NOTIFY surroundFOVChanged)
 
 public:
     /* Settings can be set from DVWindow. */
@@ -84,8 +85,10 @@ public:
     QSGTextureProvider* openImageTexture();
     void setOpenImageTarget(QQuickItem* target);
 
-    QPoint surroundPan() const;
-    void setSurroundPan(QPoint val);
+    QPointF surroundPan() const;
+    void setSurroundPan(QPointF val);
+    qreal surroundFOV() const;
+    void setSurroundFOV(qreal val);
 
 #ifdef DV_FILE_ASSOCIATION
     Q_INVOKABLE void registerFileTypes();
@@ -108,6 +111,7 @@ signals:
     void openImageTargetChanged();
 
     void surroundPanChanged();
+    void surroundFOVChanged();
 
     /* Settings. */
     void saveWindowStateChanged();
@@ -167,5 +171,6 @@ private:
 
     QQuickItem* imageTarget;
 
-    QPoint m_surroundPan;
+    QPointF m_surroundPan;
+    qreal m_surroundFOV;
 };

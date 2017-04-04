@@ -215,16 +215,28 @@ void DVQmlCommunication::setOpenImageTarget(QQuickItem *target) {
     }
 }
 
-QPoint DVQmlCommunication::surroundPan() const {
+QPointF DVQmlCommunication::surroundPan() const {
     return m_surroundPan;
 }
 
-void DVQmlCommunication::setSurroundPan(QPoint val) {
+void DVQmlCommunication::setSurroundPan(QPointF val) {
     if (val != m_surroundPan) {
         m_surroundPan = val;
-        m_surroundPan.setY(qBound(-89, m_surroundPan.y(), 89));
+        m_surroundPan.setY(qBound(-89.0, m_surroundPan.y(), 89.0));
 
         emit surroundPanChanged();
+    }
+}
+
+qreal DVQmlCommunication::surroundFOV() const {
+    return m_surroundFOV;
+}
+
+void DVQmlCommunication::setSurroundFOV(qreal val) {
+    if (val != m_surroundFOV) {
+        m_surroundFOV = qBound(15.0, val, 120.0);
+
+        emit surroundFOVChanged();
     }
 }
 

@@ -203,13 +203,15 @@ void DVWindow::paintGL() {
         shaderSphere.setUniformValue("leftRect", left.x(), left.y(), left.width(), left.height());
         shaderSphere.setUniformValue("rightRect", right.x(), right.y(), right.width(), right.height());
 
-        /* TODO - Use zoom to calculate perspective angle and pan to rotate. */
         QMatrix4x4 mat;
-        mat.perspective(60.0f, float(qmlSize.width()) / float(qmlSize.height()), 0.01f, 1.0f);
-        QTime t;
-        t.start();
-        mat.rotate(90 + qmlCommunication->surroundPan().y(), 1.0f, 0.0f, 0.0f);
+        /* Create a camera matrix using the surround FOV from QML and the aspect ratio of the FBO. */
+        mat.perspective(qmlCommunication->surroundFOV(), float(qmlSize.width()) / float(qmlSize.height()), 0.01f, 1.0f);
+
+        /* Rotate the matrix based on pan values. */
+        mat.rotate(90.0 + qmlCommunication->surroundPan().y(), 1.0f, 0.0f, 0.0f);
         mat.rotate(qmlCommunication->surroundPan().x(), 0.0f, 0.0f, 1.0f);
+
+        /* Upload to shader. */
         shaderSphere.setUniformValue("cameraMatrix", mat);
 
         /* Enable the vertex and UV arrays, must be done every frame because of QML resetting things. */
