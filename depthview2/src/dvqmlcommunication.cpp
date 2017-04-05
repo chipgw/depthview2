@@ -234,7 +234,8 @@ qreal DVQmlCommunication::surroundFOV() const {
 
 void DVQmlCommunication::setSurroundFOV(qreal val) {
     if (val != m_surroundFOV) {
-        m_surroundFOV = qBound(15.0, val, 120.0);
+        /* This is about the same limits as the value of zoom has [0.2, 4.0], based on the way it is converted. */
+        m_surroundFOV = qBound(7.5, val, 105.0);
 
         emit surroundFOVChanged();
     }

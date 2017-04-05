@@ -243,12 +243,7 @@ Item {
                     else if (wheel.angleDelta.y < 0)
                         media.seekBackward()
                 } else if (wheel.angleDelta.y != 0) {
-                    /* If zoom-to-fit is active retrieve the current scale before zooming in or out. */
-                    if (zoom < 0)
-                        zoom = targetScale
-
-                    zoom += wheel.angleDelta.y * zoom * 0.001
-                    zoom = Math.max(0.2, Math.min(zoom, 4.0))
+                    zoom = Math.max(0.2, Math.min(targetScale + wheel.angleDelta.y * targetScale * 0.001, 4.0))
                 }
 
                 /* Sideways scroll goes through files, unless a video is open. */
@@ -298,19 +293,10 @@ Item {
 
         property real startZoom
 
-        onPinchStarted: {
-            /* If zoom-to-fit is active retrieve the current scale before zooming in or out. */
-            if (zoom < 0)
-                zoom = targetScale
+        onPinchStarted: startZoom = targetScale
 
-            startZoom = zoom
-        }
-
-        onPinchUpdated: {
-            zoom = startZoom * pinch.scale
-            zoom = Math.max(0.2, Math.min(zoom, 4.0))
-
+        onPinchUpdated:
             /* TODO - Use the pinch center. */
-        }
+            zoom = Math.max(0.2, Math.min(startZoom * pinch.scale, 4.0))
     }
 }
