@@ -6,6 +6,7 @@
 #include <QDir>
 #include <QOpenGLBuffer>
 #include "dvinputinterface.hpp"
+#include "dvrenderinterface.hpp"
 
 /* DepthView forward declarations. */
 class DVQmlCommunication;
@@ -17,14 +18,13 @@ class QQuickRenderControl;
 class QQuickWindow;
 class QQuickItem;
 class QQmlEngine;
-class QOpenGLFramebufferObject;
 
 /* QtAV forward declarations. */
 namespace QtAV {
 class AVPlayer;
 }
 
-class DVWindow : public QOpenGLWindow, public DVInputInterface {
+class DVWindow : public QOpenGLWindow, public DVInputInterface, public DVRenderInterface {
 public:
     DVWindow();
     ~DVWindow();
@@ -84,6 +84,38 @@ public:
     /* ------------------------------ *
      * End DVInputInterface functions *
      * ------------------------------ */
+
+    /* --------------------------------- *
+     * Begin DVRenderInterface functions *
+     * --------------------------------- */
+
+    /* Get the FBO that QML is rendered to. */
+    virtual const QOpenGLFramebufferObject& getInterfaceFramebuffer();
+
+    /* Get the OpenGL textures for each eye. */
+    virtual unsigned int getInterfaceLeftEyeTexture();
+    virtual unsigned int getInterfaceRightEyeTexture();
+
+    /* Returns the texture handle the current image / video, and sets left & right to where on the texture each eye is. */
+    virtual QSGTexture* getCurrentTexture(QRectF& left, QRectF& right);
+
+    /* Get whether the current image is surround. */
+    virtual bool isSurround();
+
+    /* Draw the default sphere (for surround images). */
+    virtual void renderStandardSphere();
+
+    /* Get the OpenGL functions. */
+    virtual QOpenGLExtraFunctions* getOpenGLFunctions();
+
+    /* Set up the renderer exactly as all the built-in modes have it set up.
+     * The left and right image textures will be bound to TEXTURE0 and TEXTURE1, respectively,
+     * the viewport is set to the window size, and surround images will be rendered under the UI. */
+    virtual void doStandardSetup();
+
+    /* ------------------------------- *
+     * End DVRenderInterface functions *
+     * ------------------------------- */
 
 public slots:
     void updateQmlSize();

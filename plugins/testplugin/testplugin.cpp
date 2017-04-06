@@ -1,4 +1,5 @@
 #include "testplugin.hpp"
+#include "dvrenderinterface.hpp"
 #include <QOpenGLExtraFunctions>
 #include <QOpenGLShaderProgram>
 #include <QQmlComponent>
@@ -62,9 +63,11 @@ bool TestPlugin::deinit() {
     return true;
 }
 
-bool TestPlugin::render(const QString&, QOpenGLExtraFunctions* f) {
+bool TestPlugin::render(const QString&, DVRenderInterface* renderInterface) {
     if (logRenderStart.isValid() && logRenderStart.read().toBool())
         qDebug("Plugin rendering start.");
+
+    renderInterface->doStandardSetup();
 
     /* This is just the default fullscreen quad from the built-in modes. */
     shader->bind();
@@ -82,6 +85,8 @@ bool TestPlugin::render(const QString&, QOpenGLExtraFunctions* f) {
         1.0f, 1.0f,
         0.0f, 1.0f
     };
+
+    QOpenGLExtraFunctions* f = renderInterface->getOpenGLFunctions();
 
     /* Enable the vertex and UV arrays, must be done every frame because of QML resetting things. */
     f->glEnableVertexAttribArray(0);

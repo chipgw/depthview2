@@ -26,10 +26,6 @@
 #endif
 #endif
 
-/* Vertex attrib locations. */
-const GLuint vertex = 0;
-const GLuint uv     = 1;
-
 struct Vertex {
     QVector3D pos;
     QVector2D tex;
@@ -59,11 +55,11 @@ void makeSphere(uint32_t slices, uint32_t stacks, QOpenGLBuffer& sphereVerts, QO
             Vertex vert;
             /* Make a circle with the radius of the current stack. */
             vert.pos = QVector3D(qCos(h * hstep) * r,
-                                 qSin(h * hstep) * r,
-                                 z);
+                                 z,
+                                 qSin(h * hstep) * r);
 
             vert.tex = QVector2D(float(h) / float(slices),
-                                 1.0f - float(v) / float(stacks));
+                                 float(v) / float(stacks));
 
             verts.append(vert);
 
@@ -159,90 +155,10 @@ void DVWindow::paintGL() {
     /* Now we don't want QML messing us up. */
     qmlWindow->resetOpenGLState();
 
-    QOpenGLExtraFunctions* f = context()->extraFunctions();
+    if (qmlCommunication->drawMode() == DVDrawMode::Plugin && pluginManager->doPluginRender(this))
+        return;
 
-    /* TODO - Allow plugins to handle surround rendering their own way. (Mainly for VR) */
-    if (qmlCommunication->openImageTexture() && qmlCommunication->openImageTexture()->texture() && folderListing->isCurrentFileSurround()) {
-        f->glEnable(GL_BLEND);
-        f->glBlendFunc(GL_ONE_MINUS_DST_ALPHA, GL_DST_ALPHA);
-
-        renderFBO->bind();
-
-        shaderSphere.bind();
-
-        qmlCommunication->openImageTexture()->texture()->bind();
-        QRectF left = qmlCommunication->openImageTexture()->texture()->normalizedTextureSubRect();
-        QRectF right = left;
-
-        switch (folderListing->currentFileStereoMode()) {
-        case DVSourceMode::TopBottom:
-        case DVSourceMode::TopBottomAnamorphic:
-            left.setHeight(left.height() * 0.5f);
-            right.setHeight(right.height() * 0.5f);
-
-            if (folderListing->currentFileStereoSwap())
-                left.translate(0.0f, left.y() + left.height());
-            else
-                right.translate(0.0f, right.y() + left.height());
-            break;
-        case DVSourceMode::SidebySide:
-        case DVSourceMode::SidebySideAnamorphic:
-            left.setWidth(left.width() * 0.5f);
-            right.setWidth(right.width() * 0.5f);
-
-            if (folderListing->currentFileStereoSwap())
-                left.translate(left.x() + left.width(), 0.0f);
-            else
-                right.translate(right.x() + right.width(), 0.0f);
-            break;
-        case DVSourceMode::Mono:
-            /* Do nothing for mono images. */
-            break;
-        }
-
-        shaderSphere.setUniformValue("leftRect", left.x(), left.y(), left.width(), left.height());
-        shaderSphere.setUniformValue("rightRect", right.x(), right.y(), right.width(), right.height());
-
-        QMatrix4x4 mat;
-        /* Create a camera matrix using the surround FOV from QML and the aspect ratio of the FBO. */
-        mat.perspective(qmlCommunication->surroundFOV(), float(qmlSize.width()) / float(qmlSize.height()), 0.01f, 1.0f);
-
-        /* Rotate the matrix based on pan values. */
-        mat.rotate(90.0 + qmlCommunication->surroundPan().y(), 1.0f, 0.0f, 0.0f);
-        mat.rotate(qmlCommunication->surroundPan().x(), 0.0f, 0.0f, 1.0f);
-
-        /* Upload to shader. */
-        shaderSphere.setUniformValue("cameraMatrix", mat);
-
-        /* Enable the vertex and UV arrays, must be done every frame because of QML resetting things. */
-        f->glEnableVertexAttribArray(vertex);
-        f->glEnableVertexAttribArray(uv);
-
-        sphereVerts.bind();
-        sphereTris.bind();
-
-        /* Set up the attribute buffers once for all planets. */
-        shaderSphere.setAttributeBuffer(int(vertex), GL_FLOAT, offsetof(Vertex, pos), 3, sizeof(Vertex));
-        shaderSphere.setAttributeBuffer(uv,     GL_FLOAT, offsetof(Vertex, tex), 2, sizeof(Vertex));
-
-        f->glDrawElements(GL_TRIANGLES, sphereTriCount, GL_UNSIGNED_INT, nullptr);
-
-        renderFBO->release();
-        sphereVerts.release();
-        sphereTris.release();
-
-        f->glBlendFunc(GL_ONE, GL_ZERO);
-        f->glDisable(GL_BLEND);
-    }
-
-    /* Make sure the viewport is the correct size, QML may have changed it. */
-    f->glViewport(0, 0, width(), height());
-
-    f->glActiveTexture(GL_TEXTURE0);
-    f->glBindTexture(GL_TEXTURE_2D, renderFBO->textures()[qmlCommunication->swapEyes() ? 1 : 0]);
-
-    f->glActiveTexture(GL_TEXTURE1);
-    f->glBindTexture(GL_TEXTURE_2D, renderFBO->textures()[qmlCommunication->swapEyes() ? 0 : 1]);
+    doStandardSetup();
 
     /* Bind the shader and set uniforms for the current draw mode. */
     switch (qmlCommunication->drawMode()) {
@@ -286,9 +202,7 @@ void DVWindow::paintGL() {
         shaderMono.setUniformValue("left", true);
         break;
     case DVDrawMode::Plugin:
-        if (pluginManager->doPluginRender())
-            /* If it worked, return from here to avoid the default fullscreen quad. */
-            return;
+        /* If it's a plugin and we're at this point, the plugin failed to render. */
     default:
         /* Whoops, invalid renderer. Reset to Anaglyph... */
         qmlCommunication->setDrawMode(DVDrawMode::Anaglyph);
@@ -308,6 +222,8 @@ void DVWindow::paintGL() {
         1.0f, 1.0f,
         0.0f, 1.0f
     };
+
+    QOpenGLExtraFunctions* f = context()->extraFunctions();
 
     /* Enable the vertex and UV arrays, must be done every frame because of QML resetting things. */
     f->glEnableVertexAttribArray(vertex);
@@ -406,4 +322,125 @@ void DVWindow::createFBO() {
 void DVWindow::resizeGL(int, int) {
     /* Delegate to updateQmlSize to resize FBO's and stuff. */
     updateQmlSize();
+}
+
+const QOpenGLFramebufferObject& DVWindow::getInterfaceFramebuffer() {
+    return *renderFBO;
+}
+
+unsigned int DVWindow::getInterfaceLeftEyeTexture() {
+    return renderFBO->textures()[qmlCommunication->swapEyes() ? 1 : 0];
+}
+
+unsigned int DVWindow::getInterfaceRightEyeTexture() {
+    return renderFBO->textures()[qmlCommunication->swapEyes() ? 0 : 1];
+}
+
+QSGTexture* DVWindow::getCurrentTexture(QRectF& left, QRectF& right) {
+    if (qmlCommunication->openImageTexture() && qmlCommunication->openImageTexture()->texture()) {
+        right = left = qmlCommunication->openImageTexture()->texture()->normalizedTextureSubRect();
+
+        switch (folderListing->currentFileStereoMode()) {
+        case DVSourceMode::TopBottom:
+        case DVSourceMode::TopBottomAnamorphic:
+            left.setHeight(left.height() * 0.5f);
+            right.setHeight(right.height() * 0.5f);
+
+            if (folderListing->currentFileStereoSwap())
+                left.translate(0.0f, left.y() + left.height());
+            else
+                right.translate(0.0f, right.y() + left.height());
+            break;
+        case DVSourceMode::SidebySide:
+        case DVSourceMode::SidebySideAnamorphic:
+            left.setWidth(left.width() * 0.5f);
+            right.setWidth(right.width() * 0.5f);
+
+            if (folderListing->currentFileStereoSwap())
+                left.translate(left.x() + left.width(), 0.0f);
+            else
+                right.translate(right.x() + right.width(), 0.0f);
+            break;
+        case DVSourceMode::Mono:
+            /* Do nothing for mono images. */
+            break;
+        }
+
+        return qmlCommunication->openImageTexture()->texture();
+    }
+    return 0;
+}
+
+bool DVWindow::isSurround() {
+    return folderListing->isCurrentFileSurround();
+}
+
+void DVWindow::renderStandardSphere() {
+    QOpenGLExtraFunctions* f = context()->extraFunctions();
+
+    /* Enable the vertex and UV arrays. */
+    f->glEnableVertexAttribArray(vertex);
+    f->glEnableVertexAttribArray(uv);
+
+    sphereVerts.bind();
+    sphereTris.bind();
+
+    /* Set up the attribute buffers once for all planets. */
+    f->glVertexAttribPointer(vertex, 3, GL_FLOAT, GL_TRUE, sizeof(Vertex), (const void*)offsetof(Vertex, pos));
+    f->glVertexAttribPointer(uv,     2, GL_FLOAT, GL_TRUE, sizeof(Vertex), (const void*)offsetof(Vertex, tex));
+
+    f->glDrawElements(GL_TRIANGLES, sphereTriCount, GL_UNSIGNED_INT, nullptr);
+
+    sphereVerts.release();
+    sphereTris.release();
+}
+
+QOpenGLExtraFunctions* DVWindow::getOpenGLFunctions() {
+    return context()->extraFunctions();
+}
+
+void DVWindow::doStandardSetup() {
+    QOpenGLExtraFunctions* f = context()->extraFunctions();
+
+    if (qmlCommunication->openImageTexture() && qmlCommunication->openImageTexture()->texture() && folderListing->isCurrentFileSurround()) {
+        f->glEnable(GL_BLEND);
+        f->glBlendFunc(GL_ONE_MINUS_DST_ALPHA, GL_DST_ALPHA);
+
+        renderFBO->bind();
+
+        shaderSphere.bind();
+
+        QRectF left, right;
+        getCurrentTexture(left, right)->bind();
+
+        shaderSphere.setUniformValue("leftRect", left.x(), left.y(), left.width(), left.height());
+        shaderSphere.setUniformValue("rightRect", right.x(), right.y(), right.width(), right.height());
+
+        QMatrix4x4 mat;
+        /* Create a camera matrix using the surround FOV from QML and the aspect ratio of the FBO. */
+        mat.perspective(qmlCommunication->surroundFOV(), float(qmlSize.width()) / float(qmlSize.height()), 0.01f, 1.0f);
+
+        /* Rotate the matrix based on pan values. */
+        mat.rotate(qmlCommunication->surroundPan().y(), 1.0f, 0.0f, 0.0f);
+        mat.rotate(qmlCommunication->surroundPan().x(), 0.0f, 1.0f, 0.0f);
+
+        /* Upload to shader. */
+        shaderSphere.setUniformValue("cameraMatrix", mat);
+
+        renderStandardSphere();
+
+        renderFBO->release();
+
+        f->glBlendFunc(GL_ONE, GL_ZERO);
+        f->glDisable(GL_BLEND);
+    }
+
+    /* Make sure the viewport is the correct size, QML may have changed it. */
+    f->glViewport(0, 0, width(), height());
+
+    f->glActiveTexture(GL_TEXTURE0);
+    f->glBindTexture(GL_TEXTURE_2D, renderFBO->textures()[qmlCommunication->swapEyes() ? 1 : 0]);
+
+    f->glActiveTexture(GL_TEXTURE1);
+    f->glBindTexture(GL_TEXTURE_2D, renderFBO->textures()[qmlCommunication->swapEyes() ? 0 : 1]);
 }

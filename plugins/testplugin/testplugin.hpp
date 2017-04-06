@@ -17,7 +17,7 @@ public:
     bool init(QOpenGLExtraFunctions* f, QQmlContext* qmlContext);
     bool deinit();
 
-    bool render(const QString& drawModeName, QOpenGLExtraFunctions* f);
+    bool render(const QString& drawModeName, DVRenderInterface* renderInterface);
 
     void frameSwapped(QOpenGLExtraFunctions* f);
 

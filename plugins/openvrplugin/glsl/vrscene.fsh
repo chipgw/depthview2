@@ -1,10 +1,9 @@
-uniform sampler2D textureL;
-uniform sampler2D textureR;
+uniform sampler2D texture;
 varying highp vec2 texCoord;
 
-uniform bool left;
+uniform vec4 rect;
 
 void main() {
-    gl_FragColor = left ? texture2D(textureL, texCoord) : texture2D(textureR, texCoord);
+    gl_FragColor = texture2D(texture, texCoord * rect.zw + rect.xy);
 }
 

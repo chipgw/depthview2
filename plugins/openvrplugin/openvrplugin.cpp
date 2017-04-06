@@ -1,4 +1,5 @@
 #include "openvrplugin.hpp"
+#include "dvrenderinterface.hpp"
 #include <QOpenGLExtraFunctions>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLFramebufferObject>
@@ -6,6 +7,7 @@
 #include <QQmlComponent>
 #include <QQuickItem>
 #include <QQmlContext>
+#include <QSGTexture>
 #include <QDebug>
 #include <cmath>
 
@@ -31,27 +33,11 @@ bool OpenVRPlugin::init(QOpenGLExtraFunctions*, QQmlContext* qmlContext) {
 
     mirrorShader->link();
 
-    /* Bind so we set the texture sampler uniform values. */
-    mirrorShader->bind();
-
-    /* Left image is TEXTURE0. */
-    mirrorShader->setUniformValue("textureL", 0);
-    /* Right image is TEXTURE1. */
-    mirrorShader->setUniformValue("textureR", 1);
-
     vrSceneShader = new QOpenGLShaderProgram;
     vrSceneShader->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/OpenVR/glsl/vrscene.vsh");
     vrSceneShader->addShaderFromSourceFile(QOpenGLShader::Fragment, ":/OpenVR/glsl/vrscene.fsh");
 
     vrSceneShader->link();
-
-    /* Bind so we set the texture sampler uniform values. */
-    vrSceneShader->bind();
-
-    /* Left image is TEXTURE0. */
-    vrSceneShader->setUniformValue("textureL", 0);
-    /* Right image is TEXTURE1. */
-    vrSceneShader->setUniformValue("textureR", 1);
 
     distortionShader = new QOpenGLShaderProgram;
     distortionShader->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/OpenVR/glsl/distortion.vsh");
@@ -64,12 +50,6 @@ bool OpenVRPlugin::init(QOpenGLExtraFunctions*, QQmlContext* qmlContext) {
     distortionShader->bindAttributeLocation("uvBlueIn",     3);
 
     distortionShader->link();
-
-    /* Bind so we set the texture sampler uniform values. */
-    distortionShader->bind();
-
-    /* The source texture will be bound to TEXTURE0. */
-    distortionShader->setUniformValue("texture", 0);
 
     QQmlComponent component(qmlContext->engine());
 
@@ -273,7 +253,7 @@ bool OpenVRPlugin::initVR() {
     return true;
 }
 
-bool OpenVRPlugin::render(const QString&, QOpenGLExtraFunctions* f) {
+bool OpenVRPlugin::render(const QString&, DVRenderInterface* renderInterface) {
     if (vrSystem == nullptr && !initVR())
         return false;
 
@@ -294,6 +274,8 @@ bool OpenVRPlugin::render(const QString&, QOpenGLExtraFunctions* f) {
         0.0f, 1.0f
     };
 
+    QOpenGLExtraFunctions* f = renderInterface->getOpenGLFunctions();
+
     /* Enable the vertex and UV arrays, must be done every frame because of QML resetting things. */
     f->glEnableVertexAttribArray(0);
     f->glEnableVertexAttribArray(1);
@@ -303,8 +285,13 @@ bool OpenVRPlugin::render(const QString&, QOpenGLExtraFunctions* f) {
 
     /* Draw left eye to monitor as if in mono left mode. */
     mirrorShader->bind();
-    mirrorShader->setUniformValue("left", true);
+    /* TODO - This doesn't contain the current image if it's a surround image. */
+    f->glBindTexture(GL_TEXTURE_2D, renderInterface->getInterfaceLeftEyeTexture());
     f->glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+    f->glActiveTexture(GL_TEXTURE0);
+    QRectF currentTextureLeft, currentTextureRight;
+    QSGTexture* currentTexture = renderInterface->getCurrentTexture(currentTextureLeft, currentTextureRight);
 
     /* Get the tracked position of the user's head. */
     QMatrix4x4 head;
@@ -316,8 +303,8 @@ bool OpenVRPlugin::render(const QString&, QOpenGLExtraFunctions* f) {
     const vr::HmdMatrix34_t& rightMatrix = vrSystem->GetEyeToHeadTransform(vr::Eye_Right);
 
     /* Get a projection matrix for each eye. */
-    const vr::HmdMatrix44_t& leftProj = vrSystem->GetProjectionMatrix(vr::Eye_Left,  0.1f, 100.0f);
-    const vr::HmdMatrix44_t& rightProj = vrSystem->GetProjectionMatrix(vr::Eye_Right, 0.1f, 100.0f);
+    const vr::HmdMatrix44_t& leftProj = vrSystem->GetProjectionMatrix(vr::Eye_Left,  0.1f, 1000.0f);
+    const vr::HmdMatrix44_t& rightProj = vrSystem->GetProjectionMatrix(vr::Eye_Right, 0.1f, 1000.0f);
 
     /* Convert them all to QMatrix4x4 and combine them. */
     QMatrix4x4 leftEyeMat  = QMatrix4x4(*leftProj.m) *  QMatrix4x4(QMatrix4x3(*leftMatrix.m))  * head;
@@ -333,22 +320,40 @@ bool OpenVRPlugin::render(const QString&, QOpenGLExtraFunctions* f) {
         updateScreen();
     }
 
-    f->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, screen.data());
-    f->glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, screenUV.data());
-
     vrSceneShader->bind();
     f->glViewport(0, 0, renderWidth, renderHeight);
 
-    /* TODO - Configurable backgrounds and 360 images. */
+    /* TODO - Configurable backgrounds. */
     f->glClearColor(0.1f, 0.1f, 0.1f, 0.0f);
 
     /* Setup for the left eye. */
     leftEyeRenderFBO->bind();
     f->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    vrSceneShader->setUniformValue("left", true);
     vrSceneShader->setUniformValue("cameraMatrix", leftEyeMat);
 
+    if (currentTexture != nullptr && renderInterface->isSurround()) {
+        f->glDisable(GL_BLEND);
+
+        vrSceneShader->setUniformValue("scale", 900.0f);
+        vrSceneShader->setUniformValue("rect", currentTextureLeft.x(), currentTextureLeft.y(),
+                                       currentTextureLeft.width(), currentTextureLeft.height());
+
+        currentTexture->bind();
+
+        renderInterface->renderStandardSphere();
+
+        f->glEnable(GL_BLEND);
+        f->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    }
+
+    vrSceneShader->setUniformValue("scale", 1.0f);
+    vrSceneShader->setUniformValue("rect", 0.0f, 0.0f, 1.0f, 1.0f);
+
+    f->glBindTexture(GL_TEXTURE_2D, renderInterface->getInterfaceLeftEyeTexture());
+
     /* Draw left eye to VR FBO. */
+    f->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, screen.data());
+    f->glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, screenUV.data());
     f->glDrawArrays(GL_TRIANGLE_STRIP, 0, screen.size());
 
     leftEyeRenderFBO->release();
@@ -356,10 +361,31 @@ bool OpenVRPlugin::render(const QString&, QOpenGLExtraFunctions* f) {
     /* Setup for the right eye. */
     rightEyeRenderFBO->bind();
     f->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    vrSceneShader->setUniformValue("left", false);
     vrSceneShader->setUniformValue("cameraMatrix", rightEyeMat);
 
+    if (currentTexture != 0 && renderInterface->isSurround()) {
+        f->glDisable(GL_BLEND);
+
+        vrSceneShader->setUniformValue("scale", 900.0f);
+        vrSceneShader->setUniformValue("rect", currentTextureRight.x(), currentTextureRight.y(),
+                                       currentTextureRight.width(), currentTextureRight.height());
+
+        currentTexture->bind();
+
+        renderInterface->renderStandardSphere();
+
+        f->glEnable(GL_BLEND);
+        f->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    }
+
+    vrSceneShader->setUniformValue("scale", 1.0f);
+    vrSceneShader->setUniformValue("rect", 0.0f, 0.0f, 1.0f, 1.0f);
+
+    f->glBindTexture(GL_TEXTURE_2D, renderInterface->getInterfaceRightEyeTexture());
+
     /* Draw right eye to VR FBO. */
+    f->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, screen.data());
+    f->glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, screenUV.data());
     f->glDrawArrays(GL_TRIANGLE_STRIP, 0, screen.size());
 
     rightEyeRenderFBO->release();
@@ -382,7 +408,6 @@ bool OpenVRPlugin::render(const QString&, QOpenGLExtraFunctions* f) {
 
     f->glDisable(GL_DEPTH_TEST);
     f->glDisable(GL_CULL_FACE);
-    f->glActiveTexture(GL_TEXTURE0);
 
     leftEyeResolveFBO->bind();
     f->glClear(GL_COLOR_BUFFER_BIT);

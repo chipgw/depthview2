@@ -9,6 +9,7 @@ class DVInputPlugin;
 class DVRenderPlugin;
 class DVWindow;
 class DVInputInterface;
+class DVRenderInterface;
 
 class QSettings;
 class QQmlEngine;
@@ -61,7 +62,7 @@ public:
 
     /* Functions that get the current plugin and interface with it. */
     DVRenderPlugin* getCurrentRenderPlugin() const;
-    bool doPluginRender();
+    bool doPluginRender(DVRenderInterface* renderInterface);
     QSize getPluginSize(QSize inputSize);
 
     /* Returns true if the window should hold the mouse. */

@@ -22,7 +22,7 @@ public:
     bool deinit();
     bool initVR();
 
-    bool render(const QString& drawModeName, QOpenGLExtraFunctions* f);
+    bool render(const QString& drawModeName, DVRenderInterface* renderInterface);
 
     void frameSwapped(QOpenGLExtraFunctions* f);
 

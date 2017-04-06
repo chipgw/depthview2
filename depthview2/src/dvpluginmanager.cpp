@@ -313,11 +313,11 @@ DVRenderPlugin* DVPluginManager::getCurrentRenderPlugin() const {
     return nullptr;
 }
 
-bool DVPluginManager::doPluginRender() {
+bool DVPluginManager::doPluginRender(DVRenderInterface* renderInterface) {
     DVRenderPlugin* plugin = getCurrentRenderPlugin();
 
     /* Return false if it wasn't found, otherwise let it do its thing. */
-    return plugin != nullptr && plugin->render(m_pluginMode, openglContext->extraFunctions());
+    return plugin != nullptr && plugin->render(m_pluginMode, renderInterface);
 }
 
 QSize DVPluginManager::getPluginSize(QSize inputSize) {

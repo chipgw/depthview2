@@ -274,7 +274,7 @@ Item {
             onMouseMoved:
                 if (imageMouseArea.surroundPanning != undefined) {
                     /* Update the pan value with the mouse delta multiplied by the panning rate. */
-                    DepthView.surroundPan = Qt.point(DepthView.surroundPan.x - panRate * (imageMouseArea.surroundPanning.x - pos.x),
+                    DepthView.surroundPan = Qt.point(DepthView.surroundPan.x + panRate * (imageMouseArea.surroundPanning.x - pos.x),
                                                      DepthView.surroundPan.y + panRate * (imageMouseArea.surroundPanning.y - pos.y))
                     imageMouseArea.surroundPanning = pos
                 }

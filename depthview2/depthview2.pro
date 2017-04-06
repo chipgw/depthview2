@@ -31,7 +31,8 @@ HEADERS += \
     include/dvinputinterface.hpp \
     include/dvthumbnailprovider.hpp \
     include/fileassociation.hpp \
-    include/dvpluginmanager.hpp
+    include/dvpluginmanager.hpp \
+    include/dvrenderinterface.hpp
 
 INCLUDEPATH += include
 

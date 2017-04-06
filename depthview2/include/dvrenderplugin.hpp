@@ -6,6 +6,7 @@ class QOpenGLExtraFunctions;
 class QQmlContext;
 class QQuickItem;
 class DVInputInterface;
+class DVRenderInterface;
 
 class DVRenderPlugin {
 public:
@@ -16,9 +17,8 @@ public:
     /* Delete and clean up anything used by the plugin. */
     virtual bool deinit() = 0;
 
-    /* Render the scene using the plugin. drawModeName is one of the options returned by drawModeNames().
-     * The left and right image textures are bound to TEXTURE0 and TEXTURE1, respectively. */
-    virtual bool render(const QString& drawModeName, QOpenGLExtraFunctions* f) = 0;
+    /* Render the scene using the plugin. drawModeName is one of the options returned by drawModeNames(). */
+    virtual bool render(const QString& drawModeName, DVRenderInterface* renderInterface) = 0;
 
     /* If the plugin needs to do anything right after frame swap, do it here... */
     virtual void frameSwapped(QOpenGLExtraFunctions* f) = 0;
