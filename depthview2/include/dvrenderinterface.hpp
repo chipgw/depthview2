@@ -30,6 +30,9 @@ public:
     /* Draw the default sphere (for surround images). */
     virtual void renderStandardSphere() = 0;
 
+    /* Draw the default fullscreen quad. */
+    virtual void renderStandardQuad() = 0;
+
     /* Get the OpenGL functions. */
     virtual QOpenGLExtraFunctions* getOpenGLFunctions() = 0;
 

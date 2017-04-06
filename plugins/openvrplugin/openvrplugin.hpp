@@ -6,11 +6,11 @@
 #include <QVector>
 #include <QVector2D>
 #include <QVector3D>
+#include <QOpenGLShaderProgram>
+#include <QOpenGLFramebufferObject>
+#include <QOpenGLBuffer>
+#include <QSGTexture>
 #include <openvr.h>
-
-class QOpenGLShaderProgram;
-class QOpenGLBuffer;
-class QOpenGLFramebufferObject;
 
 class OpenVRPlugin : public QObject, public DVRenderPlugin {
     Q_OBJECT
@@ -21,8 +21,11 @@ public:
     bool init(QOpenGLExtraFunctions* f, QQmlContext* qmlContext);
     bool deinit();
     bool initVR();
+    void calculateEyeDistortion(vr::EVREye eye, QVector<QVector2D>& verts, QVector<GLushort>& indexes, int offset);
 
     bool render(const QString& drawModeName, DVRenderInterface* renderInterface);
+    void renderEyeScene(vr::EVREye eye, DVRenderInterface* renderInterface, const QMatrix4x4& head, QSGTexture* imgTexture, QRectF imgRect);
+    bool renderEyeDistortion(vr::EVREye eye, QOpenGLExtraFunctions* f);
 
     void frameSwapped(QOpenGLExtraFunctions* f);
 
@@ -37,10 +40,8 @@ public:
     bool pollInput(DVInputInterface* inputInterface);
 
 private:
-    QOpenGLFramebufferObject* leftEyeRenderFBO;
-    QOpenGLFramebufferObject* leftEyeResolveFBO;
-    QOpenGLFramebufferObject* rightEyeRenderFBO;
-    QOpenGLFramebufferObject* rightEyeResolveFBO;
+    QOpenGLFramebufferObject* renderFBO[2];
+    QOpenGLFramebufferObject* resolveFBO[2];
 
     QOpenGLBuffer* distortionVBO;
     QOpenGLBuffer* distortionIBO;

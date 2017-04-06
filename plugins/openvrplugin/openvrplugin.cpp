@@ -1,13 +1,9 @@
 #include "openvrplugin.hpp"
 #include "dvrenderinterface.hpp"
 #include <QOpenGLExtraFunctions>
-#include <QOpenGLShaderProgram>
-#include <QOpenGLFramebufferObject>
-#include <QOpenGLBuffer>
 #include <QQmlComponent>
 #include <QQuickItem>
 #include <QQmlContext>
-#include <QSGTexture>
 #include <QDebug>
 #include <cmath>
 
@@ -21,10 +17,8 @@ bool OpenVRPlugin::init(QOpenGLExtraFunctions*, QQmlContext* qmlContext) {
 
     /* These wil be inited on first usage. */
     vrSystem = nullptr;
-    leftEyeRenderFBO = nullptr;
-    rightEyeRenderFBO = nullptr;
-    leftEyeResolveFBO = nullptr;
-    rightEyeResolveFBO = nullptr;
+    renderFBO[0] = renderFBO[1] = nullptr;
+    resolveFBO[0] = resolveFBO[1] = nullptr;
 
     mirrorShader = new QOpenGLShaderProgram;
 
@@ -92,10 +86,8 @@ bool OpenVRPlugin::deinit() {
     delete vrSceneShader;
     delete distortionShader;
 
-    delete leftEyeRenderFBO;
-    delete rightEyeRenderFBO;
-    delete leftEyeResolveFBO;
-    delete rightEyeResolveFBO;
+    delete renderFBO[0]; delete renderFBO[1];
+    delete resolveFBO[0]; delete resolveFBO[1];
 
     vr::VR_Shutdown();
 
@@ -133,106 +125,18 @@ bool OpenVRPlugin::initVR() {
     vrSystem->GetRecommendedRenderTargetSize(&renderWidth, &renderHeight);
 
     /* Set up an FBO for each eye. */
-    leftEyeRenderFBO = new QOpenGLFramebufferObject(renderWidth, renderHeight);
-    rightEyeRenderFBO = new QOpenGLFramebufferObject(renderWidth, renderHeight);
-    leftEyeResolveFBO = new QOpenGLFramebufferObject(renderWidth, renderHeight);
-    rightEyeResolveFBO = new QOpenGLFramebufferObject(renderWidth, renderHeight);
-
-    /* How many verts in each direction. */
-    GLushort lensGridSegmentCount = 43;
-
-    float w = 1.0f/(lensGridSegmentCount-1);
-    float h = 1.0f/(lensGridSegmentCount-1);
-
-    float u, v;
-
-    GLushort a,b,c,d;
+    renderFBO[0] = new QOpenGLFramebufferObject(renderWidth, renderHeight);
+    renderFBO[1] = new QOpenGLFramebufferObject(renderWidth, renderHeight);
+    resolveFBO[0] = new QOpenGLFramebufferObject(renderWidth, renderHeight);
+    resolveFBO[1] = new QOpenGLFramebufferObject(renderWidth, renderHeight);
 
     QVector<QVector2D> verts;
     QVector<GLushort> indexes;
 
     /* Calculate the left eye's distortion verts. */
-    for (int y = 0; y < lensGridSegmentCount; ++y) {
-        for (int x = 0; x < lensGridSegmentCount; ++x) {
-            /* Calculate the undistorted UV coordinates for the vertex. */
-            u = x*w;
-            v = y*h;
-
-            /* Place a vertex, taking the UV and mapping from [0, 1] to [-1, 1]. */
-            verts.push_back(QVector2D(2.0f*u-1.0f, 2.0f*v-1.0f));
-
-            vr::DistortionCoordinates_t distorted;
-            /* Get the distortion coordinates from OpenVR. Invert v because of how OpenGL handles textures. */
-            if(!vrSystem->ComputeDistortion(vr::Eye_Left, u, 1.0f-v, &distorted))
-                qWarning("Error getting distortion coordinates!");
-
-            /* Put the distortion coordinate into the list, inverting v back into OpenGL land. */
-            verts.push_back(QVector2D(distorted.rfRed[0], 1.0f - distorted.rfRed[1]));
-            verts.push_back(QVector2D(distorted.rfGreen[0], 1.0f - distorted.rfGreen[1]));
-            verts.push_back(QVector2D(distorted.rfBlue[0], 1.0f - distorted.rfBlue[1]));
-
-            if (y == lensGridSegmentCount-1 || x == lensGridSegmentCount-1)
-                continue;
-
-            /* Calculate the indexes for a nice little quad. */
-            a = lensGridSegmentCount*y+x;
-            b = lensGridSegmentCount*y+x+1;
-            c = (y+1)*lensGridSegmentCount+x+1;
-            d = (y+1)*lensGridSegmentCount+x;
-
-            /* Add the quad as a pair of triangles. */
-            indexes.push_back(a);
-            indexes.push_back(b);
-            indexes.push_back(c);
-
-            indexes.push_back(a);
-            indexes.push_back(c);
-            indexes.push_back(d);
-        }
-    }
-
+    calculateEyeDistortion(vr::Eye_Left, verts, indexes, 0);
     /* Indexes for the right eye must be offset by how many verts there were for the left eye. */
-    int offset = verts.size() / 4;
-
-    /* Calculate the right eye's distortion verts. */
-    for (int y = 0; y < lensGridSegmentCount; ++y) {
-        for (int x = 0; x < lensGridSegmentCount; ++x) {
-            /* Calculate the undistorted UV coordinates for the vertex. */
-            u = x*w;
-            v = y*h;
-
-            /* Place a vertex, taking the UV and mapping from [0, 1] to [-1, 1]. */
-            verts.push_back(QVector2D(2.0f*u-1.0f, 2.0f*v-1.0f));
-
-            vr::DistortionCoordinates_t distorted;
-            /* Get the distortion coordinates from OpenVR. Invert v because of how OpenGL handles textures. */
-            if(!vrSystem->ComputeDistortion(vr::Eye_Right, u, 1.0f-v, &distorted))
-                qWarning("Error getting distortion coordinates!");
-
-            /* Put the distortion coordinate into the list, inverting v back into OpenGL land. */
-            verts.push_back(QVector2D(distorted.rfRed[0], 1.0f - distorted.rfRed[1]));
-            verts.push_back(QVector2D(distorted.rfGreen[0], 1.0f - distorted.rfGreen[1]));
-            verts.push_back(QVector2D(distorted.rfBlue[0], 1.0f - distorted.rfBlue[1]));
-
-            if (y == lensGridSegmentCount-1 || x == lensGridSegmentCount-1)
-                continue;
-
-            /* Calculate the indexes for a nice little quad. */
-            a = lensGridSegmentCount*y+x +offset;
-            b = lensGridSegmentCount*y+x+1 +offset;
-            c = (y+1)*lensGridSegmentCount+x+1 +offset;
-            d = (y+1)*lensGridSegmentCount+x +offset;
-
-            /* Add the quad as a pair of triangles. */
-            indexes.push_back(a);
-            indexes.push_back(b);
-            indexes.push_back(c);
-
-            indexes.push_back(a);
-            indexes.push_back(c);
-            indexes.push_back(d);
-        }
-    }
+    calculateEyeDistortion(vr::Eye_Right, verts, indexes, verts.size() / 4);
 
     /* Upload the distortion verts to the GPU. */
     distortionVBO = new QOpenGLBuffer(QOpenGLBuffer::VertexBuffer);
@@ -253,43 +157,64 @@ bool OpenVRPlugin::initVR() {
     return true;
 }
 
+void OpenVRPlugin::calculateEyeDistortion(vr::EVREye eye, QVector<QVector2D>& verts, QVector<GLushort>& indexes, int offset) {
+    /* How many verts in each direction. */
+    constexpr GLushort lensGridSegmentCount = 43;
+
+    constexpr float w = 1.0f/(lensGridSegmentCount-1);
+    constexpr float h = 1.0f/(lensGridSegmentCount-1);
+
+    for (int y = 0; y < lensGridSegmentCount; ++y) {
+        for (int x = 0; x < lensGridSegmentCount; ++x) {
+            /* Calculate the undistorted UV coordinates for the vertex. */
+            float u = x * w;
+            float v = y * h;
+
+            /* Place a vertex, taking the UV and mapping from [0, 1] to [-1, 1]. */
+            verts.push_back(QVector2D(2.0f*u-1.0f, 2.0f*v-1.0f));
+
+            vr::DistortionCoordinates_t distorted;
+            /* Get the distortion coordinates from OpenVR. Invert v because of how OpenGL handles textures. */
+            if (!vrSystem->ComputeDistortion(eye, u, 1.0f-v, &distorted))
+                qWarning("Error getting distortion coordinates!");
+
+            /* Put the distortion coordinate into the list, inverting v back into OpenGL land. */
+            verts.push_back(QVector2D(distorted.rfRed[0], 1.0f - distorted.rfRed[1]));
+            verts.push_back(QVector2D(distorted.rfGreen[0], 1.0f - distorted.rfGreen[1]));
+            verts.push_back(QVector2D(distorted.rfBlue[0], 1.0f - distorted.rfBlue[1]));
+
+            /* No indexes for the last element in either x or y. */
+            if (y == lensGridSegmentCount-1 || x == lensGridSegmentCount-1) continue;
+
+            /* Calculate the index of the current vertex. */
+            GLushort current = lensGridSegmentCount * y + x + offset;
+
+            /* Add a quad as a pair of triangles with the current vertex at the corner. */
+            indexes.push_back(current);
+            indexes.push_back(current + 1);
+            indexes.push_back(current + lensGridSegmentCount + 1);
+
+            indexes.push_back(current);
+            indexes.push_back(current + lensGridSegmentCount + 1);
+            indexes.push_back(current + lensGridSegmentCount);
+        }
+    }
+}
+
 bool OpenVRPlugin::render(const QString&, DVRenderInterface* renderInterface) {
     if (vrSystem == nullptr && !initVR())
         return false;
 
     vr::VRCompositor()->WaitGetPoses(trackedDevicePose, vr::k_unMaxTrackedDeviceCount, NULL, 0 );
 
-    /* This is just the default fullscreen quad from the built-in modes. */
-    static const float quad[] {
-       -1.0f,-1.0f,
-        1.0f,-1.0f,
-        1.0f, 1.0f,
-       -1.0f, 1.0f
-    };
-
-    static const float quadUV[] {
-        0.0f, 0.0f,
-        1.0f, 0.0f,
-        1.0f, 1.0f,
-        0.0f, 1.0f
-    };
-
     QOpenGLExtraFunctions* f = renderInterface->getOpenGLFunctions();
-
-    /* Enable the vertex and UV arrays, must be done every frame because of QML resetting things. */
-    f->glEnableVertexAttribArray(0);
-    f->glEnableVertexAttribArray(1);
-
-    f->glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, quad);
-    f->glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, quadUV);
 
     /* Draw left eye to monitor as if in mono left mode. */
     mirrorShader->bind();
     /* TODO - This doesn't contain the current image if it's a surround image. */
     f->glBindTexture(GL_TEXTURE_2D, renderInterface->getInterfaceLeftEyeTexture());
-    f->glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+    renderInterface->renderStandardQuad();
 
-    f->glActiveTexture(GL_TEXTURE0);
     QRectF currentTextureLeft, currentTextureRight;
     QSGTexture* currentTexture = renderInterface->getCurrentTexture(currentTextureLeft, currentTextureRight);
 
@@ -298,48 +223,59 @@ bool OpenVRPlugin::render(const QString&, DVRenderInterface* renderInterface) {
     if (trackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].bPoseIsValid)
         head = QMatrix4x4(QMatrix4x3(*trackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking.m)).inverted();
 
-    /* A matrix for each eye, to tell where it is relative to the user's head. */
-    const vr::HmdMatrix34_t& leftMatrix = vrSystem->GetEyeToHeadTransform(vr::Eye_Left);
-    const vr::HmdMatrix34_t& rightMatrix = vrSystem->GetEyeToHeadTransform(vr::Eye_Right);
-
-    /* Get a projection matrix for each eye. */
-    const vr::HmdMatrix44_t& leftProj = vrSystem->GetProjectionMatrix(vr::Eye_Left,  0.1f, 1000.0f);
-    const vr::HmdMatrix44_t& rightProj = vrSystem->GetProjectionMatrix(vr::Eye_Right, 0.1f, 1000.0f);
-
-    /* Convert them all to QMatrix4x4 and combine them. */
-    QMatrix4x4 leftEyeMat  = QMatrix4x4(*leftProj.m) *  QMatrix4x4(QMatrix4x3(*leftMatrix.m))  * head;
-    QMatrix4x4 rightEyeMat = QMatrix4x4(*rightProj.m) * QMatrix4x4(QMatrix4x3(*rightMatrix.m)) * head;
-
-    /* Get the size of the window. */
-    GLint viewport[4];
-    f->glGetIntegerv(GL_VIEWPORT, viewport);
-
-    /* Check to see if the aspect ratio is the same, if not, we update the screen. */
-    if (aspectRatio != float(viewport[3]) / float(viewport[2])) {
-        aspectRatio = float(viewport[3]) / float(viewport[2]);
-        updateScreen();
-    }
-
     vrSceneShader->bind();
     f->glViewport(0, 0, renderWidth, renderHeight);
 
     /* TODO - Configurable backgrounds. */
     f->glClearColor(0.1f, 0.1f, 0.1f, 0.0f);
 
-    /* Setup for the left eye. */
-    leftEyeRenderFBO->bind();
-    f->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    vrSceneShader->setUniformValue("cameraMatrix", leftEyeMat);
+    renderEyeScene(vr::Eye_Left, renderInterface, head, currentTexture, currentTextureLeft);
+    renderEyeScene(vr::Eye_Right, renderInterface, head, currentTexture, currentTextureRight);
 
-    if (currentTexture != nullptr && renderInterface->isSurround()) {
+    /* Get ready to render distortion. */
+    distortionShader->bind();
+    distortionVBO->bind();
+    distortionIBO->bind();
+    f->glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
+
+    /* Set up vertex arrays. */
+    f->glEnableVertexAttribArray(2);
+    f->glEnableVertexAttribArray(3);
+    f->glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(QVector2D) * 4, (void*)(0));
+    f->glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(QVector2D) * 4, (void*)(sizeof(QVector2D)));
+    f->glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(QVector2D) * 4, (void*)(sizeof(QVector2D) * 2));
+    f->glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(QVector2D) * 4, (void*)(sizeof(QVector2D) * 3));
+
+    /* Render the distortion for both eyes and submit. */
+    return renderEyeDistortion(vr::Eye_Left, f) && renderEyeDistortion(vr::Eye_Right, f);
+}
+
+void OpenVRPlugin::renderEyeScene(vr::EVREye eye, DVRenderInterface* renderInterface, const QMatrix4x4& head, QSGTexture* imgTexture, QRectF imgRect) {
+    QOpenGLExtraFunctions* f = renderInterface->getOpenGLFunctions();
+
+    /* A matrix for each eye, to tell where it is relative to the user's head. */
+    const vr::HmdMatrix34_t& eyeMatrix = vrSystem->GetEyeToHeadTransform(eye);
+
+    /* Get a projection matrix for each eye. */
+    const vr::HmdMatrix44_t& eyeProj = vrSystem->GetProjectionMatrix(eye,  0.1f, 1000.0f);
+
+    /* Convert them all to QMatrix4x4 and combine them. */
+    QMatrix4x4 eyeMat = QMatrix4x4(*eyeProj.m) * QMatrix4x4(QMatrix4x3(*eyeMatrix.m)) * head;
+
+    /* Setup for the eye. */
+    renderFBO[eye]->bind();
+    f->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    vrSceneShader->setUniformValue("cameraMatrix", eyeMat);
+
+    if (imgTexture != nullptr && renderInterface->isSurround()) {
         f->glDisable(GL_BLEND);
 
         vrSceneShader->setUniformValue("scale", 900.0f);
-        vrSceneShader->setUniformValue("rect", currentTextureLeft.x(), currentTextureLeft.y(),
-                                       currentTextureLeft.width(), currentTextureLeft.height());
+        vrSceneShader->setUniformValue("rect", imgRect.x(), imgRect.y(), imgRect.width(), imgRect.height());
 
-        currentTexture->bind();
+        imgTexture->bind();
 
+        /* Use the sphere provided by the normal surround rendering. */
         renderInterface->renderStandardSphere();
 
         f->glEnable(GL_BLEND);
@@ -351,101 +287,29 @@ bool OpenVRPlugin::render(const QString&, DVRenderInterface* renderInterface) {
 
     f->glBindTexture(GL_TEXTURE_2D, renderInterface->getInterfaceLeftEyeTexture());
 
-    /* Draw left eye to VR FBO. */
+    /* Draw the screen to eye FBO. */
     f->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, screen.data());
     f->glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, screenUV.data());
     f->glDrawArrays(GL_TRIANGLE_STRIP, 0, screen.size());
 
-    leftEyeRenderFBO->release();
+    renderFBO[eye]->release();
+}
 
-    /* Setup for the right eye. */
-    rightEyeRenderFBO->bind();
-    f->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    vrSceneShader->setUniformValue("cameraMatrix", rightEyeMat);
-
-    if (currentTexture != 0 && renderInterface->isSurround()) {
-        f->glDisable(GL_BLEND);
-
-        vrSceneShader->setUniformValue("scale", 900.0f);
-        vrSceneShader->setUniformValue("rect", currentTextureRight.x(), currentTextureRight.y(),
-                                       currentTextureRight.width(), currentTextureRight.height());
-
-        currentTexture->bind();
-
-        renderInterface->renderStandardSphere();
-
-        f->glEnable(GL_BLEND);
-        f->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    }
-
-    vrSceneShader->setUniformValue("scale", 1.0f);
-    vrSceneShader->setUniformValue("rect", 0.0f, 0.0f, 1.0f, 1.0f);
-
-    f->glBindTexture(GL_TEXTURE_2D, renderInterface->getInterfaceRightEyeTexture());
-
-    /* Draw right eye to VR FBO. */
-    f->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, screen.data());
-    f->glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, screenUV.data());
-    f->glDrawArrays(GL_TRIANGLE_STRIP, 0, screen.size());
-
-    rightEyeRenderFBO->release();
-
-    /* Get ready to render distortion. */
-    distortionShader->bind();
-    distortionVBO->bind();
-    distortionIBO->bind();
-    f->glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
-
-    /* Set up vertex arrays. */
-    f->glEnableVertexAttribArray(0);
-    f->glEnableVertexAttribArray(1);
-    f->glEnableVertexAttribArray(2);
-    f->glEnableVertexAttribArray(3);
-    f->glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(QVector2D) * 4, (void*)(0));
-    f->glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(QVector2D) * 4, (void*)(sizeof(QVector2D)));
-    f->glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(QVector2D) * 4, (void*)(sizeof(QVector2D) * 2));
-    f->glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(QVector2D) * 4, (void*)(sizeof(QVector2D) * 3));
-
-    f->glDisable(GL_DEPTH_TEST);
-    f->glDisable(GL_CULL_FACE);
-
-    leftEyeResolveFBO->bind();
-    f->glClear(GL_COLOR_BUFFER_BIT);
-
-    /* Render left lens (first half of index array) */
-    f->glBindTexture(GL_TEXTURE_2D, leftEyeRenderFBO->texture());
-    f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    f->glDrawElements(GL_TRIANGLES, distortionNumIndexes/2, GL_UNSIGNED_SHORT, 0);
-
-    leftEyeResolveFBO->release();
-
-    rightEyeResolveFBO->bind();
+bool OpenVRPlugin::renderEyeDistortion(vr::EVREye eye, QOpenGLExtraFunctions *f) {
+    resolveFBO[eye]->bind();
     f->glClear(GL_COLOR_BUFFER_BIT);
 
     /* Render right lens (second half of index array) */
-    f->glBindTexture(GL_TEXTURE_2D, rightEyeRenderFBO->texture());
+    f->glBindTexture(GL_TEXTURE_2D, renderFBO[eye]->texture());
     f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    f->glDrawElements(GL_TRIANGLES, distortionNumIndexes/2, GL_UNSIGNED_SHORT, (const void*)distortionNumIndexes);
+    f->glDrawElements(GL_TRIANGLES, distortionNumIndexes/2, GL_UNSIGNED_SHORT, (const void*)(distortionNumIndexes * eye));
 
-    rightEyeResolveFBO->release();
+    resolveFBO[eye]->release();
 
-    /* All done with distortion. */
-    distortionVBO->release();
-    distortionIBO->release();
-    f->glBindTexture(GL_TEXTURE_2D, 0);
-
-    vr::Texture_t leftEyeTexture = { reinterpret_cast<void*>(static_cast<intptr_t>(leftEyeResolveFBO->texture())), vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
-    vr::VRCompositor()->Submit(vr::Eye_Left, &leftEyeTexture);
-
-    vr::Texture_t rightEyeTexture = { reinterpret_cast<void*>(static_cast<intptr_t>(rightEyeResolveFBO->texture())), vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
-    vr::VRCompositor()->Submit(vr::Eye_Right, &rightEyeTexture);
-
-    /* All's well that ends well... */
-    return true;
+    vr::Texture_t eyeTexture = { reinterpret_cast<void*>(static_cast<intptr_t>(resolveFBO[eye]->texture())), vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
+    return vr::VRCompositor()->Submit(eye, &eyeTexture) == vr::VRCompositorError_None;
 }
 
 void OpenVRPlugin::frameSwapped(QOpenGLExtraFunctions*) {
@@ -466,9 +330,13 @@ bool OpenVRPlugin::shouldLockMouse() {
 }
 
 QSize OpenVRPlugin::getRenderSize(const QSize& windowSize) {
-    bool ok;
-    qreal sizeFactor = renderSizeFac.read().toReal(&ok);
-    return windowSize * (ok ? sizeFactor : 1.0);
+    /* Check to see if the aspect ratio is the same, if not, we update the screen. */
+    if (aspectRatio != float(windowSize.width()) / float(windowSize.height())) {
+        aspectRatio = float(windowSize.width()) / float(windowSize.height());
+        updateScreen();
+    }
+    qreal sizeFactor = renderSizeFac.read().toReal();
+    return windowSize * (sizeFactor > 0.5 ? sizeFactor : 1.0);
 }
 
 float interpolate(float v1, float v2, float a) {
@@ -481,7 +349,7 @@ void OpenVRPlugin::updateScreen() {
     float z = screenHeight.read().toFloat();
     float size = screenSize.read().toFloat();
 
-    float height = size * aspectRatio;
+    float height = size / aspectRatio;
 
     /* Get rid of any previous geometry. */
     screen.clear();

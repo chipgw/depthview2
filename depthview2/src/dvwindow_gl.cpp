@@ -209,30 +209,7 @@ void DVWindow::paintGL() {
         return;
     }
 
-    static const float quad[] {
-       -1.0f,-1.0f,
-        1.0f,-1.0f,
-        1.0f, 1.0f,
-       -1.0f, 1.0f
-    };
-
-    static const float quadUV[] {
-        0.0f, 0.0f,
-        1.0f, 0.0f,
-        1.0f, 1.0f,
-        0.0f, 1.0f
-    };
-
-    QOpenGLExtraFunctions* f = context()->extraFunctions();
-
-    /* Enable the vertex and UV arrays, must be done every frame because of QML resetting things. */
-    f->glEnableVertexAttribArray(vertex);
-    f->glEnableVertexAttribArray(uv);
-
-    f->glVertexAttribPointer(vertex, 2, GL_FLOAT, GL_FALSE, 0, quad);
-    f->glVertexAttribPointer(uv,     2, GL_FLOAT, GL_FALSE, 0, quadUV);
-
-    f->glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+    renderStandardQuad();
 }
 
 void DVWindow::onFrameSwapped() {
@@ -393,6 +370,33 @@ void DVWindow::renderStandardSphere() {
 
     sphereVerts.release();
     sphereTris.release();
+}
+
+void DVWindow::renderStandardQuad() {
+    static const float quad[] {
+        -1.0f,-1.0f,
+         1.0f,-1.0f,
+         1.0f, 1.0f,
+        -1.0f, 1.0f
+     };
+
+     static const float quadUV[] {
+         0.0f, 0.0f,
+         1.0f, 0.0f,
+         1.0f, 1.0f,
+         0.0f, 1.0f
+     };
+
+     QOpenGLExtraFunctions* f = context()->extraFunctions();
+
+     /* Enable the vertex and UV arrays, must be done every frame because of QML resetting things. */
+     f->glEnableVertexAttribArray(vertex);
+     f->glEnableVertexAttribArray(uv);
+
+     f->glVertexAttribPointer(vertex, 2, GL_FLOAT, GL_FALSE, 0, quad);
+     f->glVertexAttribPointer(uv,     2, GL_FLOAT, GL_FALSE, 0, quadUV);
+
+     f->glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
 QOpenGLExtraFunctions* DVWindow::getOpenGLFunctions() {
