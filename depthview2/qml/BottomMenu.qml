@@ -156,14 +156,23 @@ ToolBar {
 
                             MenuSeparator { }
 
+                            ListModel {
+                                id: allSourceModes
+                                ListElement { text: qsTr("Side-by-Side"); mode: SourceMode.SidebySide }
+                                ListElement { text: qsTr("Side-by-Side Anamorphic"); mode: SourceMode.SidebySideAnamorphic }
+                                ListElement { text: qsTr("Top/Bottom"); mode: SourceMode.TopBottom }
+                                ListElement { text: qsTr("Top/Bottom Anamorphic"); mode: SourceMode.TopBottomAnamorphic }
+                                ListElement { text: qsTr("Mono"); mode: SourceMode.Mono }
+                            }
+                            ListModel {
+                                id: surroundSourceModes
+                                ListElement { text: qsTr("Side-by-Side"); mode: SourceMode.SidebySide }
+                                ListElement { text: qsTr("Top/Bottom"); mode: SourceMode.TopBottom }
+                                ListElement { text: qsTr("Mono"); mode: SourceMode.Mono }
+                            }
+
                             Repeater {
-                                model: ListModel {
-                                    ListElement { text: qsTr("Side-by-Side"); mode: SourceMode.SidebySide }
-                                    ListElement { text: qsTr("Side-by-Side Anamorphic"); mode: SourceMode.SidebySideAnamorphic }
-                                    ListElement { text: qsTr("Top/Bottom"); mode: SourceMode.TopBottom }
-                                    ListElement { text: qsTr("Top/Bottom Anamorphic"); mode: SourceMode.TopBottomAnamorphic }
-                                    ListElement { text: qsTr("Mono"); mode: SourceMode.Mono }
-                                }
+                                model: FolderListing.currentFileIsSurround ? surroundSourceModes : allSourceModes
 
                                 MenuItem {
                                     text: model.text
