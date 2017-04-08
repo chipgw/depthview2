@@ -1,6 +1,7 @@
 #include "openvrplugin.hpp"
 #include "dvrenderinterface.hpp"
 #include <QOpenGLExtraFunctions>
+#include <QSGTextureProvider>
 #include <QQmlComponent>
 #include <QQuickItem>
 #include <QQmlContext>
@@ -71,6 +72,9 @@ bool OpenVRPlugin::init(QOpenGLExtraFunctions*, QQmlContext* qmlContext) {
     screenCurve = QQmlProperty(obj, "screenCurve");
     lockMouse = QQmlProperty(obj, "lockMouse");
     renderSizeFac = QQmlProperty(obj, "renderSizeFac");
+    backgroundMode = QQmlProperty(obj, "backgroundSourceMode");
+    backgroundSwap = QQmlProperty(obj, "backgroundSwap");
+
     screenDistance.connectNotifySignal(this, SLOT(updateScreen()));
     screenHeight.connectNotifySignal(this, SLOT(updateScreen()));
     screenSize.connectNotifySignal(this, SLOT(updateScreen()));
@@ -96,7 +100,7 @@ bool OpenVRPlugin::deinit() {
     return true;
 }
 
-bool OpenVRPlugin::initVR() {
+bool OpenVRPlugin::initVR(DVRenderInterface* renderInterface) {
     vr::EVRInitError error = vr::VRInitError_None;
     vrSystem = vr::VR_Init(&error, vr::VRApplication_Scene);
 
@@ -154,6 +158,10 @@ bool OpenVRPlugin::initVR() {
 
     qDebug("OpenVR inited.");
 
+    backgroundImage = configMenu->findChild<QQuickItem*>("backgroundImage");
+    /* We need to attach this to the windows root item or else the image will not be usable unless the settings window is open. */
+    backgroundImage->setParentItem(renderInterface->getRootItem());
+
     return true;
 }
 
@@ -202,7 +210,7 @@ void OpenVRPlugin::calculateEyeDistortion(vr::EVREye eye, QVector<QVector2D>& ve
 }
 
 bool OpenVRPlugin::render(const QString&, DVRenderInterface* renderInterface) {
-    if (vrSystem == nullptr && !initVR())
+    if (vrSystem == nullptr && !initVR(renderInterface))
         return false;
 
     vr::VRCompositor()->WaitGetPoses(trackedDevicePose, vr::k_unMaxTrackedDeviceCount, NULL, 0 );
@@ -216,7 +224,16 @@ bool OpenVRPlugin::render(const QString&, DVRenderInterface* renderInterface) {
     renderInterface->renderStandardQuad();
 
     QRectF currentTextureLeft, currentTextureRight;
-    QSGTexture* currentTexture = renderInterface->getCurrentTexture(currentTextureLeft, currentTextureRight);
+    QSGTexture* currentTexture = nullptr;
+
+    if (renderInterface->isSurround())
+        currentTexture = renderInterface->getCurrentTexture(currentTextureLeft, currentTextureRight);
+
+    /* if the current image isn't a loaded or isn't surround, try to use the set background image. */
+    if (currentTexture == nullptr && backgroundImage && backgroundImage->textureProvider() && backgroundImage->textureProvider()->texture())
+        renderInterface->getTextureRects(currentTextureLeft, currentTextureRight,
+                                         currentTexture = backgroundImage->textureProvider()->texture(),
+                                         backgroundSwap.read().toBool(), (DVSourceMode::Type)backgroundMode.read().toInt());
 
     /* Get the tracked position of the user's head. */
     QMatrix4x4 head;
@@ -226,7 +243,7 @@ bool OpenVRPlugin::render(const QString&, DVRenderInterface* renderInterface) {
     vrSceneShader->bind();
     f->glViewport(0, 0, renderWidth, renderHeight);
 
-    /* TODO - Configurable backgrounds. */
+    /* TODO - Configurable background color. */
     f->glClearColor(0.1f, 0.1f, 0.1f, 0.0f);
 
     renderEyeScene(vr::Eye_Left, renderInterface, head, currentTexture, currentTextureLeft);
@@ -267,12 +284,13 @@ void OpenVRPlugin::renderEyeScene(vr::EVREye eye, DVRenderInterface* renderInter
     f->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     vrSceneShader->setUniformValue("cameraMatrix", eyeMat);
 
-    if (imgTexture != nullptr && renderInterface->isSurround()) {
+    if (imgTexture != nullptr) {
         f->glDisable(GL_BLEND);
 
         vrSceneShader->setUniformValue("scale", 900.0f);
         vrSceneShader->setUniformValue("rect", imgRect.x(), imgRect.y(), imgRect.width(), imgRect.height());
 
+        /* TODO - Use the x pan value. */
         imgTexture->bind();
 
         /* Use the sphere provided by the normal surround rendering. */

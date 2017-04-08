@@ -6,6 +6,7 @@ class QOpenGLFramebufferObject;
 class QOpenGLBuffer;
 class QOpenGLExtraFunctions;
 class QSGTexture;
+class QQuickItem;
 
 /* Vertex attrib locations. */
 constexpr unsigned int vertex = 0;
@@ -24,6 +25,9 @@ public:
     /* Returns the texture handle the current image / video, and sets left & right to where on the texture each eye is. */
     virtual QSGTexture* getCurrentTexture(QRectF& left, QRectF& right) = 0;
 
+    /* Get the rectangles of a texture based on the source mode and swap. */
+    virtual void getTextureRects(QRectF& left, QRectF& right, QSGTexture* texture, bool swap, DVSourceMode::Type mode) = 0;
+
     /* Get whether the current image is surround. */
     virtual bool isSurround() = 0;
 
@@ -40,4 +44,6 @@ public:
      * The left and right image textures will be bound to TEXTURE0 and TEXTURE1, respectively,
      * the viewport is set to the window size, and surround images will be rendered under the UI. */
     virtual void doStandardSetup() = 0;
+
+    virtual QQuickItem* getRootItem() = 0;
 };

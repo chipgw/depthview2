@@ -20,7 +20,7 @@ class OpenVRPlugin : public QObject, public DVRenderPlugin {
 public:
     bool init(QOpenGLExtraFunctions* f, QQmlContext* qmlContext);
     bool deinit();
-    bool initVR();
+    bool initVR(DVRenderInterface* renderInterface);
     void calculateEyeDistortion(vr::EVREye eye, QVector<QVector2D>& verts, QVector<GLushort>& indexes, int offset);
 
     bool render(const QString& drawModeName, DVRenderInterface* renderInterface);
@@ -58,6 +58,7 @@ private:
     QOpenGLShaderProgram* distortionShader;
 
     QQuickItem* configMenu;
+    QQuickItem* backgroundImage;
 
     /* Screen options */
     QQmlProperty screenSize;
@@ -66,6 +67,8 @@ private:
     QQmlProperty screenCurve;
     QQmlProperty lockMouse;
     QQmlProperty renderSizeFac;
+    QQmlProperty backgroundMode;
+    QQmlProperty backgroundSwap;
 
     /* We keep track of the window's aspect ratio and update the screen when it changes. */
     float aspectRatio;

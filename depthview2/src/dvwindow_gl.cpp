@@ -315,37 +315,42 @@ unsigned int DVWindow::getInterfaceRightEyeTexture() {
 
 QSGTexture* DVWindow::getCurrentTexture(QRectF& left, QRectF& right) {
     if (qmlCommunication->openImageTexture() && qmlCommunication->openImageTexture()->texture()) {
-        right = left = qmlCommunication->openImageTexture()->texture()->normalizedTextureSubRect();
-
-        switch (folderListing->currentFileStereoMode()) {
-        case DVSourceMode::TopBottom:
-        case DVSourceMode::TopBottomAnamorphic:
-            left.setHeight(left.height() * 0.5f);
-            right.setHeight(right.height() * 0.5f);
-
-            if (folderListing->currentFileStereoSwap())
-                left.translate(0.0f, left.y() + left.height());
-            else
-                right.translate(0.0f, right.y() + left.height());
-            break;
-        case DVSourceMode::SidebySide:
-        case DVSourceMode::SidebySideAnamorphic:
-            left.setWidth(left.width() * 0.5f);
-            right.setWidth(right.width() * 0.5f);
-
-            if (folderListing->currentFileStereoSwap())
-                left.translate(left.x() + left.width(), 0.0f);
-            else
-                right.translate(right.x() + right.width(), 0.0f);
-            break;
-        case DVSourceMode::Mono:
-            /* Do nothing for mono images. */
-            break;
-        }
+        getTextureRects(left, right, qmlCommunication->openImageTexture()->texture(),
+                        folderListing->currentFileStereoSwap(), folderListing->currentFileStereoMode());
 
         return qmlCommunication->openImageTexture()->texture();
     }
     return 0;
+}
+
+void DVWindow::getTextureRects(QRectF& left, QRectF& right, QSGTexture* texture, bool swap, DVSourceMode::Type mode) {
+    right = left = texture->normalizedTextureSubRect();
+
+    switch (mode) {
+    case DVSourceMode::TopBottom:
+    case DVSourceMode::TopBottomAnamorphic:
+        left.setHeight(left.height() * 0.5f);
+        right.setHeight(right.height() * 0.5f);
+
+        if (swap)
+            left.translate(0.0f, left.y() + left.height());
+        else
+            right.translate(0.0f, right.y() + left.height());
+        break;
+    case DVSourceMode::SidebySide:
+    case DVSourceMode::SidebySideAnamorphic:
+        left.setWidth(left.width() * 0.5f);
+        right.setWidth(right.width() * 0.5f);
+
+        if (swap)
+            left.translate(left.x() + left.width(), 0.0f);
+        else
+            right.translate(right.x() + right.width(), 0.0f);
+        break;
+    case DVSourceMode::Mono:
+        /* Do nothing for mono images. */
+        break;
+    }
 }
 
 bool DVWindow::isSurround() {
@@ -447,4 +452,8 @@ void DVWindow::doStandardSetup() {
 
     f->glActiveTexture(GL_TEXTURE1);
     f->glBindTexture(GL_TEXTURE_2D, renderFBO->textures()[qmlCommunication->swapEyes() ? 0 : 1]);
+}
+
+QQuickItem* DVWindow::getRootItem() {
+    return qmlWindow->contentItem();
 }

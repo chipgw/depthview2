@@ -99,6 +99,9 @@ public:
     /* Returns the texture handle the current image / video, and sets left & right to where on the texture each eye is. */
     virtual QSGTexture* getCurrentTexture(QRectF& left, QRectF& right);
 
+    /* Get the rectangles of a texture based on the source mode and swap. */
+    virtual void getTextureRects(QRectF& left, QRectF& right, QSGTexture* texture, bool swap, DVSourceMode::Type mode);
+
     /* Get whether the current image is surround. */
     virtual bool isSurround();
 
@@ -115,6 +118,8 @@ public:
      * The left and right image textures will be bound to TEXTURE0 and TEXTURE1, respectively,
      * the viewport is set to the window size, and surround images will be rendered under the UI. */
     virtual void doStandardSetup();
+
+    virtual QQuickItem* getRootItem();
 
     /* ------------------------------- *
      * End DVRenderInterface functions *
