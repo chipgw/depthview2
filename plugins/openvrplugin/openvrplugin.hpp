@@ -24,7 +24,7 @@ public:
     void calculateEyeDistortion(vr::EVREye eye, QVector<QVector2D>& verts, QVector<GLushort>& indexes, int offset);
 
     bool render(const QString& drawModeName, DVRenderInterface* renderInterface);
-    void renderEyeScene(vr::EVREye eye, DVRenderInterface* renderInterface, const QMatrix4x4& head, QSGTexture* imgTexture, QRectF imgRect);
+    void renderEyeScene(vr::EVREye eye, DVRenderInterface* renderInterface, const QMatrix4x4& head, QSGTexture* imgTexture, QRectF imgRect, qreal imgPan);
     bool renderEyeDistortion(vr::EVREye eye, QOpenGLExtraFunctions* f);
 
     void frameSwapped(QOpenGLExtraFunctions* f);

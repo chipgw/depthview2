@@ -105,6 +105,9 @@ public:
     /* Get whether the current image is surround. */
     virtual bool isSurround();
 
+    virtual QPointF getSurroundPan();
+    virtual qreal getSurroundFOV();
+
     /* Draw the default sphere (for surround images). */
     virtual void renderStandardSphere();
 

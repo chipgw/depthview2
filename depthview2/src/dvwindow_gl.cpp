@@ -357,6 +357,14 @@ bool DVWindow::isSurround() {
     return folderListing->isCurrentFileSurround();
 }
 
+QPointF DVWindow::getSurroundPan() {
+    return qmlCommunication->surroundPan();
+}
+
+qreal DVWindow::getSurroundFOV() {
+    return qmlCommunication->surroundFOV();
+}
+
 void DVWindow::renderStandardSphere() {
     QOpenGLExtraFunctions* f = context()->extraFunctions();
 

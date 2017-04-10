@@ -225,9 +225,12 @@ bool OpenVRPlugin::render(const QString&, DVRenderInterface* renderInterface) {
 
     QRectF currentTextureLeft, currentTextureRight;
     QSGTexture* currentTexture = nullptr;
+    qreal currentTexturePan = 0;
 
-    if (renderInterface->isSurround())
+    if (renderInterface->isSurround()) {
         currentTexture = renderInterface->getCurrentTexture(currentTextureLeft, currentTextureRight);
+        currentTexturePan = renderInterface->getSurroundPan().x();
+    }
 
     /* if the current image isn't a loaded or isn't surround, try to use the set background image. */
     if (currentTexture == nullptr && backgroundImage && backgroundImage->textureProvider() && backgroundImage->textureProvider()->texture())
@@ -246,8 +249,8 @@ bool OpenVRPlugin::render(const QString&, DVRenderInterface* renderInterface) {
     /* TODO - Configurable background color. */
     f->glClearColor(0.1f, 0.1f, 0.1f, 0.0f);
 
-    renderEyeScene(vr::Eye_Left, renderInterface, head, currentTexture, currentTextureLeft);
-    renderEyeScene(vr::Eye_Right, renderInterface, head, currentTexture, currentTextureRight);
+    renderEyeScene(vr::Eye_Left, renderInterface, head, currentTexture, currentTextureLeft, currentTexturePan);
+    renderEyeScene(vr::Eye_Right, renderInterface, head, currentTexture, currentTextureRight, currentTexturePan);
 
     /* Get ready to render distortion. */
     distortionShader->bind();
@@ -267,7 +270,7 @@ bool OpenVRPlugin::render(const QString&, DVRenderInterface* renderInterface) {
     return renderEyeDistortion(vr::Eye_Left, f) && renderEyeDistortion(vr::Eye_Right, f);
 }
 
-void OpenVRPlugin::renderEyeScene(vr::EVREye eye, DVRenderInterface* renderInterface, const QMatrix4x4& head, QSGTexture* imgTexture, QRectF imgRect) {
+void OpenVRPlugin::renderEyeScene(vr::EVREye eye, DVRenderInterface* renderInterface, const QMatrix4x4& head, QSGTexture* imgTexture, QRectF imgRect, qreal imgPan) {
     QOpenGLExtraFunctions* f = renderInterface->getOpenGLFunctions();
 
     /* A matrix for each eye, to tell where it is relative to the user's head. */
@@ -282,15 +285,16 @@ void OpenVRPlugin::renderEyeScene(vr::EVREye eye, DVRenderInterface* renderInter
     /* Setup for the eye. */
     renderFBO[eye]->bind();
     f->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    vrSceneShader->setUniformValue("cameraMatrix", eyeMat);
 
     if (imgTexture != nullptr) {
         f->glDisable(GL_BLEND);
 
-        vrSceneShader->setUniformValue("scale", 900.0f);
+        QMatrix4x4 sphereMat;
+        sphereMat.scale(900.0f);
+        sphereMat.rotate(imgPan, 0.0f, 1.0f, 0.0f);
+        vrSceneShader->setUniformValue("cameraMatrix", eyeMat * sphereMat);
         vrSceneShader->setUniformValue("rect", imgRect.x(), imgRect.y(), imgRect.width(), imgRect.height());
 
-        /* TODO - Use the x pan value. */
         imgTexture->bind();
 
         /* Use the sphere provided by the normal surround rendering. */
@@ -299,8 +303,8 @@ void OpenVRPlugin::renderEyeScene(vr::EVREye eye, DVRenderInterface* renderInter
         f->glEnable(GL_BLEND);
         f->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
+    vrSceneShader->setUniformValue("cameraMatrix", eyeMat);
 
-    vrSceneShader->setUniformValue("scale", 1.0f);
     vrSceneShader->setUniformValue("rect", 0.0f, 0.0f, 1.0f, 1.0f);
 
     f->glBindTexture(GL_TEXTURE_2D, renderInterface->getInterfaceLeftEyeTexture());

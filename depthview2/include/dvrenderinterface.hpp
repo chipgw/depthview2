@@ -31,6 +31,10 @@ public:
     /* Get whether the current image is surround. */
     virtual bool isSurround() = 0;
 
+    /* Get the properties for surround rendering as provided by QML. */
+    virtual QPointF getSurroundPan() = 0;
+    virtual qreal getSurroundFOV() = 0;
+
     /* Draw the default sphere (for surround images). */
     virtual void renderStandardSphere() = 0;
 
