@@ -300,8 +300,10 @@ void OpenVRPlugin::renderEyeScene(vr::EVREye eye, DVRenderInterface* renderInter
         /* Use the sphere provided by the normal surround rendering. */
         renderInterface->renderStandardSphere();
 
-        f->glEnable(GL_BLEND);
-        f->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        if (renderInterface->isSurround()) {
+            f->glEnable(GL_BLEND);
+            f->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        }
     }
     vrSceneShader->setUniformValue("cameraMatrix", eyeMat);
 
