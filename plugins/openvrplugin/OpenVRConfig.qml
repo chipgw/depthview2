@@ -28,7 +28,7 @@ ColumnLayout {
         screenSize.value = settings.screenSize
         screenHeight.value = settings.screenHeight
         renderSizeFac.value = settings.renderSizeFac
-        backgroundImagePath.text = settings.backgroundImage
+        backgroundImagePath.text = FolderListing.decodeURL(settings.backgroundImage)
         backgroundImageMode.setMode(settings.backgroundSourceMode)
         backgroundImageSwap.checked = settings.backgroundSwap
     }
@@ -40,7 +40,7 @@ ColumnLayout {
         settings.screenHeight = screenHeight.value
         settings.renderSizeFac = renderSizeFac.value
         /* TODO - Check if it exists. */
-        settings.backgroundImage = backgroundImagePath.text
+        settings.backgroundImage = FolderListing.encodeURL(backgroundImagePath.text)
         settings.backgroundSourceMode = backgroundImageMode.mode
         settings.backgroundSwap = backgroundImageSwap.checked
     }
@@ -94,48 +94,64 @@ ColumnLayout {
         to: 1
     }
 
-    RowLayout {
-        width: parent.width
-        TextField {
-            id: backgroundImagePath
-            Layout.fillWidth: true
-        }
+    GroupBox {
+        Layout.fillWidth: true
+        title: qsTr("Background")
+        GridLayout {
+            /* TODO - Still not quite happy with this layout... */
+            width: parent.width
+            columns: 4
 
-        ComboBox {
-            id: backgroundImageMode
-            textRole: "text"
-            model: ListModel {
-                ListElement { text: qsTr("Mono"); mode: SourceMode.Mono }
-                ListElement { text: qsTr("Side-by-Side"); mode: SourceMode.SidebySide }
-                ListElement { text: qsTr("Top/Bottom"); mode: SourceMode.TopBottom }
+            TextField {
+                id: backgroundImagePath
+                Layout.columnSpan: 4
+                Layout.fillWidth: true
             }
-            function setMode(mode) {
-                if (mode == SourceMode.SidebySideAnamorphic)
-                    mode = SourceMode.SidebySide
-                if (mode == SourceMode.TopBottomAnamorphic)
-                    mode = SourceMode.TopBottom
 
-                for (var i = 0; i < model.count; ++i)
-                    if (model.get(i).mode == mode)
-                        currentIndex = i
+            CheckBox {
+                id: backgroundImageSwap
+                text: "Swap"
+                Layout.fillWidth: true
+
+                enabled: backgroundImageMode.mode != SourceMode.Mono
             }
-            readonly property var mode: model.get(currentIndex).mode
-        }
-        CheckBox {
-            id: backgroundImageSwap
-            text: "Swap"
 
-            enabled: backgroundImageMode.mode != SourceMode.Mono
-        }
+            Label {
+                text: qsTr("Source Mode:")
+            }
+            ComboBox {
+                id: backgroundImageMode
+                textRole: "text"
+                model: ListModel {
+                    ListElement { text: qsTr("Mono"); mode: SourceMode.Mono }
+                    ListElement { text: qsTr("Side-by-Side"); mode: SourceMode.SidebySide }
+                    ListElement { text: qsTr("Top/Bottom"); mode: SourceMode.TopBottom }
+                }
+                function setMode(mode) {
+                    if (mode == SourceMode.SidebySideAnamorphic)
+                        mode = SourceMode.SidebySide
+                    if (mode == SourceMode.TopBottomAnamorphic)
+                        mode = SourceMode.TopBottom
 
-        Button {
-            text: "Use Current"
+                    for (var i = 0; i < model.count; ++i)
+                        if (model.get(i).mode == mode)
+                            currentIndex = i
+                }
+                readonly property var mode: model.get(currentIndex).mode
+                Layout.fillWidth: true
+            }
 
-            enabled: FolderListing.currentFileIsSurround
+            Button {
+                text: "Use Current"
+                Layout.columnSpan: 1
+                Layout.fillWidth: true
 
-            onClicked: {
-                backgroundImagePath.text = FolderListing.currentDir + "/" + FolderListing.currentFile
-                backgroundImageMode.setMode(FolderListing.currentFileStereoMode)
+                enabled: FolderListing.currentFileIsSurround
+
+                onClicked: {
+                    backgroundImagePath.text = FolderListing.decodeURL(FolderListing.currentDir) + "/" + FolderListing.currentFile
+                    backgroundImageMode.setMode(FolderListing.currentFileStereoMode)
+                }
             }
         }
     }

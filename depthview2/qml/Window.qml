@@ -174,7 +174,7 @@ Item {
         sequence: "Right"
         context: Qt.ApplicationShortcut
 
-        enabled: !FolderListing.fileBrowserOpen
+        enabled: !FolderListing.fileBrowserOpen && !settingsPopup.visible
 
         onActivated: FolderListing.openNext()
     }
@@ -182,7 +182,7 @@ Item {
         sequence: "Left"
         context: Qt.ApplicationShortcut
 
-        enabled: !FolderListing.fileBrowserOpen
+        enabled: !FolderListing.fileBrowserOpen && !settingsPopup.visible
 
         onActivated: FolderListing.openPrevious()
     }
@@ -190,7 +190,7 @@ Item {
         sequence: "P"
         context: Qt.ApplicationShortcut
 
-        enabled: FolderListing.currentFileIsVideo
+        enabled: FolderListing.currentFileIsVideo && !FolderListing.fileBrowserOpen && !settingsPopup.visible
 
         onActivated: image.playPause()
     }
