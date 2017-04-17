@@ -74,6 +74,7 @@ bool OpenVRPlugin::init(QOpenGLExtraFunctions*, QQmlContext* qmlContext) {
     renderSizeFac = QQmlProperty(obj, "renderSizeFac");
     backgroundMode = QQmlProperty(obj, "backgroundSourceMode");
     backgroundSwap = QQmlProperty(obj, "backgroundSwap");
+    backgroundPan = QQmlProperty(obj, "backgroundPan");
 
     screenDistance.connectNotifySignal(this, SLOT(updateScreen()));
     screenHeight.connectNotifySignal(this, SLOT(updateScreen()));
@@ -233,10 +234,13 @@ bool OpenVRPlugin::render(const QString&, DVRenderInterface* renderInterface) {
     }
 
     /* if the current image isn't a loaded or isn't surround, try to use the set background image. */
-    if (currentTexture == nullptr && backgroundImage && backgroundImage->textureProvider() && backgroundImage->textureProvider()->texture())
-        renderInterface->getTextureRects(currentTextureLeft, currentTextureRight,
-                                         currentTexture = backgroundImage->textureProvider()->texture(),
+    if (currentTexture == nullptr && backgroundImage && backgroundImage->textureProvider() && backgroundImage->textureProvider()->texture()) {
+        currentTexture = backgroundImage->textureProvider()->texture();
+        currentTexturePan = backgroundPan.read().toReal();
+
+        renderInterface->getTextureRects(currentTextureLeft, currentTextureRight, currentTexture,
                                          backgroundSwap.read().toBool(), (DVSourceMode::Type)backgroundMode.read().toInt());
+    }
 
     /* Get the tracked position of the user's head. */
     QMatrix4x4 head;

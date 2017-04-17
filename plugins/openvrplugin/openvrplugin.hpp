@@ -69,6 +69,7 @@ private:
     QQmlProperty renderSizeFac;
     QQmlProperty backgroundMode;
     QQmlProperty backgroundSwap;
+    QQmlProperty backgroundPan;
 
     /* We keep track of the window's aspect ratio and update the screen when it changes. */
     float aspectRatio;

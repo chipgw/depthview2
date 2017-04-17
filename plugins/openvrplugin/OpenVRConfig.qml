@@ -19,6 +19,7 @@ ColumnLayout {
         property url backgroundImage
         property int backgroundSourceMode: SourceMode.Mono
         property bool backgroundSwap: false
+        property real backgroundPan: 0
     }
 
     function reset() {
@@ -31,6 +32,7 @@ ColumnLayout {
         backgroundImagePath.text = FolderListing.decodeURL(settings.backgroundImage)
         backgroundImageMode.setMode(settings.backgroundSourceMode)
         backgroundImageSwap.checked = settings.backgroundSwap
+        backgroundImagePan.value = settings.backgroundPan
     }
     function apply() {
         settings.lockMouse = lockMouse.checked
@@ -43,6 +45,7 @@ ColumnLayout {
         settings.backgroundImage = FolderListing.encodeURL(backgroundImagePath.text)
         settings.backgroundSourceMode = backgroundImageMode.mode
         settings.backgroundSwap = backgroundImageSwap.checked
+        settings.backgroundPan = backgroundImagePan.value
     }
 
     CheckBox {
@@ -100,11 +103,11 @@ ColumnLayout {
         GridLayout {
             /* TODO - Still not quite happy with this layout... */
             width: parent.width
-            columns: 4
+            columns: 6
 
             TextField {
                 id: backgroundImagePath
-                Layout.columnSpan: 4
+                Layout.columnSpan: 6
                 Layout.fillWidth: true
             }
 
@@ -138,19 +141,29 @@ ColumnLayout {
                             currentIndex = i
                 }
                 readonly property var mode: model.get(currentIndex).mode
+            }
+
+            Label {
+                text: qsTr("Pan")
+            }
+
+            Slider {
+                id: backgroundImagePan
                 Layout.fillWidth: true
+                from: 0
+                to: 360
             }
 
             Button {
                 text: "Use Current"
                 Layout.columnSpan: 1
-                Layout.fillWidth: true
 
                 enabled: FolderListing.currentFileIsSurround
 
                 onClicked: {
                     backgroundImagePath.text = FolderListing.decodeURL(FolderListing.currentDir) + "/" + FolderListing.currentFile
                     backgroundImageMode.setMode(FolderListing.currentFileStereoMode)
+                    backgroundImagePan.value = DepthView.surroundPan.x
                 }
             }
         }
