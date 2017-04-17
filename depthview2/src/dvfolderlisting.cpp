@@ -311,6 +311,9 @@ void DVFolderListing::setCurrentFileSurround(bool surround) {
         qWarning("Unable to update record for file! %s", qPrintable(query.lastError().text()));
 
     emit currentFileSurroundChanged();
+
+    QModelIndex changedIndex = createIndex(m_currentDir.entryInfoList().indexOf(m_currentFile), 0);
+    emit dataChanged(changedIndex, changedIndex, {IsSurroundRole});
 }
 
 DVSourceMode::Type DVFolderListing::currentFileStereoMode() const {
@@ -333,6 +336,9 @@ void DVFolderListing::setCurrentFileStereoMode(DVSourceMode::Type mode) {
         qWarning("Unable to update record for file! %s", qPrintable(query.lastError().text()));
 
     emit currentFileStereoModeChanged();
+
+    QModelIndex changedIndex = createIndex(m_currentDir.entryInfoList().indexOf(m_currentFile), 0);
+    emit dataChanged(changedIndex, changedIndex, {FileStereoModeRole});
 }
 
 bool DVFolderListing::currentFileStereoSwap() const {
@@ -355,6 +361,9 @@ void DVFolderListing::setCurrentFileStereoSwap(bool swap) {
         qWarning("Unable to update record for file! %s", qPrintable(query.lastError().text()));
 
     emit currentFileStereoSwapChanged();
+
+    QModelIndex changedIndex = createIndex(m_currentDir.entryInfoList().indexOf(m_currentFile), 0);
+    emit dataChanged(changedIndex, changedIndex, {FileStereoSwapRole});
 }
 
 qint64 DVFolderListing::currentFileSize() const {
