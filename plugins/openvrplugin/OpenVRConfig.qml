@@ -109,6 +109,8 @@ ColumnLayout {
                 id: backgroundImagePath
                 Layout.columnSpan: 6
                 Layout.fillWidth: true
+
+                placeholderText: qsTr("Background Image Path...")
             }
 
             CheckBox {
