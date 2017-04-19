@@ -4,6 +4,7 @@
 #include "dvfolderlisting.hpp"
 #include "dvthumbnailprovider.hpp"
 #include "dvpluginmanager.hpp"
+#include "dvfilevalidator.hpp"
 #include <QApplication>
 #include <QQuickRenderControl>
 #include <QQuickWindow>
@@ -72,6 +73,8 @@ DVWindow::DVWindow() : QOpenGLWindow(), settings(SETTINGS_ARGS), renderFBO(nullp
 
     qmlRegisterUncreatableType<DVDrawMode>(DV_URI_VERSION, "DrawMode", "Only for enum values.");
     qmlRegisterUncreatableType<DVSourceMode>(DV_URI_VERSION, "SourceMode", "Only for enum values.");
+    qmlRegisterType<DVFileValidator>(DV_URI_VERSION, "FileValidator");
+    qRegisterMetaType<DVFolderListing*>();
 
     /* Update QML size whenever draw mode or anamorphic are changed. */
     connect(qmlCommunication, &DVQmlCommunication::drawModeChanged, this, &DVWindow::updateQmlSize);

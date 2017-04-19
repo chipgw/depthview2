@@ -111,6 +111,11 @@ ColumnLayout {
                 Layout.fillWidth: true
 
                 placeholderText: qsTr("Background Image Path...")
+                validator: FileValidator {
+                    filterSurround: true
+                    folderListing: FolderListing
+                }
+                color: acceptableInput ? "green" : "red"
             }
 
             CheckBox {
