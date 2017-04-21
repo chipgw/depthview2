@@ -166,12 +166,14 @@ QStringList DVFolderListing::getStorageDevicePaths() const {
     QStringList paths;
 
     for (QStorageInfo info : QStorageInfo::mountedVolumes())
-#ifdef Q_OS_ANDROID
+#if defined(Q_OS_ANDROID)
         /* In my experience anything that doesn't have "storage" or "sdcard" in it on Android is useless. */
         if (info.rootPath().contains("storage") || info.rootPath().contains("sdcard"))
+#elif defined(Q_OS_LINUX)
+        /* Ignore tmpfs and run filesystems on Linux. */
+        if (info.device() != "tmpfs" && info.device() != "run")
 #endif
         paths.append(info.rootPath() + ';' + info.displayName() + ";" + QString::number(info.bytesTotal()));
-
 
     return paths;
 }
