@@ -42,7 +42,6 @@ class DVPluginManager : public QAbstractListModel {
     Q_PROPERTY(QStringList pluginModes READ getPluginModes NOTIFY pluginModesChanged)
     Q_PROPERTY(QStringList modes READ getModes NOTIFY pluginModesChanged)
 
-    Q_PROPERTY(QObject* pluginConfigMenu READ getPluginConfigMenu NOTIFY pluginModeChanged)
     Q_PROPERTY(QList<QObject*> pluginConfigMenus READ getPluginConfigMenus NOTIFY pluginModesChanged)
 
 public:
@@ -75,7 +74,6 @@ public:
 
     QStringList getPluginModes() const;
     QStringList getModes() const;
-    QObject* getPluginConfigMenu() const;
     QObjectList getPluginConfigMenus() const;
 
     /* QObject should be const, but QML does not know how to do const. */

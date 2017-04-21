@@ -30,7 +30,7 @@ class DVQmlCommunication : public QObject {
     Q_PROPERTY(bool startupFileBrowser READ startupFileBrowser WRITE setStartupFileBrowser NOTIFY startupFileBrowserChanged)
 
     Q_PROPERTY(QString uiTheme READ uiTheme WRITE setUiTheme NOTIFY uiThemeChanged)
-    Q_PROPERTY(QStringList uiThemes READ uiThemes)
+    Q_PROPERTY(QStringList uiThemes READ uiThemes CONSTANT)
 
     Q_PROPERTY(QQuickItem* openImageTarget READ openImageTarget WRITE setOpenImageTarget NOTIFY openImageTargetChanged)
 

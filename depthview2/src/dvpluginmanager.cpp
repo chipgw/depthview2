@@ -383,11 +383,6 @@ QStringList DVPluginManager::getPluginModes() const {
     return pluginModes;
 }
 
-QObject *DVPluginManager::getPluginConfigMenu() const {
-    DVRenderPlugin* plugin = getCurrentRenderPlugin();
-    return plugin != nullptr ? plugin->getConfigMenuObject() : nullptr;
-}
-
 QObjectList DVPluginManager::getPluginConfigMenus() const {
     QObjectList list;
 
