@@ -6,7 +6,7 @@
 #include <QSqlRecord>
 #include <QSqlError>
 
-DVFolderListing::DVFolderListing(QObject *parent, QSettings& s) : QAbstractListModel(parent),
+DVFolderListing::DVFolderListing(QObject* parent, QSettings& s) : QAbstractListModel(parent),
     settings(s), currentHistory(-1), driveTimer(this), m_fileBrowserOpen(false) {
     if (settings.contains("Bookmarks"))
         m_bookmarks = settings.value("Bookmarks").toStringList();
@@ -296,6 +296,7 @@ bool DVFolderListing::isCurrentFileVideo() const {
 bool DVFolderListing::isCurrentFileSurround() const {
     return isFileSurround(m_currentFile);
 }
+
 void DVFolderListing::setCurrentFileSurround(bool surround) {
     if (surround == isCurrentFileSurround())
         return;
@@ -372,6 +373,7 @@ qint64 DVFolderListing::currentFileSize() const {
     return m_currentFile.size();
 }
 QString DVFolderListing::currentFileInfo() const {
+    /* This only returns generic info available from here, the resolution and other type specific stats are not. */
     QString info = tr("<h1>Media Info:</h1>%1<br>Type: %2<br>File Size: %3<br>Date Created: %4")
             .arg(m_currentFile.absoluteFilePath()).arg(fileTypeString(m_currentFile))
             .arg(bytesToString(m_currentFile.size())).arg(m_currentFile.created().toString());
@@ -419,25 +421,28 @@ DVSourceMode::Type DVFolderListing::fileStereoMode(const QFileInfo& file) const 
 
     QSqlRecord record = getRecordForFile(file);
 
+    /* First check the record fot the file. */
     if (!record.isEmpty()) {
         QVariant value = record.value("stereoMode");
         if (!value.isNull())
             return value.value<DVSourceMode::Type>();
     }
 
-    /* TODO - Try to find a way to detect the mode. */
+    /* If it isn't a stereo file and there isn't a value stored, just disable 3D until something is set. */
     return DVSourceMode::Mono;
 }
 
 bool DVFolderListing::fileStereoSwap(const QFileInfo& file) const {
     QSqlRecord record = getRecordForFile(file);
 
+    /* First check the record fot the file. */
     if (!record.isEmpty()) {
         QVariant value = record.value("stereoSwap");
         if (!value.isNull())
             return value.toBool();
     }
 
+    /* If there was no valid stored value, return true for stereo image files (jps & pns) and false for everything else. */
     return isFileStereoImage(file);
 }
 
@@ -541,6 +546,7 @@ void DVFolderListing::setupFileDatabase() {
         if (query.lastError().isValid()) qWarning("Error creating table! %s", qPrintable(query.lastError().text()));
     }
 
+    /* Add the different fields one by one, checking to see if they exist first. */
     if (!table.contains("stereoMode")) {
         QSqlQuery query("ALTER TABLE files ADD stereoMode integer");
         if (query.lastError().isValid()) qWarning("Error setting up table! %s", qPrintable(query.lastError().text()));
