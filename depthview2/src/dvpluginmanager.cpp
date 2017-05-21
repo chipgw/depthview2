@@ -112,9 +112,7 @@ void DVPluginManager::loadPlugins(QQmlEngine* engine, QOpenGLContext* context) {
 
         QSqlRecord pluginRecord = getRecordForPlugin(filename);
 
-        if (!pluginRecord.isEmpty() && pluginRecord.value("enabled").toBool()) {
-            loadPlugin(filename);
-
+        if (!pluginRecord.isEmpty() && pluginRecord.value("enabled").toBool() && loadPlugin(filename)) {
             if (plugin->pluginType == DVPluginType::RenderPlugin)
                 initRenderPlugin(filename);
             else if (plugin->pluginType == DVPluginType::InputPlugin)

@@ -24,15 +24,14 @@ INCLUDEPATH += ../../depthview2/include
 RESOURCES += steamcontrollerplugin.qrc
 
 win32: {
-    contains(QMAKE_TARGET.arch, x86_64): {
-        LIBS += -L$$PWD/../../../steamsdk/redistributable_bin/win64/ -lsteam_api64
-    } else {
-        LIBS += -L$$PWD/../../../steamsdk/redistributable_bin/ -lsteam_api
-    }
-}else:LIBS += -L$$PWD/../../../steamsdk/redistributable_bin/linux32/ -L$$PWD/../../../steamsdk/redistributable_bin/linux64/ -lsteam_api
+    contains(QMAKE_TARGET.arch, x86_64): LIBS += -L$$PWD/../../../steamsdk/redistributable_bin/win64/ -lsteam_api64
+    else: LIBS += -L$$PWD/../../../steamsdk/redistributable_bin/ -lsteam_api
+}else{
+    linux-g++-64:LIBS += -L$$PWD/../../../steamsdk/redistributable_bin/linux64/ -lsteam_api
+    linux-g++-32:LIBS += -L$$PWD/../../../steamsdk/redistributable_bin/linux32/ -lsteam_api
+}
 
 INCLUDEPATH += $$PWD/../../../steamsdk/public/steam
 DEPENDPATH += $$PWD/../../../steamsdk/public/steam
 
-DISTFILES += \
-    steamcontrollerplugin.json
+DISTFILES += steamcontrollerplugin.json

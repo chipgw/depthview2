@@ -23,5 +23,4 @@ INCLUDEPATH += ../../depthview2/include
 
 RESOURCES += testplugin.qrc
 
-DISTFILES += \
-    testplugin.json
+DISTFILES += testplugin.json

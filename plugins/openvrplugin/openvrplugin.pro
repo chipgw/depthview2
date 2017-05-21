@@ -27,16 +27,12 @@ RESOURCES += openvrplugin.qrc
 linux-g++: DEFINES += COMPILER_GCC
 
 win32: {
-    contains(QMAKE_TARGET.arch, x86_64): {
-        LIBS += -L$$PWD/../../../openvr/lib/win64/
-    } else {
-        LIBS += -L$$PWD/../../../openvr/lib/win32/
-    }
+    contains(QMAKE_TARGET.arch, x86_64): LIBS += -L$$PWD/../../../openvr/lib/win64/
+    else: LIBS += -L$$PWD/../../../openvr/lib/win32/
 }
-LIBS += -L$$PWD/../../../openvr/lib/linux32/ -L$$PWD/../../../openvr/lib/linux64/ -lopenvr_api
+LIBS += -L$$PWD/../../../openvr/lib/linux64/ -lopenvr_api
 
 INCLUDEPATH += $$PWD/../../../openvr/headers
 DEPENDPATH += $$PWD/../../../openvr/headers
 
-DISTFILES += \
-    openvrplugin.json
+DISTFILES += openvrplugin.json
