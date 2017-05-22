@@ -33,8 +33,8 @@ Dialog {
 
         Component.onCompleted: {
             /* Disable the buttons if there is no function for them to call. */
-            standardButton(DialogButtonBox.Apply).enabled = Qt.binding(function() { return swipe.currentItem !== undefined && swipe.currentItem.apply !== undefined })
-            standardButton(DialogButtonBox.Reset).enabled = Qt.binding(function() { return swipe.currentItem !== undefined && swipe.currentItem.reset !== undefined })
+            standardButton(DialogButtonBox.Apply).enabled = Qt.binding(function() { return swipe.currentItem !== null && swipe.currentItem.apply !== undefined })
+            standardButton(DialogButtonBox.Reset).enabled = Qt.binding(function() { return swipe.currentItem !== null && swipe.currentItem.reset !== undefined })
         }
     }
 
