@@ -13,7 +13,8 @@ struct Action {
 
     void (DVInputInterface::*func)();
 
-    ControllerDigitalActionData_t last, current;
+    ControllerDigitalActionData_t last = ControllerDigitalActionData_t{};
+    ControllerDigitalActionData_t  current = ControllerDigitalActionData_t{};
 };
 
 class SteamControllerPlugin : public QObject, public DVInputPlugin {
