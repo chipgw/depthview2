@@ -17,6 +17,9 @@ public:
     /* Delete and clean up anything used by the plugin. */
     virtual bool deinit() = 0;
 
+    /* Return an error string describing why init(), deinit(), or render() failed. */
+    virtual QString getErrorString() = 0;
+
     /* Render the scene using the plugin. drawModeName is one of the options returned by drawModeNames(). */
     virtual bool render(const QString& drawModeName, DVRenderInterface* renderInterface) = 0;
 

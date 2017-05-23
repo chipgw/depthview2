@@ -33,15 +33,17 @@ bool TestPlugin::init(QOpenGLExtraFunctions*, QQmlContext* qmlContext) {
 
     /* The program can't run if there was an error. */
     if (component.isError()) {
-        qDebug(qPrintable(component.errorString()));
+        errorString = component.errorString();
         return false;
     }
 
     configMenuObject = qobject_cast<QQuickItem*>(component.create(qmlContext));
 
     /* Critical error! abort! abort! */
-    if (configMenuObject == nullptr)
+    if (configMenuObject == nullptr) {
+        errorString = "Unable to create configuration QML component.";
         return false;
+    }
 
     QObject* obj = QQmlProperty(configMenuObject, "settings").read().value<QObject*>();
     logRenderStart = QQmlProperty(obj, "logRenderStart");
@@ -61,6 +63,10 @@ bool TestPlugin::deinit() {
     qDebug("Test plugin deinited.");
 
     return true;
+}
+
+QString TestPlugin::getErrorString() {
+    return errorString;
 }
 
 bool TestPlugin::render(const QString&, DVRenderInterface* renderInterface) {

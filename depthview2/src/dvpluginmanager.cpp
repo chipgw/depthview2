@@ -122,7 +122,6 @@ void DVPluginManager::loadPlugins(QQmlEngine* engine, QOpenGLContext* context) {
 
     qDebug("Done loading plugins.");
 
-
     /* Tell the model system that we've finished changing all the things. */
     endResetModel();
 }
@@ -170,8 +169,7 @@ bool DVPluginManager::initRenderPlugin(const QString &pluginName) {
         return plugin->inited = true;
     }
 
-    /* TODO - Get an error message from the plugin. */
-    plugin->errorString = "Plugin \"" + pluginName + "\" failed to init.";
+    plugin->errorString = "Plugin \"" + pluginName + "\" failed to init. " + plugin->renderPlugin->getErrorString();
     qWarning("%s", qPrintable(plugin->errorString));
     return false;
 }
@@ -192,8 +190,7 @@ bool DVPluginManager::initInputPlugin(const QString &pluginName) {
         return plugin->inited = true;
     }
 
-    /* TODO - Get an error message from the plugin. */
-    plugin->errorString = "Plugin \"" + pluginName + "\" failed to init.";
+    plugin->errorString = "Plugin \"" + pluginName + "\" failed to init. " + plugin->inputPlugin->getErrorString();
     qWarning("%s", qPrintable(plugin->errorString));
     return false;
 }

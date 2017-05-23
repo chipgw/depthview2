@@ -12,7 +12,7 @@ bool OpenVRPlugin::init(QOpenGLExtraFunctions*, QQmlContext* qmlContext) {
     Q_INIT_RESOURCE(openvrplugin);
 
     if (!vr::VR_IsHmdPresent()) {
-        qDebug("No HMD detected...");
+        errorString = "No HMD detected.";
         return false;
     }
 
@@ -55,15 +55,17 @@ bool OpenVRPlugin::init(QOpenGLExtraFunctions*, QQmlContext* qmlContext) {
 
     /* The program can't run if there was an error. */
     if (component.isError()) {
-        qDebug(qPrintable(component.errorString()));
+        errorString = component.errorString();
         return false;
     }
 
     configMenu = qobject_cast<QQuickItem*>(component.create(qmlContext));
 
     /* Critical error! abort! abort! */
-    if (configMenu == nullptr)
+    if (configMenu == nullptr) {
+        errorString = "Unable to create configuration QML component.";
         return false;
+    }
 
     QObject* obj = QQmlProperty(configMenu, "settings").read().value<QObject*>();
     screenDistance = QQmlProperty(obj, "screenDistance");
@@ -101,13 +103,17 @@ bool OpenVRPlugin::deinit() {
     return true;
 }
 
+QString OpenVRPlugin::getErrorString() {
+    return errorString;
+}
+
 bool OpenVRPlugin::initVR(DVRenderInterface* renderInterface) {
     vr::EVRInitError error = vr::VRInitError_None;
     vrSystem = vr::VR_Init(&error, vr::VRApplication_Scene);
 
     if (error != vr::VRInitError_None) {
         vrSystem = nullptr;
-        qDebug("Error initing vr system!");
+        errorString = "Error initing VR system.";
         return false;
     }
 
@@ -116,13 +122,13 @@ bool OpenVRPlugin::initVR(DVRenderInterface* renderInterface) {
 
     if (renderModels == nullptr) {
         vrSystem = nullptr;
-        qDebug("Error getting render model interface!");
+        errorString = "Error getting render model interface.";
         return false;
     }
 
     if (!vr::VRCompositor()) {
         vrSystem = nullptr;
-        qDebug("Error getting compositor!");
+        errorString = "Error getting compositor.";
         return false;
     }
 
@@ -337,7 +343,11 @@ bool OpenVRPlugin::renderEyeDistortion(vr::EVREye eye, QOpenGLExtraFunctions *f)
     resolveFBO[eye]->release();
 
     vr::Texture_t eyeTexture = { reinterpret_cast<void*>(static_cast<intptr_t>(resolveFBO[eye]->texture())), vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
-    return vr::VRCompositor()->Submit(eye, &eyeTexture) == vr::VRCompositorError_None;
+    if (vr::VRCompositor()->Submit(eye, &eyeTexture) != vr::VRCompositorError_None) {
+        errorString = "Error submitting texture to OpenVR.";
+        return false;
+    }
+    return true;
 }
 
 void OpenVRPlugin::frameSwapped(QOpenGLExtraFunctions*) {

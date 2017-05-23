@@ -20,6 +20,9 @@ class OpenVRPlugin : public QObject, public DVRenderPlugin {
 public:
     bool init(QOpenGLExtraFunctions* f, QQmlContext* qmlContext);
     bool deinit();
+
+    QString getErrorString();
+
     bool initVR(DVRenderInterface* renderInterface);
     void calculateEyeDistortion(vr::EVREye eye, QVector<QVector2D>& verts, QVector<GLushort>& indexes, int offset);
 
@@ -76,6 +79,8 @@ private:
 
     QVector<QVector3D> screen;
     QVector<QVector2D> screenUV;
+
+    QString errorString;
 
 public slots:
     void updateScreen();

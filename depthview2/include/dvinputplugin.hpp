@@ -16,6 +16,9 @@ public:
     /* Delete and clean up anything used by the plugin. */
     virtual bool deinit() = 0;
 
+    /* Return an error string describing why init(), deinit(), or pollInput() failed. */
+    virtual QString getErrorString() = 0;
+
     /* If the plugin needs to do anything right after frame swap, do it here... */
     virtual void frameSwapped() = 0;
 

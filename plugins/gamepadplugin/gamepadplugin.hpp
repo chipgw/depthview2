@@ -18,6 +18,8 @@ class GamepadPlugin : public QObject, public DVInputPlugin {
 
     QQmlProperty gamepadEnable;
 
+    QString errorString;
+
     bool buttonAJustChanged;
     bool buttonBJustChanged;
     bool buttonCenterJustChanged;
@@ -60,6 +62,8 @@ public slots:
 public:
     bool init(QQmlContext* qmlContext);
     bool deinit();
+
+    QString getErrorString();
 
     void frameSwapped();
 

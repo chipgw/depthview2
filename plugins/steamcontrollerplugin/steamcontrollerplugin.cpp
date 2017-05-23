@@ -17,21 +17,27 @@ bool SteamControllerPlugin::init(QQmlContext* qmlContext) {
 
     /* The program can't run if there was an error. */
     if (component.isError()) {
-        qDebug(qPrintable(component.errorString()));
+        errorString = component.errorString();
         return false;
     }
 
     configMenuObject = qobject_cast<QQuickItem*>(component.create(qmlContext));
 
     /* Critical error! abort! abort! */
-    if (configMenuObject == nullptr)
+    if (configMenuObject == nullptr) {
+        errorString = "Unable to create configuration QML component.";
         return false;
+    }
 
-    if (!SteamAPI_Init())
+    if (!SteamAPI_Init()) {
+        errorString = "Unable to initialize Steam API.";
         return false;
+    }
 
-    if (!SteamController()->Init())
+    if (!SteamController()->Init()) {
+        errorString = "Unable to initialize Steam Controller.";
         return false;
+    }
 
     fileBrowserActionSet = SteamController()->GetActionSetHandle("FileBrowser");
     fileBrowserActions += Action { SteamController()->GetDigitalActionHandle("browser_accept"), &DVInputInterface::accept };
@@ -80,6 +86,10 @@ bool SteamControllerPlugin::deinit() {
     qDebug("Steam Controller plugin shutdown");
 
     return true;
+}
+
+QString SteamControllerPlugin::getErrorString() {
+    return errorString;
 }
 
 void SteamControllerPlugin::frameSwapped() {

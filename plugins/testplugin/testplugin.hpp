@@ -13,9 +13,13 @@ class TestPlugin : public QObject, public DVRenderPlugin {
 
     QQuickItem* configMenuObject;
 
+    QString errorString;
+
 public:
     bool init(QOpenGLExtraFunctions* f, QQmlContext* qmlContext);
     bool deinit();
+
+    QString getErrorString();
 
     bool render(const QString& drawModeName, DVRenderInterface* renderInterface);
 

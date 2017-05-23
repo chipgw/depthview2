@@ -36,9 +36,13 @@ class SteamControllerPlugin : public QObject, public DVInputPlugin {
     ControllerActionSetHandle_t videoPlayerActionSet;
     QList<Action> videoPlayerActions;
 
+    QString errorString;
+
 public:
     bool init(QQmlContext* qmlContext);
     bool deinit();
+
+    QString getErrorString();
 
     void frameSwapped();
 

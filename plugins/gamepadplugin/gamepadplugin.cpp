@@ -17,15 +17,18 @@ bool GamepadPlugin::init(QQmlContext* qmlContext) {
 
     /* The program can't run if there was an error. */
     if (component.isError()) {
-        qDebug(qPrintable(component.errorString()));
+        errorString = component.errorString();
+        qDebug(qPrintable(errorString));
         return false;
     }
 
     configMenuObject = qobject_cast<QQuickItem*>(component.create(qmlContext));
 
     /* Critical error! abort! abort! */
-    if (configMenuObject == nullptr)
+    if (configMenuObject == nullptr) {
+        errorString = "Unable to create configuration QML component.";
         return false;
+    }
 
     connect(&gamepad, &QGamepad::buttonAChanged,        this, &GamepadPlugin::buttonAChanged);
     connect(&gamepad, &QGamepad::buttonBChanged,        this, &GamepadPlugin::buttonBChanged);
@@ -59,6 +62,10 @@ bool GamepadPlugin::deinit() {
     qDebug("Gamepad plugin shutdown");
 
     return true;
+}
+
+QString GamepadPlugin::getErrorString() {
+    return errorString;
 }
 
 void GamepadPlugin::frameSwapped() {
