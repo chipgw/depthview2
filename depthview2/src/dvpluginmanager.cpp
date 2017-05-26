@@ -98,11 +98,13 @@ void DVPluginManager::loadPlugins(QQmlEngine* engine, QOpenGLContext* context) {
         plugin->loader.setFileName(pluginsDir.absoluteFilePath(filename));
 
         QString iid = plugin->loader.metaData().value("IID").toString();
-        if (iid == DVRenderPlugin_iid)
+        if (iid == DVRenderPlugin_iid) {
             plugin->pluginType = DVPluginType::RenderPlugin;
-        else if (iid == DVInputPlugin_iid)
+            qDebug("Found render plugin: \"%s\"", qPrintable(filename));
+        } else if (iid == DVInputPlugin_iid) {
             plugin->pluginType = DVPluginType::InputPlugin;
-        else {
+            qDebug("Found input plugin: \"%s\"", qPrintable(filename));
+        } else {
             qDebug("\"%s\" is not a valid plugin. Invalid IID \"%s\"!", qPrintable(filename), qPrintable(iid));
             delete plugin;
             continue;
@@ -112,6 +114,7 @@ void DVPluginManager::loadPlugins(QQmlEngine* engine, QOpenGLContext* context) {
 
         QSqlRecord pluginRecord = getRecordForPlugin(filename);
 
+        /* If there's a record for the plugin and it's set to enabled, load and init it. */
         if (!pluginRecord.isEmpty() && pluginRecord.value("enabled").toBool() && loadPlugin(filename)) {
             if (plugin->pluginType == DVPluginType::RenderPlugin)
                 initRenderPlugin(filename);
@@ -142,14 +145,7 @@ bool DVPluginManager::loadPlugin(const QString& pluginName) {
     else if (plugin->pluginType == DVPluginType::InputPlugin)
         plugin->inputPlugin = qobject_cast<DVInputPlugin*>(obj);
 
-    plugin->loaded = plugin->renderPlugin != nullptr || plugin->inputPlugin != nullptr;
-
-    if (plugin->renderPlugin != nullptr)
-        qDebug("Found render plugin: \"%s\"", qPrintable(pluginName));
-    else if (plugin->inputPlugin != nullptr)
-        qDebug("Found input plugin: \"%s\"", qPrintable(pluginName));
-
-    return plugin->loaded;
+    return (plugin->loaded = plugin->renderPlugin != nullptr || plugin->inputPlugin != nullptr);
 }
 
 bool DVPluginManager::initRenderPlugin(const QString &pluginName) {

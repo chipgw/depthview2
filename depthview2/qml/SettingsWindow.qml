@@ -124,10 +124,16 @@ Dialog {
                         onClicked: DepthView.registerFileTypes()
                     }
                     Button {
-                        text: qsTr("Reset Database")
+                        text: qsTr("Reset File Database")
 
                         /* TODO - Confirm. */
                         onClicked: FolderListing.resetFileDatabase()
+                    }
+                    Button {
+                        text: qsTr("Reset Plugin Database")
+
+                        /* TODO - Confirm. */
+                        onClicked: PluginManager.resetPluginDatabase()
                     }
                 }
             }

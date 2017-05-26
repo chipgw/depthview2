@@ -35,7 +35,6 @@ class DVPluginManager : public QAbstractListModel {
     QList<QString> pluginModes;
 
     QSqlRecord getRecordForPlugin(const QString& pluginName, bool create = false) const;
-    void resetPluginDatabase();
     void storePluginEnabled(const QString &pluginName, bool enable);
 
     Q_PROPERTY(QString pluginMode READ pluginMode WRITE setPluginMode NOTIFY pluginModeChanged)
@@ -58,6 +57,8 @@ public:
 
     Q_INVOKABLE bool enablePlugin(QString pluginFileName);
     Q_INVOKABLE bool disablePlugin(QString pluginFileName);
+
+    Q_INVOKABLE void resetPluginDatabase();
 
     /* Functions that get the current plugin and interface with it. */
     DVRenderPlugin* getCurrentRenderPlugin() const;
