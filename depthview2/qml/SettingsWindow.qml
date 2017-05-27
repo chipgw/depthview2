@@ -123,18 +123,47 @@ Dialog {
 
                         onClicked: DepthView.registerFileTypes()
                     }
-                    Button {
-                        text: qsTr("Reset File Database")
 
-                        /* TODO - Confirm. */
-                        onClicked: FolderListing.resetFileDatabase()
-                    }
-                    Button {
-                        text: qsTr("Reset Plugin Database")
+                    RowLayout {
+                        Button {
+                            text: qsTr("Reset File Database")
 
-                        /* TODO - Confirm. */
-                        onClicked: PluginManager.resetPluginDatabase()
+                            onClicked: resetFileDB.open()
+
+                        }
+                        Button {
+                            text: qsTr("Reset Plugin Database")
+
+                            onClicked: resetPluginDB.open()
+
+                        }
                     }
+                }
+                Dialog {
+                    id: resetFileDB
+                    title: "Are you sure?"
+                    modal: true
+
+                    Label {
+                        text: "All stored file information will be lost..."
+                    }
+
+                    standardButtons: Dialog.Ok | Dialog.Cancel
+
+                    onAccepted: FolderListing.resetFileDatabase()
+                }
+                Dialog {
+                    id: resetPluginDB
+                    title: "Are you sure?"
+                    modal: true
+
+                    Label {
+                        text: "All currently enabled plugins will be reset..."
+                    }
+
+                    standardButtons: Dialog.Ok | Dialog.Cancel
+
+                    onAccepted: PluginManager.resetPluginDatabase()
                 }
             }
 
@@ -163,12 +192,12 @@ Dialog {
                 /* Only enable panning when the item is tall enough. */
                 interactive: contentHeight > height
 
-                Column {
+                ColumnLayout {
                     id: renderSettingsContent
                     width: parent.width
 
                     GroupBox {
-                        width: parent.width
+                        Layout.fillWidth: true
                         title: qsTr("Anaglyph")
 
                         LabeledSlider {
@@ -180,7 +209,7 @@ Dialog {
                     }
 
                     GroupBox {
-                        width: parent.width
+                        Layout.fillWidth: true
                         title: qsTr("Side-by-Side/Top-Bottom")
 
                         Column {
