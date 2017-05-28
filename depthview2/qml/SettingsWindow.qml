@@ -68,6 +68,7 @@ Dialog {
                     saveWindowStateCheckBox.checked = DepthView.saveWindowState
                     startupFileBrowserCheckBox.checked = DepthView.startupFileBrowser
                     uiThemeComboBox.currentIndex = uiThemeComboBox.find(DepthView.uiTheme)
+                    startDir.text = FolderListing.startDir
 
                     /* If the selection is invalid, use "Default", as that's what QML uses when none is set. */
                     if (uiThemeComboBox.currentIndex < 0)
@@ -78,6 +79,7 @@ Dialog {
                     DepthView.saveWindowState = saveWindowStateCheckBox.checked
                     DepthView.startupFileBrowser = startupFileBrowserCheckBox.checked
                     DepthView.uiTheme = uiThemeComboBox.currentText
+                    FolderListing.startDir = startDir.text
                 }
 
                 readonly property string title: qsTr("General Settings")
@@ -88,7 +90,7 @@ Dialog {
                 /* Only enable panning when the item is tall enough. */
                 interactive: contentHeight > height
 
-                Column {
+                ColumnLayout {
                     id: generalSettingsContent
                     width: parent.width
 
@@ -114,6 +116,7 @@ Dialog {
                             model: DepthView.uiThemes
                         }
                     }
+
                     Button {
                         /* If the function is undefined this build doesn't support file association. */
                         visible: DepthView.registerFileTypes !== undefined
@@ -124,18 +127,41 @@ Dialog {
                         onClicked: DepthView.registerFileTypes()
                     }
 
+                    GroupBox {
+                        Layout.fillWidth: true
+                        title: qsTr("Startup Directory")
+
+                        RowLayout {
+                            width: parent.width
+                            TextField {
+                                id: startDir
+                                Layout.fillWidth: true
+
+                                placeholderText: qsTr("Startup Directory Path...")
+                                validator: FileValidator {
+                                    filterDir: true
+                                }
+                                color: acceptableInput ? "green" : "red"
+                            }
+
+                            Button {
+                                text: qsTr("Use Current")
+
+                                onClicked: startDir.text = FolderListing.decodeURL(FolderListing.currentDir)
+                            }
+                        }
+                    }
+
                     RowLayout {
                         Button {
                             text: qsTr("Reset File Database")
 
                             onClicked: resetFileDB.open()
-
                         }
                         Button {
                             text: qsTr("Reset Plugin Database")
 
                             onClicked: resetPluginDB.open()
-
                         }
                     }
                 }

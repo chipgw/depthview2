@@ -58,6 +58,8 @@ class DVFolderListing : public QAbstractListModel {
 
     Q_PROPERTY(bool fileBrowserOpen READ fileBrowserOpen WRITE setFileBrowserOpen NOTIFY fileBrowserOpenChanged)
 
+    Q_PROPERTY(QString startDir READ startDir WRITE setStartDir NOTIFY startDirChanged)
+
 public:
     explicit DVFolderListing(QObject* parent, QSettings& s);
     void postQmlInit();
@@ -168,6 +170,9 @@ public:
 
     bool initDir(const QString& dir);
 
+    QString startDir();
+    void setStartDir(QString path);
+
     bool fileBrowserOpen() const;
     void setFileBrowserOpen(bool open);
 
@@ -190,4 +195,6 @@ signals:
     void currentFileStereoModeChanged();
     void currentFileStereoSwapChanged();
     void currentFileSurroundChanged();
+
+    void startDirChanged();
 };

@@ -43,15 +43,11 @@ int main(int argc, char* argv[]) {
     parser.process(app.arguments());
 
 #ifdef DV_FILE_ASSOCIATION
-    if(parser.isSet("register")){
+    if (parser.isSet("register")){
         fileassociation::registerFileTypes();
         return 0;
     }
 #endif
-
-    /* If not started in a specific directory default to the user's home path. */
-    if(QDir::currentPath() == app.applicationDirPath())
-        QDir::setCurrent(QDir::homePath());
 
     DVWindow window;
     window.show();

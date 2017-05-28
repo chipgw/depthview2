@@ -19,6 +19,9 @@ QValidator::State DVFileValidator::validate(QString& input, int& pos) const {
     if (!file.exists())
         return Intermediate;
 
+    if (filterDir && !file.isDir())
+        return Intermediate;
+
     /* No valid folderListing means we can't run checks. */
     if (folderListing != nullptr) {
         /* If filterSurround is set and the file isn't surround, state is Intermediate. */

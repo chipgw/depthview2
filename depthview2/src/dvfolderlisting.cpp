@@ -1,4 +1,5 @@
 #include "dvfolderlisting.hpp"
+#include <QApplication>
 #include <QStorageInfo>
 #include <QSettings>
 #include <QDateTime>
@@ -13,7 +14,12 @@ DVFolderListing::DVFolderListing(QObject* parent, QSettings& s) : QAbstractListM
 
     setupFileDatabase();
 
-    initDir(QDir::currentPath());
+    /* If started in a specific directory use that. */
+    if (QDir::currentPath() != qApp->applicationDirPath())
+        initDir(QDir::currentPath());
+    /* Use a stored setting if it exists, but if not or it fails just use the home dir. */
+    else if (!(settings.contains("StartDir") && initDir(settings.value("StartDir").toString())))
+        initDir(QDir::homePath());
 
     /* TODO - What other video types can we do? */
     stereoImageSuffixes << "jps" << "pns";
@@ -524,6 +530,21 @@ bool DVFolderListing::initDir(const QString& dir) {
 
     /* It's all good. */
     return true;
+}
+
+QString DVFolderListing::startDir() {
+    return settings.value("StartDir").toString();
+}
+
+void DVFolderListing::setStartDir(QString path) {
+    if (!settings.contains("StartDir") || settings.value("StartDir").toString() != path) {
+        if (path.isEmpty())
+            settings.remove("StartDir");
+        else
+            settings.setValue("StartDir", path);
+
+        emit startDirChanged();
+    }
 }
 
 bool DVFolderListing::fileBrowserOpen() const {
