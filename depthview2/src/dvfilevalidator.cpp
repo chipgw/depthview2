@@ -6,6 +6,7 @@ DVFileValidator::DVFileValidator(QObject *parent): QValidator(parent), folderLis
     filterStereo = false;
     filterVideo = false;
     filterImage = false;
+    filterDir = false;
 }
 
 QValidator::State DVFileValidator::validate(QString& input, int& pos) const {
