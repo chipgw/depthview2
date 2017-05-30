@@ -117,10 +117,8 @@ bool DVFolderListing::openFile(QFileInfo fileInfo) {
             /* Not an image or a video, not something we can open. */
             return false;
 
-        /* Check to see if the file is in the current dir, and if it isn't update the dir. Use a new QDir because
-         * filters are part of QDir comparisons, and sometimes the QString path has variations that will break things. */
-        if (fileInfo.dir() != QDir(m_currentDir.path()))
-            setCurrentDir(fileInfo.absolutePath());
+        /* Update the current dir with the new path. This function will check to see if it's the same dir. */
+        setCurrentDir(fileInfo.absolutePath());
 
         /* Close the file browser if it was open. */
         setFileBrowserOpen(false);
@@ -145,6 +143,11 @@ void DVFolderListing::setCurrentDir(QUrl url) {
 }
 
 void DVFolderListing::setCurrentDir(QString dir) {
+    /* Make sure we aren't already there so as to not lie to the model system about everything changing.
+     * Use a new QDir because filters are part of QDir comparisons, and sometimes the QString path has variations that will break things. */
+    if (QDir(dir) == QDir(m_currentDir.path()))
+        return;
+
     /* Tell the model system that we're going to be changing all the things. */
     beginResetModel();
 

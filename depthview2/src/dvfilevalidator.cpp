@@ -1,7 +1,7 @@
 #include "dvfilevalidator.hpp"
 #include "dvfolderlisting.hpp"
 
-DVFileValidator::DVFileValidator(QObject *parent): QValidator(parent), folderListing(nullptr) {
+DVFileValidator::DVFileValidator(QObject* parent): QValidator(parent), folderListing(nullptr) {
     filterSurround = false;
     filterStereo = false;
     filterVideo = false;
