@@ -53,6 +53,10 @@ DVWindow::DVWindow() : QOpenGLWindow(), settings(SETTINGS_ARGS), renderFBO(nullp
     folderListing = new DVFolderListing(this, settings);
     pluginManager = new DVPluginManager(this, settings);
 
+    /* Let these classes see each other. */
+    qmlCommunication->folderListing = folderListing;
+    folderListing->qmlCommunication = qmlCommunication;
+
     /* Use the class defined above. */
     qmlRenderControl = new RenderControl(this);
     qmlWindow = new QQuickWindow(qmlRenderControl);

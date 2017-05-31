@@ -5,6 +5,7 @@
 #include "dvenums.hpp"
 #include "fileassociation.hpp"
 
+class DVFolderListing;
 class QWindow;
 class QSettings;
 class QSGTextureProvider;
@@ -89,6 +90,8 @@ public:
     void setSurroundPan(QPointF val);
     qreal surroundFOV() const;
     void setSurroundFOV(qreal val);
+
+    DVFolderListing* folderListing;
 
 #ifdef DV_FILE_ASSOCIATION
     Q_INVOKABLE void registerFileTypes();

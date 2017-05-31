@@ -33,10 +33,8 @@ struct DVPluginInfo {
 
 DVPluginManager::DVPluginManager(QObject* parent, QSettings& s) : QAbstractListModel(parent), settings(s) {
     /* Check to see if the table exists. */
-    if (QSqlDatabase::database().record("plugins").isEmpty()) {
-        /* TODO - Handle potential changes/additions to database fields. */
+    if (QSqlDatabase::database().record("plugins").isEmpty())
         resetPluginDatabase();
-    }
 }
 
 void DVPluginManager::postQmlInit() {

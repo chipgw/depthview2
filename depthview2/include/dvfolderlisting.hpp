@@ -8,6 +8,7 @@
 #include <dvenums.hpp>
 
 class QSettings;
+class DVQmlCommunication;
 
 class DVFolderListing : public QAbstractListModel {
     Q_OBJECT
@@ -178,6 +179,8 @@ public:
 
     void setupFileDatabase();
     Q_INVOKABLE void resetFileDatabase();
+
+    DVQmlCommunication* qmlCommunication;
 
 signals:
     /* No argument because they are used as NOTIFY for multiple properties. */

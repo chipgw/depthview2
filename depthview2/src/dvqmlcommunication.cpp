@@ -190,18 +190,18 @@ void DVQmlCommunication::setUiTheme(QString theme) {
         /* Theme has to be set before any controls are loaded by QML, so a restart is required to apply. */
         if (QMessageBox::question(nullptr, "Restart to apply?", "You must restart to apply the new UI Theme, restart now?",
                                   QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes) {
-            /* TODO - Send arguments to restore current state. */
-            QProcess::startDetached(QApplication::applicationFilePath());
+            /* Start the application again with the same file. */
+            QProcess::startDetached(QApplication::applicationFilePath(), QStringList(folderListing->currentURL().toLocalFile()));
             QApplication::quit();
         }
     }
 }
 
-QQuickItem *DVQmlCommunication::openImageTarget() {
+QQuickItem* DVQmlCommunication::openImageTarget() {
     return imageTarget;
 }
 
-QSGTextureProvider *DVQmlCommunication::openImageTexture() {
+QSGTextureProvider* DVQmlCommunication::openImageTexture() {
     if (imageTarget && imageTarget->isTextureProvider())
         return imageTarget->textureProvider();
 
