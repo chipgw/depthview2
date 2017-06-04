@@ -400,8 +400,9 @@ QHash<int, QByteArray> DVPluginManager::roleNames() const {
 QVariant DVPluginManager::data(const QModelIndex& index, int role) const {
     QVariant data;
 
-    if (int(plugins.size()) > index.row()) {
-        auto plugin = (plugins.begin() + index.row());
+    /* Make sure the index is valid. */
+    if (plugins.size() > index.row()) {
+        auto plugin = plugins.begin() + index.row();
 
         QJsonObject metaData = plugin.value()->loader.metaData().value("MetaData").toObject();
 

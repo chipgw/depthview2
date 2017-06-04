@@ -121,7 +121,7 @@ public:
 
     /* Begin Model stuff... */
     enum Roles {
-        FileNameRole = Qt::UserRole+1,
+        FileNameRole = Qt::UserRole,
         FilePathRole,
         IsDirRole,
         IsImageRole,

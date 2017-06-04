@@ -476,6 +476,7 @@ QHash<int, QByteArray> DVFolderListing::roleNames() const {
 QVariant DVFolderListing::data(const QModelIndex& index, int role) const {
     QVariant data;
 
+    /* Make sure the index is valid. */
     if (int(m_currentDir.count()) > index.row()) {
         QFileInfo info = m_currentDir.entryInfoList()[index.row()];
 
@@ -526,8 +527,7 @@ bool DVFolderListing::initDir(const QString& dir) {
     currentHistory = -1;
 
     /* Return false if cd fails. */
-    if (!m_currentDir.cd(dir))
-        return false;
+    if (!m_currentDir.cd(dir)) return false;
 
     pushHistory();
 
@@ -541,6 +541,7 @@ QString DVFolderListing::startDir() {
 
 void DVFolderListing::setStartDir(QString path) {
     if (!settings.contains("StartDir") || settings.value("StartDir").toString() != path) {
+        /* Remove the setting entirely if set to an empty string. */
         if (path.isEmpty())
             settings.remove("StartDir");
         else

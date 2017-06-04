@@ -83,7 +83,7 @@ public:
 
     /* Begin model stuff. */
     enum Roles {
-        PluginFileNameRole = Qt::UserRole+1,
+        PluginFileNameRole = Qt::UserRole,
         PluginDisplayNameRole,
         PluginDescriptionRole,
         PluginVersionRole,
