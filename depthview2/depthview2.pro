@@ -34,7 +34,8 @@ HEADERS += \
     include/fileassociation.hpp \
     include/dvpluginmanager.hpp \
     include/dvrenderinterface.hpp \
-    include/dvfilevalidator.hpp
+    include/dvfilevalidator.hpp \
+    include/dvconfig.hpp
 
 INCLUDEPATH += include
 
