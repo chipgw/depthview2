@@ -1,5 +1,9 @@
 #pragma once
 
+#ifndef __has_cpp_attribute
+#define __has_cpp_attribute(X) 0
+#endif
+
 /* Find a fallthrough attribute to use. */
 #if __has_cpp_attribute(fallthrough)
 #define DV_FALLTHROUGH [[fallthrough]]
