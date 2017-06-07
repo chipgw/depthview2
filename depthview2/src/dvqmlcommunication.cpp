@@ -19,6 +19,8 @@ DVQmlCommunication::DVQmlCommunication(QWindow* parent, QSettings& s) : QObject(
 
     m_greyFac = settings.contains("GreyFac") ? settings.value("GreyFac").toReal() : 0.0;
 
+    m_swapEyes = settings.contains("SwapEyes") ? settings.value("SwapEyes").toBool() : false;
+
     m_anamorphicDualView = settings.contains("Anamorphic") ? settings.value("Anamorphic").toBool() : false;
 
     m_mirrorLeft = settings.contains("MirrorLeft") ? settings.value("MirrorLeft").toBool() : false;
@@ -132,6 +134,7 @@ bool DVQmlCommunication::swapEyes() const {
 void DVQmlCommunication::setSwapEyes(bool swap) {
     if (swap != m_swapEyes) {
         m_swapEyes = swap;
+        settings.setValue("SwapEyes", swap);
         emit swapEyesChanged();
     }
 }
