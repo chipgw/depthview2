@@ -86,7 +86,9 @@ DVWindow::DVWindow() : QOpenGLWindow(), settings(SETTINGS_ARGS), renderFBO(nullp
     connect(qmlCommunication, &DVQmlCommunication::anamorphicDualViewChanged, this, &DVWindow::updateQmlSize);
 
     /* Update window title whenever file changes. */
-    connect(folderListing, &DVFolderListing::currentFileChanged, [this](){setTitle(folderListing->currentFile() + " - DepthView");});
+    connect(folderListing, &DVFolderListing::currentDirChanged, this, &DVWindow::updateTitle);
+    connect(folderListing, &DVFolderListing::currentFileChanged, this, &DVWindow::updateTitle);
+    connect(folderListing, &DVFolderListing::fileBrowserOpenChanged, this, &DVWindow::updateTitle);
 
     connect(this, &DVWindow::frameSwapped, this, &DVWindow::onFrameSwapped);
 
@@ -132,6 +134,10 @@ void DVWindow::updateQmlSize() {
     qmlRoot->setSize(qmlSize);
 
     qmlWindow->setGeometry(QRect(QPoint(), qmlSize));
+}
+
+void DVWindow::updateTitle() {
+   setTitle((folderListing->fileBrowserOpen() ? folderListing->currentDir().toLocalFile() : folderListing->currentFile()) + " - DepthView");
 }
 
 /* Most events need only be passed on to the qmlWindow. */

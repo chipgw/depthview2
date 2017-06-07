@@ -133,6 +133,8 @@ public slots:
 
     void onFrameSwapped();
 
+    void updateTitle();
+
 protected:
     void initializeGL();
     void paintGL();
