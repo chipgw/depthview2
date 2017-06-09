@@ -21,7 +21,8 @@ class DVQmlCommunication : public QObject {
     Q_PROPERTY(bool mirrorLeft READ mirrorLeft WRITE setMirrorLeft NOTIFY mirrorLeftChanged)
     Q_PROPERTY(bool mirrorRight READ mirrorRight WRITE setMirrorRight NOTIFY mirrorRightChanged)
 
-    Q_PROPERTY(qreal greyFac READ greyFac WRITE setGreyFac NOTIFY greyFacChanged)
+    Q_PROPERTY(qreal greyFacL READ greyFacL WRITE setGreyFacL NOTIFY greyFacLChanged)
+    Q_PROPERTY(qreal greyFacR READ greyFacR WRITE setGreyFacR NOTIFY greyFacRChanged)
 
     Q_PROPERTY(bool fullscreen READ fullscreen WRITE setFullscreen NOTIFY fullscreenChanged)
 
@@ -59,8 +60,10 @@ public:
     bool mirrorRight() const;
     void setMirrorRight(bool mirror);
 
-    qreal greyFac() const;
-    void setGreyFac(qreal fac);
+    qreal greyFacL() const;
+    void setGreyFacL(qreal fac);
+    qreal greyFacR() const;
+    void setGreyFacR(qreal fac);
 
     bool fullscreen() const;
     void setFullscreen(bool fullscreen);
@@ -105,7 +108,8 @@ signals:
     void mirrorLeftChanged(bool mirror);
     void mirrorRightChanged(bool mirror);
 
-    void greyFacChanged(qreal fac);
+    void greyFacLChanged(qreal fac);
+    void greyFacRChanged(qreal fac);
 
     void fullscreenChanged(bool fullscreen);
 
@@ -161,7 +165,8 @@ private:
     bool m_mirrorLeft;
     bool m_mirrorRight;
 
-    qreal m_greyFac;
+    qreal m_greyFacL;
+    qreal m_greyFacR;
 
     DVDrawMode::Type m_drawMode;
     bool m_anamorphicDualView;

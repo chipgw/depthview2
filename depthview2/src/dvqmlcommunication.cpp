@@ -17,7 +17,8 @@ DVQmlCommunication::DVQmlCommunication(QWindow* parent, QSettings& s) : QObject(
 
     m_drawMode = settings.contains("DrawMode") ? DVDrawMode::fromString(settings.value("DrawMode").toByteArray()) : DVDrawMode::Anaglyph;
 
-    m_greyFac = settings.contains("GreyFac") ? settings.value("GreyFac").toReal() : 0.0;
+    m_greyFacL = settings.contains("GreyFacL") ? settings.value("GreyFacL").toReal() : 0.0;
+    m_greyFacR = settings.contains("GreyFacR") ? settings.value("GreyFacR").toReal() : 0.0;
 
     m_swapEyes = settings.contains("SwapEyes") ? settings.value("SwapEyes").toBool() : false;
 
@@ -112,19 +113,35 @@ void DVQmlCommunication::ownerWindowStateChanged(Qt::WindowState windowState) {
     emit fullscreenChanged(windowState == Qt::WindowFullScreen);
 }
 
-qreal DVQmlCommunication::greyFac() const {
-    return m_greyFac;
+qreal DVQmlCommunication::greyFacL() const {
+    return m_greyFacL;
 }
 
-void DVQmlCommunication::setGreyFac(qreal fac) {
+void DVQmlCommunication::setGreyFacL(qreal fac) {
     /* Limit to [0, 1] range. */
     fac = qBound(0.0, fac, 1.0);
 
     /* Only emit if changed. */
-    if (fac != m_greyFac) {
-        m_greyFac = fac;
-        settings.setValue("GreyFac", fac);
-        emit greyFacChanged(fac);
+    if (fac != m_greyFacL) {
+        m_greyFacL = fac;
+        settings.setValue("GreyFacL", fac);
+        emit greyFacLChanged(fac);
+    }
+}
+
+qreal DVQmlCommunication::greyFacR() const {
+    return m_greyFacR;
+}
+
+void DVQmlCommunication::setGreyFacR(qreal fac) {
+    /* Limit to [0, 1] range. */
+    fac = qBound(0.0, fac, 1.0);
+
+    /* Only emit if changed. */
+    if (fac != m_greyFacR) {
+        m_greyFacR = fac;
+        settings.setValue("GreyFacR", fac);
+        emit greyFacRChanged(fac);
     }
 }
 

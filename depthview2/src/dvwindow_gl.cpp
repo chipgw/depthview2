@@ -164,7 +164,8 @@ void DVWindow::paintGL() {
     switch (qmlCommunication->drawMode()) {
     case DVDrawMode::Anaglyph:
         shaderAnaglyph.bind();
-        shaderAnaglyph.setUniformValue("greyFac", float(qmlCommunication->greyFac()));
+        shaderAnaglyph.setUniformValue("greyFacL", float(qmlCommunication->greyFacL()));
+        shaderAnaglyph.setUniformValue("greyFacR", float(qmlCommunication->greyFacR()));
         break;
     case DVDrawMode::SidebySide:
         shaderSideBySide.bind();

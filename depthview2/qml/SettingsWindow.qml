@@ -195,7 +195,8 @@ Dialog {
 
             Flickable {
                 function reset() {
-                    greyFacSlider.value = DepthView.greyFac
+                    greyFacLSlider.value = DepthView.greyFacL
+                    greyFacRSlider.value = DepthView.greyFacR
                     mirrorLeftCheckBox.checked = DepthView.mirrorLeft
                     mirrorRightCheckBox.checked = DepthView.mirrorRight
                     anamorphicCheckBox.checked = DepthView.anamorphicDualView
@@ -203,7 +204,8 @@ Dialog {
                 }
 
                 function apply() {
-                    DepthView.greyFac = greyFacSlider.value
+                    DepthView.greyFacL = greyFacLSlider.value
+                    DepthView.greyFacR = greyFacRSlider.value
                     DepthView.mirrorLeft = mirrorLeftCheckBox.checked
                     DepthView.mirrorRight = mirrorRightCheckBox.checked
                     DepthView.anamorphicDualView = anamorphicCheckBox.checked
@@ -226,11 +228,21 @@ Dialog {
                         Layout.fillWidth: true
                         title: qsTr("Anaglyph")
 
-                        LabeledSlider {
-                            text: qsTr("Grey Factor")
+                        ColumnLayout {
+                            anchors.fill: parent
+                            LabeledSlider {
+                                text: qsTr("Grey Factor (Left Eye)")
 
-                            id: greyFacSlider
-                            Layout.fillWidth: true
+                                id: greyFacLSlider
+                                Layout.fillWidth: true
+                            }
+
+                            LabeledSlider {
+                                text: qsTr("Grey Factor (Right Eye)")
+
+                                id: greyFacRSlider
+                                Layout.fillWidth: true
+                            }
                         }
                     }
 
