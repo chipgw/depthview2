@@ -5,21 +5,13 @@
 #-------------------------------------------------
 
 TARGET = dv2_gamepadplugin
-TEMPLATE = lib
+include(../plugin.pri)
 
-QT += qml quick gamepad
-
-CONFIG += plugin C++11
+QT += gamepad
 
 SOURCES += gamepadplugin.cpp
 
 HEADERS += gamepadplugin.hpp
-
-# This is relative to build directory.
-DESTDIR       = ../../depthview2/plugins
-
-# Relative to project directory, needed for "dvinputplugin.hpp" and "dvinputinterface.hpp".
-INCLUDEPATH += ../../depthview2/include
 
 RESOURCES += gamepadplugin.qrc
 

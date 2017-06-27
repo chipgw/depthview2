@@ -5,21 +5,11 @@
 #-------------------------------------------------
 
 TARGET = dv2_steamcontrollerplugin
-TEMPLATE = lib
-
-QT += qml quick
-
-CONFIG += plugin C++11
+include(../plugin.pri)
 
 SOURCES += steamcontrollerplugin.cpp
 
 HEADERS += steamcontrollerplugin.hpp
-
-# This is relative to build directory.
-DESTDIR       = ../../depthview2/plugins
-
-# Relative to project directory, needed for "dvinputplugin.hpp" and "dvinputinterface.hpp".
-INCLUDEPATH += ../../depthview2/include
 
 RESOURCES += steamcontrollerplugin.qrc
 

@@ -4,21 +4,11 @@
 #------------------------------#
 
 TARGET = dv2_openvrplugin
-TEMPLATE = lib
-
-QT += qml quick
-
-CONFIG += plugin C++11
+include(../plugin.pri)
 
 SOURCES += openvrplugin.cpp
 
 HEADERS += openvrplugin.hpp
-
-# This is relative to build directory.
-DESTDIR       = ../../depthview2/plugins
-
-# Relative to project directory, needed for "dvrenderplugin.hpp".
-INCLUDEPATH += ../../depthview2/include
 
 RESOURCES += openvrplugin.qrc
 

@@ -5,21 +5,11 @@
 #-------------------------------------------------
 
 TARGET = dv2_testplugin
-TEMPLATE = lib
-
-QT += qml quick
-
-CONFIG += plugin C++11
+include(../plugin.pri)
 
 SOURCES += testplugin.cpp
 
 HEADERS += testplugin.hpp
-
-# This is relative to build directory.
-DESTDIR       = ../../depthview2/plugins
-
-# Relative to project directory, needed for "dvrenderplugin.hpp".
-INCLUDEPATH += ../../depthview2/include
 
 RESOURCES += testplugin.qrc
 

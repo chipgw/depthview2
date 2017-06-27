@@ -1,5 +1,6 @@
 #pragma once
 
+/* Make sure we have a macro to use, even if it doesn't actually do anything. */
 #ifndef __has_cpp_attribute
 #define __has_cpp_attribute(X) 0
 #endif
