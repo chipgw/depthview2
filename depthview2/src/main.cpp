@@ -31,9 +31,10 @@ int main(int argc, char* argv[]) {
               QCoreApplication::translate("main", "Start the application in the specified directory. (Ignored if a file is opened)"),
               QCoreApplication::translate("main", "directory")},
             { {"r", "renderer"},
-              /* TODO - List valid modes in help string. */
               QCoreApplication::translate("main", "Set the render mode."),
               QCoreApplication::translate("main", "renderer")},
+            { {"l", "list-modes"},
+              QCoreApplication::translate("main", "List valid render modes to console during startup.")}
         });
 
     parser.addHelpOption();

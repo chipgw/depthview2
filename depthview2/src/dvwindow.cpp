@@ -236,13 +236,18 @@ void DVWindow::doCommandLine(QCommandLineParser& parser) {
     /* We use one string to hold all warning messages, so we only have to show one dialog. */
     QString warning;
 
-    if(parser.isSet("f"))
+    /* Print the valid modes to the console.
+     * Still inits & shows the window because to get plugin modes requires the plugin system to be inited. */
+    if (parser.isSet("l"))
+        qDebug() << "Valid render modes:" << pluginManager->getModes();
+
+    if (parser.isSet("f"))
         setWindowState(Qt::WindowFullScreen);
 
-    if(parser.isSet("d") && !folderListing->initDir(parser.value("d")))
+    if (parser.isSet("d") && !folderListing->initDir(parser.value("d")))
         warning += tr("<p>Invalid directory \"%1\" passed to \"--startdir\" argument!</p>").arg(parser.value("d"));
 
-    if(parser.isSet("r")) {
+    if (parser.isSet("r")) {
         const QString& renderer = parser.value("r");
 
         int mode = pluginManager->getModes().indexOf(renderer);
