@@ -237,6 +237,8 @@ bool OpenVRPlugin::render(const QString&, DVRenderInterface* renderInterface) {
     if (renderInterface->isSurround()) {
         currentTexture = renderInterface->getCurrentTexture(currentTextureLeft, currentTextureRight);
         currentTexturePan = renderInterface->getSurroundPan().x();
+        /* Snap the pan value to multiples of 22.5 degrees to limit nausea. */
+        currentTexturePan -= fmod(currentTexturePan, 22.5);
     }
 
     /* if the current image isn't a loaded or isn't surround, try to use the set background image. */
