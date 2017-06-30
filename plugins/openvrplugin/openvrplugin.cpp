@@ -226,6 +226,7 @@ bool OpenVRPlugin::render(const QString&, DVRenderInterface* renderInterface) {
 
     /* Draw left eye to monitor as if in mono left mode. */
     mirrorShader->bind();
+    f->glViewport(0, 0, renderInterface->getWindowSize().width(), renderInterface->getWindowSize().height());
     /* TODO - This doesn't contain the current image if it's a surround image. */
     f->glBindTexture(GL_TEXTURE_2D, renderInterface->getInterfaceLeftEyeTexture());
     renderInterface->renderStandardQuad();

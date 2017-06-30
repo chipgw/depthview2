@@ -466,3 +466,7 @@ void DVWindow::doStandardSetup() {
 QQuickItem* DVWindow::getRootItem() {
     return qmlWindow->contentItem();
 }
+
+QSize DVWindow::getWindowSize() {
+    return geometry().size();
+}

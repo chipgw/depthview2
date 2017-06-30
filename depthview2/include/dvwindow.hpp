@@ -124,6 +124,8 @@ public:
 
     virtual QQuickItem* getRootItem();
 
+    virtual QSize getWindowSize();
+
     /* ------------------------------- *
      * End DVRenderInterface functions *
      * ------------------------------- */

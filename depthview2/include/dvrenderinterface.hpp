@@ -50,4 +50,6 @@ public:
     virtual void doStandardSetup() = 0;
 
     virtual QQuickItem* getRootItem() = 0;
+
+    virtual QSize getWindowSize() = 0;
 };
