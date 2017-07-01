@@ -73,6 +73,8 @@ bool OpenVRPlugin::init(QOpenGLExtraFunctions*, QQmlContext* qmlContext) {
     screenSize = QQmlProperty(obj, "screenSize");
     screenCurve = QQmlProperty(obj, "screenCurve");
     lockMouse = QQmlProperty(obj, "lockMouse");
+    mirrorUI = QQmlProperty(obj, "mirrorUI");
+    snapSurroundPan = QQmlProperty(obj, "snapSurroundPan");
     renderSizeFac = QQmlProperty(obj, "renderSizeFac");
     backgroundMode = QQmlProperty(obj, "backgroundSourceMode");
     backgroundSwap = QQmlProperty(obj, "backgroundSwap");
@@ -224,12 +226,17 @@ bool OpenVRPlugin::render(const QString&, DVRenderInterface* renderInterface) {
 
     QOpenGLExtraFunctions* f = renderInterface->getOpenGLFunctions();
 
-    /* Draw left eye to monitor as if in mono left mode. */
-    mirrorShader->bind();
-    f->glViewport(0, 0, renderInterface->getWindowSize().width(), renderInterface->getWindowSize().height());
-    /* TODO - This doesn't contain the current image if it's a surround image. */
-    f->glBindTexture(GL_TEXTURE_2D, renderInterface->getInterfaceLeftEyeTexture());
-    renderInterface->renderStandardQuad();
+    f->glClearColor(0.1f, 0.1f, 0.1f, 0.0f);
+    f->glClear(GL_COLOR_BUFFER_BIT);
+
+    if (mirrorUI.read().toBool()) {
+        /* Draw left eye to monitor as if in mono left mode. */
+        mirrorShader->bind();
+        f->glViewport(0, 0, renderInterface->getWindowSize().width(), renderInterface->getWindowSize().height());
+        /* TODO - This doesn't contain the current image if it's a surround image. */
+        f->glBindTexture(GL_TEXTURE_2D, renderInterface->getInterfaceLeftEyeTexture());
+        renderInterface->renderStandardQuad();
+    }
 
     QRectF currentTextureLeft, currentTextureRight;
     QSGTexture* currentTexture = nullptr;
@@ -238,8 +245,10 @@ bool OpenVRPlugin::render(const QString&, DVRenderInterface* renderInterface) {
     if (renderInterface->isSurround()) {
         currentTexture = renderInterface->getCurrentTexture(currentTextureLeft, currentTextureRight);
         currentTexturePan = renderInterface->getSurroundPan().x();
-        /* Snap the pan value to multiples of 22.5 degrees to limit nausea. */
-        currentTexturePan -= fmod(currentTexturePan, 22.5);
+
+        if (snapSurroundPan.read().toBool())
+            /* Snap the pan value to multiples of 22.5 degrees to limit nausea. */
+            currentTexturePan -= fmod(currentTexturePan, 22.5);
     }
 
     /* if the current image isn't a loaded or isn't surround, try to use the set background image. */
@@ -259,9 +268,8 @@ bool OpenVRPlugin::render(const QString&, DVRenderInterface* renderInterface) {
     vrSceneShader->bind();
     f->glViewport(0, 0, renderWidth, renderHeight);
 
-    /* TODO - Configurable background color. */
-    f->glClearColor(0.1f, 0.1f, 0.1f, 0.0f);
-
+    f->glEnableVertexAttribArray(0);
+    f->glEnableVertexAttribArray(1);
     renderEyeScene(vr::Eye_Left, renderInterface, head, currentTexture, currentTextureLeft, currentTexturePan);
     renderEyeScene(vr::Eye_Right, renderInterface, head, currentTexture, currentTextureRight, currentTexturePan);
 

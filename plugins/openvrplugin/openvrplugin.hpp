@@ -69,6 +69,8 @@ private:
     QQmlProperty screenHeight;
     QQmlProperty screenCurve;
     QQmlProperty lockMouse;
+    QQmlProperty mirrorUI;
+    QQmlProperty snapSurroundPan;
     QQmlProperty renderSizeFac;
     QQmlProperty backgroundMode;
     QQmlProperty backgroundSwap;

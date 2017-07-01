@@ -11,6 +11,8 @@ ColumnLayout {
     /* Properties for C++ to read and store/load. */
     property QtObject settings: QtObject {
         property bool lockMouse: false
+        property bool mirrorUI: true
+        property bool snapSurroundPan: true
         property real screenCurve: 0
         property real screenSize: 7
         property real screenDistance: 8
@@ -24,6 +26,8 @@ ColumnLayout {
 
     function reset() {
         lockMouse.checked = settings.lockMouse
+        mirrorUI.checked = settings.mirrorUI
+        snapSurroundPan.checked = settings.snapSurroundPan
         screenCurve.value = settings.screenCurve
         screenDistance.value = settings.screenDistance
         screenSize.value = settings.screenSize
@@ -36,6 +40,8 @@ ColumnLayout {
     }
     function apply() {
         settings.lockMouse = lockMouse.checked
+        settings.mirrorUI = mirrorUI.checked
+        settings.snapSurroundPan = snapSurroundPan.checked
         settings.screenCurve = screenCurve.value
         settings.screenDistance = screenDistance.value
         settings.screenSize = screenSize.value
@@ -48,9 +54,20 @@ ColumnLayout {
         settings.backgroundPan = backgroundImagePan.value
     }
 
-    CheckBox {
-        id: lockMouse
-        text: "Lock Mouse"
+    Flow {
+        Layout.fillWidth: true
+        CheckBox {
+            id: lockMouse
+            text: qsTr("Lock Mouse")
+        }
+        CheckBox {
+            id: mirrorUI
+            text: qsTr("Mirror UI to Window")
+        }
+        CheckBox {
+            id: snapSurroundPan
+            text: qsTr("Snap Surround Image Pan")
+        }
     }
 
     LabeledSlider {
