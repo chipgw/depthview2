@@ -33,7 +33,8 @@ ToolBar {
     states: [
         State {
             name: "HIDDEN"
-            PropertyChanges { target: bottomMenu; anchors.bottomMargin: -bottomMenu.height }
+            /* Put slightly below the edge of the screen so as to avoid leaving a line behind when hidden. */
+            PropertyChanges { target: bottomMenu; anchors.bottomMargin: -bottomMenu.height-8 }
         }
     ]
 
