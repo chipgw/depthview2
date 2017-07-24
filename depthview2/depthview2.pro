@@ -21,6 +21,8 @@ portable:DEFINES += DV_PORTABLE
 # Default rules for deployment.
 include(deployment.pri)
 
+include(../gitversion.pri)
+
 HEADERS += \
     include/dvwindow.hpp \
     include/dvenums.hpp \

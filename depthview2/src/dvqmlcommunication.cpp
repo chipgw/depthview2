@@ -159,6 +159,9 @@ void DVQmlCommunication::setSwapEyes(bool swap) {
 QString DVQmlCommunication::versionString() {
     return version::number.toString() + " Beta";
 }
+QString DVQmlCommunication::gitVersion() {
+    return version::git_version;
+}
 
 QString DVQmlCommunication::buildType() {
     return version::build_type;

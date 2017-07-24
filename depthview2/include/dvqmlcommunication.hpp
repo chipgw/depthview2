@@ -72,6 +72,7 @@ public:
     void setSwapEyes(bool swap);
 
     Q_INVOKABLE QString versionString();
+    Q_INVOKABLE QString gitVersion();
     Q_INVOKABLE QString buildType();
     Q_INVOKABLE QString buildCompiler();
 

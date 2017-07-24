@@ -30,4 +30,6 @@ const char* compiler = "Oracle Solaris Studio";
 const char* compiler = "Unknown";
 #endif
 
+const char* git_version = GIT_VERSION;
+
 }

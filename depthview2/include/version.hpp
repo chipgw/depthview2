@@ -7,8 +7,7 @@ namespace version {
     extern const QVersionNumber number;
     extern const char* build_type;
     extern const char* compiler;
-
-    /* TODO - Figure out how to get qmake to throw the git sha1 in here... */
+    extern const char* git_version;
 }
 
 #define DV_URI_VERSION "DepthView", version::number.majorVersion(), version::number.minorVersion()
