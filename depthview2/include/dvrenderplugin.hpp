@@ -13,7 +13,7 @@ public:
     virtual ~DVRenderPlugin() { }
 
     /* Set up the plugin and return true if it can be used. */
-    virtual bool init(QOpenGLExtraFunctions* f, QQmlContext* qmlContext) = 0;
+    virtual bool init(QOpenGLExtraFunctions* f) = 0;
     /* Delete and clean up anything used by the plugin. */
     virtual bool deinit() = 0;
 
@@ -28,6 +28,7 @@ public:
 
     /* Return an item to go inside the "Plugin Options" menu. */
     virtual QQuickItem* getConfigMenuObject() = 0;
+    virtual bool initConfigMenuObject(QQmlContext* qmlContext) = 0;
 
     /* Return a list of names that this plugin supports. */
     virtual QStringList drawModeNames() = 0;

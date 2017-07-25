@@ -1,6 +1,6 @@
 #pragma once
 
-#include <QOpenGLWindow>
+#include <QQuickWindow>
 #include <QOpenGLShaderProgram>
 #include <QSettings>
 #include <QDir>
@@ -14,17 +14,14 @@ class DVFolderListing;
 class DVPluginManager;
 
 /* Qt forward declarations. */
-class QQuickRenderControl;
-class QQuickWindow;
 class QQuickItem;
-class QQmlEngine;
 
 /* QtAV forward declarations. */
 namespace QtAV {
 class AVPlayer;
 }
 
-class DVWindow : public QOpenGLWindow, public DVInputInterface, public DVRenderInterface {
+class DVWindow : public QQuickWindow, public DVInputInterface, public DVRenderInterface {
 public:
     DVWindow();
     ~DVWindow();
@@ -132,7 +129,6 @@ public:
 
 public slots:
     void updateQmlSize();
-
     void onFrameSwapped();
 
     void updateTitle();
@@ -140,15 +136,14 @@ public slots:
 protected:
     void initializeGL();
     void paintGL();
-    void resizeGL(int, int);
+    void preSync();
 
+protected:
     /* We need to relay these events to qmlWindow. */
     bool event(QEvent *event);
 
 private:
     /* QML Stuff. */
-    QQuickRenderControl* qmlRenderControl;
-    QQuickWindow* qmlWindow;
     QQmlEngine* qmlEngine;
     QQuickItem* qmlRoot;
 
@@ -162,12 +157,12 @@ private:
     QSettings settings;
 
     /* Shaders for built-in draw modes. */
-    QOpenGLShaderProgram shaderAnaglyph;
-    QOpenGLShaderProgram shaderSideBySide;
-    QOpenGLShaderProgram shaderTopBottom;
-    QOpenGLShaderProgram shaderInterlaced;
-    QOpenGLShaderProgram shaderMono;
-    QOpenGLShaderProgram shaderSphere;
+    QOpenGLShaderProgram* shaderAnaglyph;
+    QOpenGLShaderProgram* shaderSideBySide;
+    QOpenGLShaderProgram* shaderTopBottom;
+    QOpenGLShaderProgram* shaderInterlaced;
+    QOpenGLShaderProgram* shaderMono;
+    QOpenGLShaderProgram* shaderSphere;
 
     /* The FBO that QML renders to. */
     QOpenGLFramebufferObject* renderFBO;

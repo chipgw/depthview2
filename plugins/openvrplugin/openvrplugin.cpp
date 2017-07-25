@@ -8,7 +8,7 @@
 #include <QDebug>
 #include <cmath>
 
-bool OpenVRPlugin::init(QOpenGLExtraFunctions*, QQmlContext* qmlContext) {
+bool OpenVRPlugin::init(QOpenGLExtraFunctions*) {
     Q_INIT_RESOURCE(openvrplugin);
 
     if (!vr::VR_IsHmdPresent()) {
@@ -46,44 +46,11 @@ bool OpenVRPlugin::init(QOpenGLExtraFunctions*, QQmlContext* qmlContext) {
 
     distortionShader->link();
 
-    QQmlComponent component(qmlContext->engine());
+    /* Bind so we set the texture sampler uniform values. */
+    distortionShader->bind();
 
-    component.loadUrl(QUrl(QStringLiteral("qrc:/OpenVR/OpenVRConfig.qml")));
-
-    /* Wait for it to load... */
-    while(component.isLoading());
-
-    /* The program can't run if there was an error. */
-    if (component.isError()) {
-        errorString = component.errorString();
-        return false;
-    }
-
-    configMenu = qobject_cast<QQuickItem*>(component.create(qmlContext));
-
-    /* Critical error! abort! abort! */
-    if (configMenu == nullptr) {
-        errorString = "Unable to create configuration QML component.";
-        return false;
-    }
-
-    QObject* obj = QQmlProperty(configMenu, "settings").read().value<QObject*>();
-    screenDistance = QQmlProperty(obj, "screenDistance");
-    screenHeight = QQmlProperty(obj, "screenHeight");
-    screenSize = QQmlProperty(obj, "screenSize");
-    screenCurve = QQmlProperty(obj, "screenCurve");
-    lockMouse = QQmlProperty(obj, "lockMouse");
-    mirrorUI = QQmlProperty(obj, "mirrorUI");
-    snapSurroundPan = QQmlProperty(obj, "snapSurroundPan");
-    renderSizeFac = QQmlProperty(obj, "renderSizeFac");
-    backgroundMode = QQmlProperty(obj, "backgroundSourceMode");
-    backgroundSwap = QQmlProperty(obj, "backgroundSwap");
-    backgroundPan = QQmlProperty(obj, "backgroundPan");
-
-    screenDistance.connectNotifySignal(this, SLOT(updateScreen()));
-    screenHeight.connectNotifySignal(this, SLOT(updateScreen()));
-    screenSize.connectNotifySignal(this, SLOT(updateScreen()));
-    screenCurve.connectNotifySignal(this, SLOT(updateScreen()));
+    /* The source texture will be bound to TEXTURE0. */
+    distortionShader->setUniformValue("texture", 0);
 
     qDebug("OpenVR plugin base inited.");
 
@@ -371,6 +338,37 @@ QStringList OpenVRPlugin::drawModeNames() {
 }
 
 QQuickItem* OpenVRPlugin::getConfigMenuObject() {
+    return configMenu;
+}
+
+bool OpenVRPlugin::initConfigMenuObject(QQmlContext* qmlContext) {
+    QQmlComponent component(qmlContext->engine());
+
+    component.loadUrl(QUrl(QStringLiteral("qrc:/OpenVR/OpenVRConfig.qml")));
+
+    /* Wait for it to load... */
+    while(component.isLoading());
+
+    /* The program can't run if there was an error. */
+    if (component.isError()) {
+        qDebug(qPrintable(component.errorString()));
+        return false;
+    }
+
+    configMenu = qobject_cast<QQuickItem*>(component.create(qmlContext));
+
+    QObject* obj = QQmlProperty(configMenu, "settings").read().value<QObject*>();
+    screenDistance = QQmlProperty(obj, "screenDistance");
+    screenHeight = QQmlProperty(obj, "screenHeight");
+    screenSize = QQmlProperty(obj, "screenSize");
+    screenCurve = QQmlProperty(obj, "screenCurve");
+    lockMouse = QQmlProperty(obj, "lockMouse");
+    renderSizeFac = QQmlProperty(obj, "renderSizeFac");
+    screenDistance.connectNotifySignal(this, SLOT(updateScreen()));
+    screenHeight.connectNotifySignal(this, SLOT(updateScreen()));
+    screenSize.connectNotifySignal(this, SLOT(updateScreen()));
+    screenCurve.connectNotifySignal(this, SLOT(updateScreen()));
+
     return configMenu;
 }
 

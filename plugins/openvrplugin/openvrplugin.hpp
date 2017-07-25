@@ -18,7 +18,7 @@ class OpenVRPlugin : public QObject, public DVRenderPlugin {
     Q_INTERFACES(DVRenderPlugin)
 
 public:
-    bool init(QOpenGLExtraFunctions* f, QQmlContext* qmlContext);
+    bool init(QOpenGLExtraFunctions* f);
     bool deinit();
 
     QString getErrorString();
@@ -35,6 +35,7 @@ public:
     QStringList drawModeNames();
 
     QQuickItem* getConfigMenuObject();
+    bool initConfigMenuObject(QQmlContext* qmlContext);
 
     bool shouldLockMouse();
 

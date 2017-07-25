@@ -49,9 +49,8 @@ void DVPluginManager::postQmlInit() {
     }
 }
 
-void DVPluginManager::loadPlugins(QQmlEngine* engine, QOpenGLContext* context) {
+void DVPluginManager::loadPlugins(QQmlEngine* engine) {
     qmlEngine = engine;
-    openglContext = context;
 
     /* Start with the path the application is in. */
     pluginsDir.cd(qApp->applicationDirPath());
@@ -115,7 +114,7 @@ void DVPluginManager::loadPlugins(QQmlEngine* engine, QOpenGLContext* context) {
         /* If there's a record for the plugin and it's set to enabled, load and init it. */
         if (!pluginRecord.isEmpty() && pluginRecord.value("enabled").toBool() && loadPlugin(filename)) {
             if (plugin->pluginType == DVPluginType::RenderPlugin)
-                initRenderPlugin(filename);
+                initRenderPluginQML(filename);
             else if (plugin->pluginType == DVPluginType::InputPlugin)
                 initInputPlugin(filename);
         }
@@ -125,6 +124,17 @@ void DVPluginManager::loadPlugins(QQmlEngine* engine, QOpenGLContext* context) {
 
     /* Tell the model system that we've finished changing all the things. */
     endResetModel();
+}
+
+void DVPluginManager::initRenderPlugins(QOpenGLContext* context) {
+    openglContext = context;
+
+    for (auto plugin : plugins) {
+        if (plugin->pluginType != DVPluginType::RenderPlugin || renderPlugins.contains(plugin->renderPlugin) || !plugin->errorString.isEmpty())
+            continue;
+
+        initRenderPluginGL(plugins.key(plugin));
+    }
 }
 
 bool DVPluginManager::loadPlugin(const QString& pluginName) {
@@ -146,7 +156,7 @@ bool DVPluginManager::loadPlugin(const QString& pluginName) {
     return (plugin->loaded = plugin->renderPlugin != nullptr || plugin->inputPlugin != nullptr);
 }
 
-bool DVPluginManager::initRenderPlugin(const QString &pluginName) {
+bool DVPluginManager::initRenderPluginQML(const QString &pluginName) {
     DVPluginInfo* plugin = plugins[pluginName];
 
     if (plugin->pluginType != DVPluginType::RenderPlugin)
@@ -154,17 +164,45 @@ bool DVPluginManager::initRenderPlugin(const QString &pluginName) {
 
     plugin->context = new QQmlContext(qmlEngine, this);
 
-    if (plugin->renderPlugin != nullptr && plugin->renderPlugin->init(openglContext->extraFunctions(), plugin->context)) {
+    if (plugin->renderPlugin != nullptr && plugin->renderPlugin->initConfigMenuObject(plugin->context))
+        /* Return true, but don't add to the list until it inits with OpenGL successfully. */
+        return true;
+
+    /* TODO - Get an error message from the plugin. */
+    plugin->errorString = "Plugin \"" + pluginName + "\" failed to init.";
+    qWarning("%s", qPrintable(plugin->errorString));
+    return false;
+}
+
+bool DVPluginManager::initRenderPluginGL(const QString &pluginName) {
+    DVPluginInfo* plugin = plugins[pluginName];
+
+    if (plugin->pluginType != DVPluginType::RenderPlugin)
+        return false;
+
+    QModelIndex changedIndex = createIndex(std::distance(plugins.begin(), plugins.find(pluginName)), 0);
+
+    if (plugin->renderPlugin != nullptr && plugin->renderPlugin->init(openglContext->extraFunctions())) {
         /* Add to the list of usable render plugins. */
         renderPlugins.append(plugin->renderPlugin);
         pluginModes.append(plugin->renderPlugin->drawModeNames());
+        emit pluginModesChanged();
 
         qDebug("Loaded plugin: \"%s\"", qPrintable(pluginName));
-        return plugin->inited = true;
+        plugin->inited = true;
+
+        /* Emit this signal here to update the pluginEnabled value. */
+        emit dataChanged(changedIndex, changedIndex);
+
+        return true;
     }
 
     plugin->errorString = "Plugin \"" + pluginName + "\" failed to init. " + plugin->renderPlugin->getErrorString();
     qWarning("%s", qPrintable(plugin->errorString));
+
+    /* Emit this signal here to update the pluginError value. */
+    emit dataChanged(changedIndex, changedIndex);
+
     return false;
 }
 
@@ -217,7 +255,8 @@ bool DVPluginManager::enablePlugin(QString pluginFileName) {
         /* Plugin is already enabled. */
         return true;
 
-    if ((plugin.value()->loaded || loadPlugin(pluginFileName)) && (initRenderPlugin(pluginFileName) || initInputPlugin(pluginFileName))) {
+    /* TODO - What happens if OpenGL init fails? */
+    if (loadPlugin(pluginFileName) && (initRenderPluginQML(pluginFileName) || initInputPlugin(pluginFileName))) {
         /* If it loaded correctly remember to load it on startup. */
         storePluginEnabled(pluginFileName, true);
 

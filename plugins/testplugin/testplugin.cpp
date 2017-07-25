@@ -6,7 +6,7 @@
 #include <QQuickItem>
 #include <QQmlContext>
 
-bool TestPlugin::init(QOpenGLExtraFunctions*, QQmlContext* qmlContext) {
+bool TestPlugin::init(QOpenGLExtraFunctions*) {
     Q_INIT_RESOURCE(testplugin);
 
     shader = new QOpenGLShaderProgram;
@@ -23,34 +23,6 @@ bool TestPlugin::init(QOpenGLExtraFunctions*, QQmlContext* qmlContext) {
     shader->setUniformValue("textureL", 0);
     /* Right image is TEXTURE1. */
     shader->setUniformValue("textureR", 1);
-
-    QQmlComponent component(qmlContext->engine());
-
-    component.loadUrl(QUrl(QStringLiteral("qrc:/TestPlugin/TestPluginConfig.qml")));
-
-    /* Wait for it to load... */
-    while(component.isLoading());
-
-    /* The program can't run if there was an error. */
-    if (component.isError()) {
-        errorString = component.errorString();
-        return false;
-    }
-
-    configMenuObject = qobject_cast<QQuickItem*>(component.create(qmlContext));
-
-    /* Critical error! abort! abort! */
-    if (configMenuObject == nullptr) {
-        errorString = "Unable to create configuration QML component.";
-        return false;
-    }
-
-    QObject* obj = QQmlProperty(configMenuObject, "settings").read().value<QObject*>();
-    logRenderStart = QQmlProperty(obj, "logRenderStart");
-    logRenderEnd = QQmlProperty(obj, "logRenderEnd");
-    logFrameSwap = QQmlProperty(obj, "logFrameSwap");
-    lockMouse = QQmlProperty(obj, "lockMouse");
-    renderSizeFactor = QQmlProperty(obj, "renderSizeFactor");
 
     qDebug("Test plugin inited.");
 
@@ -96,6 +68,36 @@ QStringList TestPlugin::drawModeNames() {
 }
 
 QQuickItem* TestPlugin::getConfigMenuObject() {
+    return configMenuObject;
+}
+
+bool TestPlugin::initConfigMenuObject(QQmlContext* qmlContext) {
+    QQmlComponent component(qmlContext->engine());
+
+    component.loadUrl(QUrl(QStringLiteral("qrc:/TestPlugin/TestPluginConfig.qml")));
+
+    /* Wait for it to load... */
+    while(component.isLoading());
+
+    /* The program can't run if there was an error. */
+    if (component.isError()) {
+        qDebug(qPrintable(component.errorString()));
+        return false;
+    }
+
+    configMenuObject = qobject_cast<QQuickItem*>(component.create(qmlContext));
+
+    /* Critical error! abort! abort! */
+    if (configMenuObject == nullptr)
+        return false;
+
+    QObject* obj = QQmlProperty(configMenuObject, "settings").read().value<QObject*>();
+    logRenderStart = QQmlProperty(obj, "logRenderStart");
+    logRenderEnd = QQmlProperty(obj, "logRenderEnd");
+    logFrameSwap = QQmlProperty(obj, "logFrameSwap");
+    lockMouse = QQmlProperty(obj, "lockMouse");
+    renderSizeFactor = QQmlProperty(obj, "renderSizeFactor");
+
     return configMenuObject;
 }
 

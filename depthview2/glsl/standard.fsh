@@ -5,6 +5,6 @@ varying highp vec2 texCoord;
 uniform bool left;
 
 void main() {
-    gl_FragColor = left ? texture2D(textureL, texCoord) : texture2D(textureR, texCoord);
+    gl_FragColor = vec4((left ? texture2D(textureL, texCoord) : texture2D(textureR, texCoord)).rgb, 1.0);
 }
 

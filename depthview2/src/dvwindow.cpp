@@ -7,7 +7,6 @@
 #include "dvfilevalidator.hpp"
 #include "dvconfig.hpp"
 #include <QApplication>
-#include <QQuickRenderControl>
 #include <QQuickWindow>
 #include <QQuickItem>
 #include <QQmlEngine>
@@ -19,19 +18,6 @@
 #include <QSqlDatabase>
 #include <AVPlayer.h>
 
-/* This class is needed for making forwarded keyboard events be recognized by QML. */
-class RenderControl : public QQuickRenderControl {
-public:
-    RenderControl(DVWindow* win) : QQuickRenderControl(win), window(win) { }
-
-    QWindow* window;
-
-    /* Apparently it has something to do with QML making sure the window has focus... */
-    QWindow* renderWindow(QPoint* offset) {
-        return window == nullptr ? QQuickRenderControl::renderWindow(offset) : window;
-    }
-};
-
 #ifdef DV_PORTABLE
 /* Portable builds store settings in a "DepthView.conf" next to the application executable. */
 #define SETTINGS_ARGS QApplication::applicationDirPath() + "/DepthView.conf", QSettings::IniFormat
@@ -40,7 +26,7 @@ public:
 #define SETTINGS_ARGS QSettings::IniFormat, QSettings::UserScope, QApplication::organizationName(), QApplication::applicationName()
 #endif
 
-DVWindow::DVWindow() : QOpenGLWindow(), settings(SETTINGS_ARGS), renderFBO(nullptr), sphereTris(QOpenGLBuffer::IndexBuffer) {
+DVWindow::DVWindow() : QQuickWindow(), settings(SETTINGS_ARGS), renderFBO(nullptr), sphereTris(QOpenGLBuffer::IndexBuffer) {
     /* Use the path of the settings file to get the path for the database. */
     QString path = settings.fileName();
     path.remove(path.lastIndexOf('.'), path.length()).append(".db");
@@ -57,15 +43,10 @@ DVWindow::DVWindow() : QOpenGLWindow(), settings(SETTINGS_ARGS), renderFBO(nullp
     /* Let these classes see each other. */
     qmlCommunication->folderListing = folderListing;
     folderListing->qmlCommunication = qmlCommunication;
-
-    /* Use the class defined above. */
-    qmlRenderControl = new RenderControl(this);
-    qmlWindow = new QQuickWindow(qmlRenderControl);
-
     qmlEngine = new QQmlEngine(this);
 
     if (qmlEngine->incubationController() == nullptr)
-        qmlEngine->setIncubationController(qmlWindow->incubationController());
+        qmlEngine->setIncubationController(incubationController());
 
     qmlEngine->rootContext()->setContextProperty("DepthView", qmlCommunication);
     qmlEngine->rootContext()->setContextProperty("FolderListing", folderListing);
@@ -81,22 +62,58 @@ DVWindow::DVWindow() : QOpenGLWindow(), settings(SETTINGS_ARGS), renderFBO(nullp
     qmlRegisterType<DVFileValidator>(DV_URI_VERSION, "FileValidator");
     qRegisterMetaType<DVFolderListing*>();
 
-    /* Update QML size whenever draw mode or anamorphic are changed. */
-    connect(qmlCommunication, &DVQmlCommunication::drawModeChanged, this, &DVWindow::updateQmlSize);
-    connect(qmlCommunication, &DVQmlCommunication::anamorphicDualViewChanged, this, &DVWindow::updateQmlSize);
-
     /* Update window title whenever file changes. */
     connect(folderListing, &DVFolderListing::currentDirChanged, this, &DVWindow::updateTitle);
     connect(folderListing, &DVFolderListing::currentFileChanged, this, &DVWindow::updateTitle);
     connect(folderListing, &DVFolderListing::fileBrowserOpenChanged, this, &DVWindow::updateTitle);
 
-    connect(this, &DVWindow::frameSwapped, this, &DVWindow::onFrameSwapped);
+    connect(this, &QQuickWindow::frameSwapped, this, &DVWindow::onFrameSwapped, Qt::DirectConnection);
+    connect(this, &QQuickWindow::sceneGraphInitialized, this, &DVWindow::initializeGL, Qt::DirectConnection);
+    connect(this, &QQuickWindow::afterRendering, this, &DVWindow::paintGL, Qt::DirectConnection);
+    connect(this, &QQuickWindow::beforeRendering, this, &DVWindow::preSync, Qt::DirectConnection);
 
     /* We render a cursor inside QML so it is shown for both eyes. */
     setCursor(Qt::BlankCursor);
 
     setMinimumSize(QSize(1000, 500));
     setGeometry(0, 0, 1000, 600);
+
+    pluginManager->loadPlugins(qmlEngine);
+
+    QQmlComponent rootComponent(qmlEngine);
+
+    rootComponent.loadUrl(QUrl(QStringLiteral("qrc:/qml/Window.qml")));
+
+    /* Wait for it to load... */
+    while (rootComponent.isLoading());
+
+    /* The program can't run if there was an error. */
+    if (rootComponent.isError())
+        qFatal(qPrintable(rootComponent.errorString()));
+
+    qmlRoot = qobject_cast<QQuickItem*>(rootComponent.create());
+
+    /* Critical error! abort! abort! */
+    if (qmlRoot == nullptr)
+        qFatal(qPrintable(rootComponent.errorString()));
+
+    /* This is the root item, make it so. */
+    qmlRoot->setParentItem(contentItem());
+    setColor(QColor(0, 0, 0, 0));
+
+    player = qmlRoot->findChild<QtAV::AVPlayer*>();
+    if (player == nullptr)
+        qFatal("Unable to find AVPlayer!");
+
+    /* The setGeometry() and setState() calls may try to set the qmlRoot geometry,
+     * which means this needs to be done after QML is all set up. */
+    if (settings.childGroups().contains("Window")) {
+        /* Restore window state from the stored geometry. */
+        settings.beginGroup("Window");
+        setGeometry(settings.value("Geometry").toRect());
+        setWindowState(Qt::WindowState(settings.value("State").toInt()));
+        settings.endGroup();
+    }
 }
 
 DVWindow::~DVWindow() {
@@ -128,19 +145,16 @@ void DVWindow::updateQmlSize() {
         qmlSize = pluginManager->getPluginSize(qmlSize);
 
     /* Don't recreate fbo unless it's null or its size is wrong. */
-    if(renderFBO == nullptr || renderFBO->size() != qmlSize)
+    if (renderFBO == nullptr || renderFBO->size() != qmlSize)
         createFBO();
 
     qmlRoot->setSize(qmlSize);
-
-    qmlWindow->setGeometry(QRect(QPoint(), qmlSize));
 }
 
 void DVWindow::updateTitle() {
    setTitle((folderListing->fileBrowserOpen() ? folderListing->currentDir().toLocalFile() : folderListing->currentFile()) + " - DepthView");
 }
 
-/* Most events need only be passed on to the qmlWindow. */
 bool DVWindow::event(QEvent* e) {
     switch (e->type()) {
     case QEvent::Leave:
@@ -154,6 +168,8 @@ bool DVWindow::event(QEvent* e) {
 
             /* Will generate a new event. */
             QCursor::setPos(mapToGlobal(pos));
+
+            return true;
         }
         break;
     case QEvent::MouseMove:
@@ -168,7 +184,7 @@ bool DVWindow::event(QEvent* e) {
             /* Will generate a new event. */
             QCursor::setPos(mapToGlobal(pos));
 
-            break;
+            return true;
         }
         /* We also emit a special signal for this one so that the fake cursor
          * can be set to the right position without having a MouseArea that absorbs events. */
@@ -178,24 +194,17 @@ bool DVWindow::event(QEvent* e) {
     case QEvent::MouseButtonRelease:
     case QEvent::MouseButtonDblClick:
     case QEvent::Wheel:
-        QCoreApplication::sendEvent(qmlWindow, e);
-
         setCursor(Qt::BlankCursor);
-        return true;
+        break;
     case QEvent::TouchBegin:
     case QEvent::TouchEnd:
     case QEvent::TouchUpdate:
     case QEvent::TouchCancel:
         /* TODO - Remap touch location into the modified screen coordinates,
          * in particular for Side by Side & Top/Bottom modes. */
-        QCoreApplication::sendEvent(qmlWindow, e);
 
         emit qmlCommunication->touchEvent();
-        return true;
-    case QEvent::KeyPress:
-    case QEvent::KeyRelease:
-        QCoreApplication::sendEvent(qmlWindow, e);
-        return true;
+        break;
     case QEvent::DragEnter: {
         QDragEnterEvent* drag = static_cast<QDragEnterEvent*>(e);
         if (drag->mimeData()->hasUrls()) {
@@ -208,7 +217,7 @@ bool DVWindow::event(QEvent* e) {
                 }
             }
         }
-        /* Don't relay the event to QOpenGLWindow. */
+        /* Don't relay the event to QQuickWindow. */
         return true;
     }
     case QEvent::Drop: {
@@ -229,7 +238,7 @@ bool DVWindow::event(QEvent* e) {
         break;
     }
 
-    return QOpenGLWindow::event(e);
+    return QQuickWindow::event(e);
 }
 
 void DVWindow::doCommandLine(QCommandLineParser& parser) {

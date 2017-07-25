@@ -48,9 +48,11 @@ public:
     void postQmlInit();
 
     /* Load static and dynamic plugins and init them. */
-    void loadPlugins(QQmlEngine* engine, QOpenGLContext* context);
+    void loadPlugins(QQmlEngine* engine);
+    void initRenderPlugins(QOpenGLContext* context);
     bool loadPlugin(const QString& pluginName);
-    bool initRenderPlugin(const QString& pluginName);
+    bool initRenderPluginQML(const QString& pluginName);
+    bool initRenderPluginGL(const QString& pluginName);
     bool initInputPlugin(const QString& pluginName);
     /* Call deinit() of all loaded plugins, so as to garbage collect anything they created. */
     void unloadPlugins();

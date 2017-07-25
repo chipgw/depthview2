@@ -16,7 +16,7 @@ class TestPlugin : public QObject, public DVRenderPlugin {
     QString errorString;
 
 public:
-    bool init(QOpenGLExtraFunctions* f, QQmlContext* qmlContext);
+    bool init(QOpenGLExtraFunctions* f);
     bool deinit();
 
     QString getErrorString();
@@ -28,6 +28,7 @@ public:
     QStringList drawModeNames();
 
     QQuickItem* getConfigMenuObject();
+    bool initConfigMenuObject(QQmlContext* qmlContext);
 
     bool shouldLockMouse();
 

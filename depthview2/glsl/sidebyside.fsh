@@ -24,14 +24,14 @@ void main(void) {
         if(mirrorR)
             uv.s = 1.0 - uv.s;
 
-        gl_FragColor = texture2D(textureR, uv);
+        gl_FragColor = vec4(texture2D(textureR, uv).rgb, 1.0);
     } else if (uv.s < 1.0) {
         if(mirrorL)
             uv.s = 1.0 - uv.s;
 
-        gl_FragColor = texture2D(textureL, uv);
+        gl_FragColor = vec4(texture2D(textureL, uv).rgb, 1.0);
     } else {
-        gl_FragColor = vec4(0.0);
+        gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
     }
 }
 

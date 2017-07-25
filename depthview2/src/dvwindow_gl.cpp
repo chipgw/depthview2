@@ -88,72 +88,33 @@ void makeSphere(uint32_t slices, uint32_t stacks, QOpenGLBuffer& sphereVerts, QO
 }
 
 void DVWindow::initializeGL() {
-    QOpenGLExtraFunctions* f = context()->extraFunctions();
+    QOpenGLExtraFunctions* f = openglContext()->extraFunctions();
     qDebug("GL Vendor: \"%s\", Renderer: \"%s\".", f->glGetString(GL_VENDOR), f->glGetString(GL_RENDERER));
 
     loadShaders();
 
     makeSphere(256, 128, sphereVerts, sphereTris, sphereTriCount);
 
-    pluginManager->loadPlugins(qmlEngine, context());
-
-    QQmlComponent rootComponent(qmlEngine);
-
-    rootComponent.loadUrl(QUrl(QStringLiteral("qrc:/qml/Window.qml")));
-
-    /* Wait for it to load... */
-    while (rootComponent.isLoading());
-
-    /* The program can't run if there was an error. */
-    if (rootComponent.isError())
-        qFatal(qPrintable(rootComponent.errorString()));
-
-    qmlRoot = qobject_cast<QQuickItem*>(rootComponent.create());
-
-    /* Critical error! abort! abort! */
-    if (qmlRoot == nullptr)
-        qFatal(qPrintable(rootComponent.errorString()));
-
-    /* This is the root item, make it so. */
-    qmlRoot->setParentItem(qmlWindow->contentItem());
-    qmlWindow->setColor(QColor::fromRgba(0));
-
-    player = qmlRoot->findChild<QtAV::AVPlayer*>();
-    if (player == nullptr)
-        qFatal("Unable to find AVPlayer!");
-
-    /* Init to this window's OpenGL context. */
-    qmlRenderControl->initialize(context());
-
     qmlCommunication->postQmlInit();
     folderListing->postQmlInit();
     pluginManager->postQmlInit();
-
-    /* The setGeometry() and setState() calls may try to set the qmlRoot geometry,
-     * which means this needs to be done after QML is all set up. */
-    if (settings.childGroups().contains("Window")) {
-        /* Restore window state from the stored geometry. */
-        settings.beginGroup("Window");
-        setGeometry(settings.value("Geometry").toRect());
-        setWindowState(Qt::WindowState(settings.value("State").toInt()));
-        settings.endGroup();
-    }
 }
 
-void DVWindow::paintGL() {
+void DVWindow::preSync() {
+    /* Init any new plugins that have been enabled. */
+    pluginManager->initRenderPlugins(openglContext());
+
     /* Get input from the plugins. */
     pluginManager->doPluginInput(this);
 
-    /* So QML doesn't freak out because of stuff we did last frame. */
-    qmlWindow->resetOpenGLState();
+    updateQmlSize();
 
-    qmlWindow->setRenderTarget(renderFBO);
-    qmlRenderControl->polishItems();
-    qmlRenderControl->sync();
-    qmlRenderControl->render();
+    resetOpenGLState();
+}
 
+void DVWindow::paintGL() {
     /* Now we don't want QML messing us up. */
-    qmlWindow->resetOpenGLState();
+    resetOpenGLState();
 
     if (qmlCommunication->drawMode() == DVDrawMode::Plugin && pluginManager->doPluginRender(this))
         return;
@@ -163,44 +124,44 @@ void DVWindow::paintGL() {
     /* Bind the shader and set uniforms for the current draw mode. */
     switch (qmlCommunication->drawMode()) {
     case DVDrawMode::Anaglyph:
-        shaderAnaglyph.bind();
-        shaderAnaglyph.setUniformValue("greyFacL", float(qmlCommunication->greyFacL()));
-        shaderAnaglyph.setUniformValue("greyFacR", float(qmlCommunication->greyFacR()));
+        shaderAnaglyph->bind();
+        shaderAnaglyph->setUniformValue("greyFacL", float(qmlCommunication->greyFacL()));
+        shaderAnaglyph->setUniformValue("greyFacR", float(qmlCommunication->greyFacR()));
         break;
     case DVDrawMode::SidebySide:
-        shaderSideBySide.bind();
-        shaderSideBySide.setUniformValue("mirrorL", qmlCommunication->mirrorLeft());
-        shaderSideBySide.setUniformValue("mirrorR", qmlCommunication->mirrorRight());
+        shaderSideBySide->bind();
+        shaderSideBySide->setUniformValue("mirrorL", qmlCommunication->mirrorLeft());
+        shaderSideBySide->setUniformValue("mirrorR", qmlCommunication->mirrorRight());
         break;
     case DVDrawMode::TopBottom:
-        shaderTopBottom.bind();
-        shaderTopBottom.setUniformValue("mirrorL", qmlCommunication->mirrorLeft());
-        shaderTopBottom.setUniformValue("mirrorR", qmlCommunication->mirrorRight());
+        shaderTopBottom->bind();
+        shaderTopBottom->setUniformValue("mirrorL", qmlCommunication->mirrorLeft());
+        shaderTopBottom->setUniformValue("mirrorR", qmlCommunication->mirrorRight());
         break;
     case DVDrawMode::InterlacedH:
-        shaderInterlaced.bind();
-        shaderInterlaced.setUniformValue("windowCorner", position());
-        shaderInterlaced.setUniformValue("windowSize", size());
-        shaderInterlaced.setUniformValue("horizontal", true);
-        shaderInterlaced.setUniformValue("vertical", false);
+        shaderInterlaced->bind();
+        shaderInterlaced->setUniformValue("windowCorner", position());
+        shaderInterlaced->setUniformValue("windowSize", size());
+        shaderInterlaced->setUniformValue("horizontal", true);
+        shaderInterlaced->setUniformValue("vertical", false);
         break;
     case DVDrawMode::InterlacedV:
-        shaderInterlaced.bind();
-        shaderInterlaced.setUniformValue("windowCorner", position());
-        shaderInterlaced.setUniformValue("windowSize", size());
-        shaderInterlaced.setUniformValue("horizontal", false);
-        shaderInterlaced.setUniformValue("vertical", true);
+        shaderInterlaced->bind();
+        shaderInterlaced->setUniformValue("windowCorner", position());
+        shaderInterlaced->setUniformValue("windowSize", size());
+        shaderInterlaced->setUniformValue("horizontal", false);
+        shaderInterlaced->setUniformValue("vertical", true);
         break;
     case DVDrawMode::Checkerboard:
-        shaderInterlaced.bind();
-        shaderInterlaced.setUniformValue("windowCorner", position());
-        shaderInterlaced.setUniformValue("windowSize", size());
-        shaderInterlaced.setUniformValue("horizontal", true);
-        shaderInterlaced.setUniformValue("vertical", true);
+        shaderInterlaced->bind();
+        shaderInterlaced->setUniformValue("windowCorner", position());
+        shaderInterlaced->setUniformValue("windowSize", size());
+        shaderInterlaced->setUniformValue("horizontal", true);
+        shaderInterlaced->setUniformValue("vertical", true);
         break;
     case DVDrawMode::Mono:
-        shaderMono.bind();
-        shaderMono.setUniformValue("left", true);
+        shaderMono->bind();
+        shaderMono->setUniformValue("left", true);
         break;
     case DVDrawMode::Plugin:
         /* If it's a plugin and we're at this point, the plugin failed to render. */
@@ -218,7 +179,7 @@ void DVWindow::onFrameSwapped() {
     holdMouse = false;
 
     /* In case one of the plugins needs to do something OpenGL related. */
-    makeCurrent();
+//    openglContext()->makeCurrent(this);
 
     if (qmlCommunication->drawMode() == DVDrawMode::Plugin) {
         /* Make sure the render size is up to date. */
@@ -232,13 +193,20 @@ void DVWindow::onFrameSwapped() {
 }
 
 void DVWindow::loadShaders() {
+    shaderAnaglyph      = new QOpenGLShaderProgram(openglContext());
+    shaderSideBySide    = new QOpenGLShaderProgram(openglContext());
+    shaderTopBottom     = new QOpenGLShaderProgram(openglContext());
+    shaderInterlaced    = new QOpenGLShaderProgram(openglContext());
+    shaderMono          = new QOpenGLShaderProgram(openglContext());
+    shaderSphere        = new QOpenGLShaderProgram(openglContext());
+
     /* Most draw modes use the standard vertex shader for a simple fullscreen quad. */
-    loadShader(shaderAnaglyph,      ":/glsl/standard.vsh", ":/glsl/anaglyph.fsh");
-    loadShader(shaderSideBySide,    ":/glsl/standard.vsh", ":/glsl/sidebyside.fsh");
-    loadShader(shaderTopBottom,     ":/glsl/standard.vsh", ":/glsl/topbottom.fsh");
-    loadShader(shaderInterlaced,    ":/glsl/standard.vsh", ":/glsl/interlaced.fsh");
-    loadShader(shaderMono,          ":/glsl/standard.vsh", ":/glsl/standard.fsh");
-    loadShader(shaderSphere,        ":/glsl/sphere.vsh",   ":/glsl/sphere.fsh");
+    loadShader(*shaderAnaglyph,     ":/glsl/standard.vsh", ":/glsl/anaglyph.fsh");
+    loadShader(*shaderSideBySide,   ":/glsl/standard.vsh", ":/glsl/sidebyside.fsh");
+    loadShader(*shaderTopBottom,    ":/glsl/standard.vsh", ":/glsl/topbottom.fsh");
+    loadShader(*shaderInterlaced,   ":/glsl/standard.vsh", ":/glsl/interlaced.fsh");
+    loadShader(*shaderMono,         ":/glsl/standard.vsh", ":/glsl/standard.fsh");
+    loadShader(*shaderSphere,       ":/glsl/sphere.vsh",   ":/glsl/sphere.fsh");
 }
 
 void DVWindow::loadShader(QOpenGLShaderProgram& shader, const char* vshader, const char* fshader) {
@@ -250,7 +218,7 @@ void DVWindow::loadShader(QOpenGLShaderProgram& shader, const char* vshader, con
     QString fshaderSrc = res.readAll();
 
 #ifndef Q_OS_MAC
-    if (!context()->isOpenGLES())
+    if (!openglContext()->isOpenGLES())
         fshaderSrc.prepend("#version 130\n");
 #endif
 
@@ -272,13 +240,13 @@ void DVWindow::loadShader(QOpenGLShaderProgram& shader, const char* vshader, con
 }
 
 void DVWindow::createFBO() {
-    makeCurrent();
+    openglContext()->makeCurrent(this);
 
     /* Delete the old FBO if it exsists. */
     if (renderFBO != nullptr)
         delete renderFBO;
 
-    QOpenGLExtraFunctions* f = context()->extraFunctions();
+    QOpenGLExtraFunctions* f = openglContext()->extraFunctions();
 
     /* Create the FBOs with the calculated QML size. */
     renderFBO = new QOpenGLFramebufferObject(qmlSize, QOpenGLFramebufferObject::CombinedDepthStencil);
@@ -295,11 +263,8 @@ void DVWindow::createFBO() {
         f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     }
-}
 
-void DVWindow::resizeGL(int, int) {
-    /* Delegate to updateQmlSize to resize FBO's and stuff. */
-    updateQmlSize();
+    setRenderTarget(renderFBO);
 }
 
 const QOpenGLFramebufferObject& DVWindow::getInterfaceFramebuffer() {
@@ -367,7 +332,7 @@ qreal DVWindow::getSurroundFOV() {
 }
 
 void DVWindow::renderStandardSphere() {
-    QOpenGLExtraFunctions* f = context()->extraFunctions();
+    QOpenGLExtraFunctions* f = openglContext()->extraFunctions();
 
     /* Enable the vertex and UV arrays. */
     f->glEnableVertexAttribArray(vertex);
@@ -401,7 +366,7 @@ void DVWindow::renderStandardQuad() {
          0.0f, 1.0f
      };
 
-     QOpenGLExtraFunctions* f = context()->extraFunctions();
+     QOpenGLExtraFunctions* f = openglContext()->extraFunctions();
 
      /* Enable the vertex and UV arrays, must be done every frame because of QML resetting things. */
      f->glEnableVertexAttribArray(vertex);
@@ -414,11 +379,11 @@ void DVWindow::renderStandardQuad() {
 }
 
 QOpenGLExtraFunctions* DVWindow::getOpenGLFunctions() {
-    return context()->extraFunctions();
+    return openglContext()->extraFunctions();
 }
 
 void DVWindow::doStandardSetup() {
-    QOpenGLExtraFunctions* f = context()->extraFunctions();
+    QOpenGLExtraFunctions* f = openglContext()->extraFunctions();
 
     if (qmlCommunication->openImageTexture() && qmlCommunication->openImageTexture()->texture() && folderListing->isCurrentFileSurround()) {
         f->glEnable(GL_BLEND);
@@ -426,13 +391,13 @@ void DVWindow::doStandardSetup() {
 
         renderFBO->bind();
 
-        shaderSphere.bind();
+        shaderSphere->bind();
 
         QRectF left, right;
         getCurrentTexture(left, right)->bind();
 
-        shaderSphere.setUniformValue("leftRect", left.x(), left.y(), left.width(), left.height());
-        shaderSphere.setUniformValue("rightRect", right.x(), right.y(), right.width(), right.height());
+        shaderSphere->setUniformValue("leftRect", left.x(), left.y(), left.width(), left.height());
+        shaderSphere->setUniformValue("rightRect", right.x(), right.y(), right.width(), right.height());
 
         QMatrix4x4 mat;
         /* Create a camera matrix using the surround FOV from QML and the aspect ratio of the FBO. */
@@ -443,7 +408,7 @@ void DVWindow::doStandardSetup() {
         mat.rotate(qmlCommunication->surroundPan().x(), 0.0f, 1.0f, 0.0f);
 
         /* Upload to shader. */
-        shaderSphere.setUniformValue("cameraMatrix", mat);
+        shaderSphere->setUniformValue("cameraMatrix", mat);
 
         renderStandardSphere();
 
@@ -464,7 +429,7 @@ void DVWindow::doStandardSetup() {
 }
 
 QQuickItem* DVWindow::getRootItem() {
-    return qmlWindow->contentItem();
+    return contentItem();
 }
 
 QSize DVWindow::getWindowSize() {
