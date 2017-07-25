@@ -130,7 +130,8 @@ void DVPluginManager::initRenderPlugins(QOpenGLContext* context) {
     openglContext = context;
 
     for (auto plugin : plugins) {
-        if (plugin->pluginType != DVPluginType::RenderPlugin || renderPlugins.contains(plugin->renderPlugin) || !plugin->errorString.isEmpty())
+        if (plugin->pluginType != DVPluginType::RenderPlugin || plugin->renderPlugin == nullptr ||
+                renderPlugins.contains(plugin->renderPlugin) || !plugin->errorString.isEmpty())
             continue;
 
         initRenderPluginGL(plugins.key(plugin));
