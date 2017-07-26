@@ -189,12 +189,6 @@ bool DVWindow::event(QEvent* e) {
         /* We also emit a special signal for this one so that the fake cursor
          * can be set to the right position without having a MouseArea that absorbs events. */
         emit qmlCommunication->mouseMoved(static_cast<QMouseEvent*>(e)->localPos());
-        DV_FALLTHROUGH;
-    case QEvent::MouseButtonPress:
-    case QEvent::MouseButtonRelease:
-    case QEvent::MouseButtonDblClick:
-    case QEvent::Wheel:
-        setCursor(Qt::BlankCursor);
         break;
     case QEvent::TouchBegin:
     case QEvent::TouchEnd:

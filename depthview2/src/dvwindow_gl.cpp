@@ -181,13 +181,8 @@ void DVWindow::onFrameSwapped() {
     /* In case one of the plugins needs to do something OpenGL related. */
 //    openglContext()->makeCurrent(this);
 
-    if (qmlCommunication->drawMode() == DVDrawMode::Plugin) {
-        /* Make sure the render size is up to date. */
-        /* TODO - A signal from the plugin would likely be more efficient... */
-        updateQmlSize();
-
+    if (qmlCommunication->drawMode() == DVDrawMode::Plugin)
         holdMouse = pluginManager->onFrameSwapped();
-    }
 
     update();
 }

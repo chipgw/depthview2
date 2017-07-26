@@ -143,6 +143,16 @@ Item {
         z: 1200000
     }
 
+    MouseArea {
+      anchors.fill: parent
+      enabled: false
+      cursorShape: Qt.BlankCursor
+
+      /* Same situation as with fakeCursor, it needs to be above all popups. */
+      parent: root.parent
+      z: 1200000
+    }
+
     Connections {
         target: DepthView
 
