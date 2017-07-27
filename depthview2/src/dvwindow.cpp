@@ -141,9 +141,6 @@ void DVWindow::updateQmlSize() {
     if(qmlCommunication->drawMode() == DVDrawMode::TopBottom && !qmlCommunication->anamorphicDualView())
         qmlSize.setHeight(qmlSize.height() / 2);
 
-    if (qmlCommunication->drawMode() == DVDrawMode::Plugin)
-        qmlSize = pluginManager->getPluginSize(qmlSize);
-
     /* Don't recreate fbo unless it's null or its size is wrong. */
     if (renderFBO == nullptr || renderFBO->size() != qmlSize)
         createFBO();
@@ -258,12 +255,8 @@ void DVWindow::doCommandLine(QCommandLineParser& parser) {
         if(mode == -1)
             warning += tr("<p>Invalid renderer \"%1\" passed to \"--renderer\" argument!</p>").arg(renderer);
 
-        if (mode >= DVDrawMode::Plugin) {
-            pluginManager->setPluginMode(renderer);
-            qmlCommunication->initDrawMode(DVDrawMode::Plugin);
-        } else {
-            qmlCommunication->initDrawMode(DVDrawMode::Type(mode));
-        }
+
+        qmlCommunication->initDrawMode(DVDrawMode::Type(mode));
     }
 
     for (const QString& arg : parser.positionalArguments()) {

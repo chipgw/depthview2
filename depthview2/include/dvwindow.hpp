@@ -6,7 +6,6 @@
 #include <QDir>
 #include <QOpenGLBuffer>
 #include "dvinputinterface.hpp"
-#include "dvrenderinterface.hpp"
 
 /* DepthView forward declarations. */
 class DVQmlCommunication;
@@ -21,7 +20,11 @@ namespace QtAV {
 class AVPlayer;
 }
 
-class DVWindow : public QQuickWindow, public DVInputInterface, public DVRenderInterface {
+/* Vertex attrib locations. */
+constexpr unsigned int vertex = 0;
+constexpr unsigned int uv     = 1;
+
+class DVWindow : public QQuickWindow, public DVInputInterface {
 public:
     DVWindow();
     ~DVWindow();
@@ -94,10 +97,10 @@ public:
     virtual unsigned int getInterfaceRightEyeTexture();
 
     /* Returns the texture handle the current image / video, and sets left & right to where on the texture each eye is. */
-    virtual QSGTexture* getCurrentTexture(QRectF& left, QRectF& right);
+    QSGTexture* getCurrentTexture(QRectF& left, QRectF& right);
 
     /* Get the rectangles of a texture based on the source mode and swap. */
-    virtual void getTextureRects(QRectF& left, QRectF& right, QSGTexture* texture, bool swap, DVSourceMode::Type mode);
+    void getTextureRects(QRectF& left, QRectF& right, QSGTexture* texture, bool swap, DVSourceMode::Type mode);
 
     /* Get whether the current image is surround. */
     virtual bool isSurround();
@@ -106,22 +109,15 @@ public:
     virtual qreal getSurroundFOV();
 
     /* Draw the default sphere (for surround images). */
-    virtual void renderStandardSphere();
+    void renderStandardSphere();
 
     /* Draw the default fullscreen quad. */
-    virtual void renderStandardQuad();
-
-    /* Get the OpenGL functions. */
-    virtual QOpenGLExtraFunctions* getOpenGLFunctions();
+    void renderStandardQuad();
 
     /* Set up the renderer exactly as all the built-in modes have it set up.
      * The left and right image textures will be bound to TEXTURE0 and TEXTURE1, respectively,
      * the viewport is set to the window size, and surround images will be rendered under the UI. */
-    virtual void doStandardSetup();
-
-    virtual QQuickItem* getRootItem();
-
-    virtual QSize getWindowSize();
+    void doStandardSetup();
 
     /* ------------------------------- *
      * End DVRenderInterface functions *

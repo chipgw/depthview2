@@ -1,7 +1,6 @@
 #include "version.hpp"
 #include "dvpluginmanager.hpp"
 #include "dvinputplugin.hpp"
-#include "dvrenderplugin.hpp"
 #include "dvenums.hpp"
 #include <QQuickItem>
 #include <QQmlContext>
@@ -22,7 +21,6 @@ struct DVPluginInfo {
 
     DVPluginType::Type pluginType = DVPluginType::InvalidPlugin;
 
-    DVRenderPlugin* renderPlugin = nullptr;
     DVInputPlugin* inputPlugin = nullptr;
 
     bool loaded = false;
@@ -38,15 +36,7 @@ DVPluginManager::DVPluginManager(QObject* parent, QSettings& s) : QAbstractListM
 }
 
 void DVPluginManager::postQmlInit() {
-    if (settings.contains("PluginMode")) {
-        /* Check to make sure the plugin mode is a valid loaded plugin before setting. */
-        QString mode = settings.value("PluginMode").toString();
-
-        if (pluginModes.contains(mode))
-            emit pluginModeChanged(m_pluginMode = mode);
-        else
-            qWarning("Invalid plugin mode \"%s\" set in settings file!", qPrintable(mode));
-    }
+    /* Nothing */
 }
 
 void DVPluginManager::loadPlugins(QQmlEngine* engine) {
@@ -95,10 +85,7 @@ void DVPluginManager::loadPlugins(QQmlEngine* engine) {
         plugin->loader.setFileName(pluginsDir.absoluteFilePath(filename));
 
         QString iid = plugin->loader.metaData().value("IID").toString();
-        if (iid == DVRenderPlugin_iid) {
-            plugin->pluginType = DVPluginType::RenderPlugin;
-            qDebug("Found render plugin: \"%s\"", qPrintable(filename));
-        } else if (iid == DVInputPlugin_iid) {
+        if (iid == DVInputPlugin_iid) {
             plugin->pluginType = DVPluginType::InputPlugin;
             qDebug("Found input plugin: \"%s\"", qPrintable(filename));
         } else {
@@ -112,30 +99,15 @@ void DVPluginManager::loadPlugins(QQmlEngine* engine) {
         QSqlRecord pluginRecord = getRecordForPlugin(filename);
 
         /* If there's a record for the plugin and it's set to enabled, load and init it. */
-        if (!pluginRecord.isEmpty() && pluginRecord.value("enabled").toBool() && loadPlugin(filename)) {
-            if (plugin->pluginType == DVPluginType::RenderPlugin)
-                initRenderPluginQML(filename);
-            else if (plugin->pluginType == DVPluginType::InputPlugin)
+        if (!pluginRecord.isEmpty() && pluginRecord.value("enabled").toBool() &&
+                loadPlugin(filename) && plugin->pluginType == DVPluginType::InputPlugin)
                 initInputPlugin(filename);
-        }
     }
 
     qDebug("Done loading plugins.");
 
     /* Tell the model system that we've finished changing all the things. */
     endResetModel();
-}
-
-void DVPluginManager::initRenderPlugins(QOpenGLContext* context) {
-    openglContext = context;
-
-    for (auto plugin : plugins) {
-        if (plugin->pluginType != DVPluginType::RenderPlugin || plugin->renderPlugin == nullptr ||
-                renderPlugins.contains(plugin->renderPlugin) || !plugin->errorString.isEmpty())
-            continue;
-
-        initRenderPluginGL(plugins.key(plugin));
-    }
 }
 
 bool DVPluginManager::loadPlugin(const QString& pluginName) {
@@ -149,62 +121,10 @@ bool DVPluginManager::loadPlugin(const QString& pluginName) {
         return false;
     }
 
-    if (plugin->pluginType == DVPluginType::RenderPlugin)
-        plugin->renderPlugin = qobject_cast<DVRenderPlugin*>(obj);
-    else if (plugin->pluginType == DVPluginType::InputPlugin)
+    if (plugin->pluginType == DVPluginType::InputPlugin)
         plugin->inputPlugin = qobject_cast<DVInputPlugin*>(obj);
 
-    return (plugin->loaded = plugin->renderPlugin != nullptr || plugin->inputPlugin != nullptr);
-}
-
-bool DVPluginManager::initRenderPluginQML(const QString &pluginName) {
-    DVPluginInfo* plugin = plugins[pluginName];
-
-    if (plugin->pluginType != DVPluginType::RenderPlugin)
-        return false;
-
-    plugin->context = new QQmlContext(qmlEngine, this);
-
-    if (plugin->renderPlugin != nullptr && plugin->renderPlugin->initConfigMenuObject(plugin->context))
-        /* Return true, but don't add to the list until it inits with OpenGL successfully. */
-        return true;
-
-    /* TODO - Get an error message from the plugin. */
-    plugin->errorString = "Plugin \"" + pluginName + "\" failed to init.";
-    qWarning("%s", qPrintable(plugin->errorString));
-    return false;
-}
-
-bool DVPluginManager::initRenderPluginGL(const QString &pluginName) {
-    DVPluginInfo* plugin = plugins[pluginName];
-
-    if (plugin->pluginType != DVPluginType::RenderPlugin)
-        return false;
-
-    QModelIndex changedIndex = createIndex(std::distance(plugins.begin(), plugins.find(pluginName)), 0);
-
-    if (plugin->renderPlugin != nullptr && plugin->renderPlugin->init(openglContext->extraFunctions())) {
-        /* Add to the list of usable render plugins. */
-        renderPlugins.append(plugin->renderPlugin);
-        pluginModes.append(plugin->renderPlugin->drawModeNames());
-        emit pluginModesChanged();
-
-        qDebug("Loaded plugin: \"%s\"", qPrintable(pluginName));
-        plugin->inited = true;
-
-        /* Emit this signal here to update the pluginEnabled value. */
-        emit dataChanged(changedIndex, changedIndex);
-
-        return true;
-    }
-
-    plugin->errorString = "Plugin \"" + pluginName + "\" failed to init. " + plugin->renderPlugin->getErrorString();
-    qWarning("%s", qPrintable(plugin->errorString));
-
-    /* Emit this signal here to update the pluginError value. */
-    emit dataChanged(changedIndex, changedIndex);
-
-    return false;
+    return (plugin->loaded = plugin->inputPlugin != nullptr);
 }
 
 bool DVPluginManager::initInputPlugin(const QString &pluginName) {
@@ -233,8 +153,6 @@ void DVPluginManager::unloadPlugins() {
     beginResetModel();
 
     /* Deinit any/all loaded plugins. */
-    for (DVRenderPlugin* plugin : renderPlugins)
-        plugin->deinit();
     for (DVInputPlugin* plugin : inputPlugins)
         plugin->deinit();
     /* TODO - Perhaps these should be deleted? Or will they be reused? (Probably not...) */
@@ -242,7 +160,6 @@ void DVPluginManager::unloadPlugins() {
         plugin->inited = false;
 
     /* Clear the list. Not that it should be used anymore... */
-    renderPlugins.clear();
     inputPlugins.clear();
 
     /* Tell the model system that we've finished changing all the things. */
@@ -256,12 +173,11 @@ bool DVPluginManager::enablePlugin(QString pluginFileName) {
         /* Plugin is already enabled. */
         return true;
 
-    /* TODO - What happens if OpenGL init fails? */
-    if (loadPlugin(pluginFileName) && (initRenderPluginQML(pluginFileName) || initInputPlugin(pluginFileName))) {
+    if (loadPlugin(pluginFileName) && initInputPlugin(pluginFileName)) {
         /* If it loaded correctly remember to load it on startup. */
         storePluginEnabled(pluginFileName, true);
 
-        emit pluginModesChanged();
+        emit enabledPluginsChanged();
     }
 
     QModelIndex changedIndex = createIndex(std::distance(plugins.begin(), plugin), 0);
@@ -277,15 +193,7 @@ bool DVPluginManager::disablePlugin(QString pluginFileName) {
     /* Remove from auto-load. */
     storePluginEnabled(pluginFileName, false);
 
-    if (plugin.value()->pluginType == DVPluginType::RenderPlugin) {
-        /* Remove all the draw mode names from the list of available modes. */
-        for (const QString& name : plugin.value()->renderPlugin->drawModeNames())
-            pluginModes.removeAll(name);
-
-        /* Remove the render plugin from the list and deinit it. */
-        renderPlugins.removeAll(plugin.value()->renderPlugin);
-        plugin.value()->renderPlugin->deinit();
-    } else {
+    if (plugin.value()->pluginType == DVPluginType::InputPlugin) {
         /* Remove the input plugin from the list and deinit it. */
         inputPlugins.removeAll(plugin.value()->inputPlugin);
         plugin.value()->inputPlugin->deinit();
@@ -294,7 +202,7 @@ bool DVPluginManager::disablePlugin(QString pluginFileName) {
     plugin.value()->inited = false;
 
     /* For render plugins updates the draw mode list, for all plugins removes the config object from the settings window. */
-    emit pluginModesChanged();
+    emit enabledPluginsChanged();
 
     QModelIndex changedIndex = createIndex(std::distance(plugins.begin(), plugin), 0);
     /* Emit this signal to update the pluginEnabled value if it worked and the pluginError value if it didn't. */
@@ -333,68 +241,10 @@ void DVPluginManager::loadPluginSettings(QString pluginTitle, QObject* settingsO
     settings.endGroup();
 }
 
-DVRenderPlugin* DVPluginManager::getCurrentRenderPlugin() const {
-    for (DVRenderPlugin* plugin : renderPlugins)
-        /* Find the first plugin that contains the mode we want. */
-        if (plugin->drawModeNames().contains(m_pluginMode))
-            return plugin;
-
-    return nullptr;
-}
-
-bool DVPluginManager::doPluginRender(DVRenderInterface* renderInterface) {
-    DVRenderPlugin* plugin = getCurrentRenderPlugin();
-
-    /* Return false if it wasn't found, otherwise let it do its thing. */
-    return plugin != nullptr && plugin->render(m_pluginMode, renderInterface);
-}
-
-QSize DVPluginManager::getPluginSize(QSize inputSize) {
-    DVRenderPlugin* plugin = getCurrentRenderPlugin();
-
-    if (plugin != nullptr)
-        return plugin->getRenderSize(inputSize);
-
-    return inputSize;
-}
-
-bool DVPluginManager::onFrameSwapped() {
-    DVRenderPlugin* plugin = getCurrentRenderPlugin();
-
-    if (plugin != nullptr) {
-        /* Let it do its thing. */
-        plugin->frameSwapped(openglContext->extraFunctions());
-
-        /* Do we hold the mouse? */
-        return plugin->shouldLockMouse();
-    }
-
-    return false;
-}
-
 void DVPluginManager::doPluginInput(DVInputInterface* inputInterface) {
     /* Get input from ALL input plugins. */
     for (DVInputPlugin* plugin : inputPlugins)
         plugin->pollInput(inputInterface);
-
-    /* Only get input from the current render plugin. */
-    DVRenderPlugin* plugin = getCurrentRenderPlugin();
-
-    if (plugin != nullptr)
-        plugin->pollInput(inputInterface);
-}
-
-QString DVPluginManager::pluginMode() const {
-    return m_pluginMode;
-}
-
-void DVPluginManager::setPluginMode(const QString& mode) {
-    /* Only set if valid. */
-    if (mode != m_pluginMode && pluginModes.contains(mode)) {
-        m_pluginMode = mode;
-        settings.setValue("PluginMode", mode);
-        emit pluginModeChanged(mode);
-    }
 }
 
 QStringList DVPluginManager::getModes() const {
@@ -404,19 +254,12 @@ QStringList DVPluginManager::getModes() const {
                          << "Interlaced Horizontal"
                          << "Interlaced Vertical"
                          << "Checkerboard"
-                         << "Mono"
-                         << pluginModes;
-}
-
-QStringList DVPluginManager::getPluginModes() const {
-    return pluginModes;
+                         << "Mono";
 }
 
 QObjectList DVPluginManager::getPluginConfigMenus() const {
     QObjectList list;
 
-    for (DVRenderPlugin* item : renderPlugins)
-        list.append((QObject*)item->getConfigMenuObject());
     for (DVInputPlugin* item : inputPlugins)
         list.append((QObject*)item->getConfigMenuObject());
 
@@ -461,9 +304,7 @@ QVariant DVPluginManager::data(const QModelIndex& index, int role) const {
             data = metaData.value("version");
             break;
         case PluginTypeRole:
-            if (plugin.value()->pluginType == DVPluginType::RenderPlugin)
-                data = tr("Render Plugin");
-            else if (plugin.value()->pluginType == DVPluginType::InputPlugin)
+            if (plugin.value()->pluginType == DVPluginType::InputPlugin)
                 data = tr("Input Plugin");
             else
                 data = tr("Invalid plugin");

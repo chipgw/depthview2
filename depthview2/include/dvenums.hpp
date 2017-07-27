@@ -22,7 +22,7 @@ public: \
     static Type fromString(const char* str) { return Type(metaEnum().keyToValue(str)); } \
     \
     static const char* toString(Type val) { return metaEnum().valueToKey(val); } \
-} /* Put the ';' after declarations cuz the Qt Creator parser likes it better for some reason... */
+};
 
 DV_ENUM(DVDrawMode,
         Anaglyph,
@@ -31,22 +31,20 @@ DV_ENUM(DVDrawMode,
         InterlacedV,
         InterlacedH,
         Checkerboard,
-        Mono,
-        Plugin);
+        Mono)
 
 DV_ENUM(DVSourceMode,
         SidebySide,
         SidebySideAnamorphic,
         TopBottom,
         TopBottomAnamorphic,
-        Mono);
+        Mono)
 
 DV_ENUM(DVInputMode,
         ImageViewer,
         VideoPlayer,
-        FileBrowser);
+        FileBrowser)
 
 DV_ENUM(DVPluginType,
         InvalidPlugin,
-        RenderPlugin,
-        InputPlugin);
+        InputPlugin)

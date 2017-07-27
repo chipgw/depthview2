@@ -101,9 +101,6 @@ void DVWindow::initializeGL() {
 }
 
 void DVWindow::preSync() {
-    /* Init any new plugins that have been enabled. */
-    pluginManager->initRenderPlugins(openglContext());
-
     /* Get input from the plugins. */
     pluginManager->doPluginInput(this);
 
@@ -115,9 +112,6 @@ void DVWindow::preSync() {
 void DVWindow::paintGL() {
     /* Now we don't want QML messing us up. */
     resetOpenGLState();
-
-    if (qmlCommunication->drawMode() == DVDrawMode::Plugin && pluginManager->doPluginRender(this))
-        return;
 
     doStandardSetup();
 
@@ -163,8 +157,6 @@ void DVWindow::paintGL() {
         shaderMono->bind();
         shaderMono->setUniformValue("left", true);
         break;
-    case DVDrawMode::Plugin:
-        /* If it's a plugin and we're at this point, the plugin failed to render. */
     default:
         /* Whoops, invalid renderer. Reset to Anaglyph... */
         qmlCommunication->setDrawMode(DVDrawMode::Anaglyph);
@@ -177,12 +169,6 @@ void DVWindow::paintGL() {
 void DVWindow::onFrameSwapped() {
     /* None of the built-in modes hold the mouse. */
     holdMouse = false;
-
-    /* In case one of the plugins needs to do something OpenGL related. */
-//    openglContext()->makeCurrent(this);
-
-    if (qmlCommunication->drawMode() == DVDrawMode::Plugin)
-        holdMouse = pluginManager->onFrameSwapped();
 
     update();
 }
@@ -373,10 +359,6 @@ void DVWindow::renderStandardQuad() {
      f->glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
-QOpenGLExtraFunctions* DVWindow::getOpenGLFunctions() {
-    return openglContext()->extraFunctions();
-}
-
 void DVWindow::doStandardSetup() {
     QOpenGLExtraFunctions* f = openglContext()->extraFunctions();
 
@@ -421,12 +403,4 @@ void DVWindow::doStandardSetup() {
 
     f->glActiveTexture(GL_TEXTURE1);
     f->glBindTexture(GL_TEXTURE_2D, renderFBO->textures()[qmlCommunication->swapEyes() ? 0 : 1]);
-}
-
-QQuickItem* DVWindow::getRootItem() {
-    return contentItem();
-}
-
-QSize DVWindow::getWindowSize() {
-    return geometry().size();
 }
