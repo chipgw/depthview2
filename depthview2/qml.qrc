@@ -21,5 +21,9 @@
         <file>qml/LabeledSlider.qml</file>
         <file>glsl/sphere.fsh</file>
         <file>glsl/sphere.vsh</file>
+        <file>glsl/openvrdistortion.fsh</file>
+        <file>glsl/openvrdistortion.vsh</file>
+        <file>glsl/openvrscene.fsh</file>
+        <file>glsl/openvrscene.vsh</file>
     </qresource>
 </RCC>

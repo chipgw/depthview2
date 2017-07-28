@@ -2,6 +2,7 @@
 #include "dvqmlcommunication.hpp"
 #include "dvfolderlisting.hpp"
 #include "dvpluginmanager.hpp"
+#include "dvvirtualscreenmanager.hpp"
 #include <QQuickRenderControl>
 #include <QQuickWindow>
 #include <QQuickItem>
@@ -95,6 +96,8 @@ void DVWindow::initializeGL() {
 
     makeSphere(256, 128, sphereVerts, sphereTris, sphereTriCount);
 
+    vrManager->init();
+
     qmlCommunication->postQmlInit();
     folderListing->postQmlInit();
     pluginManager->postQmlInit();
@@ -113,26 +116,28 @@ void DVWindow::paintGL() {
     /* Now we don't want QML messing us up. */
     resetOpenGLState();
 
-    doStandardSetup();
-
     /* Bind the shader and set uniforms for the current draw mode. */
     switch (qmlCommunication->drawMode()) {
     case DVDrawMode::Anaglyph:
+        doStandardSetup();
         shaderAnaglyph->bind();
         shaderAnaglyph->setUniformValue("greyFacL", float(qmlCommunication->greyFacL()));
         shaderAnaglyph->setUniformValue("greyFacR", float(qmlCommunication->greyFacR()));
         break;
     case DVDrawMode::SidebySide:
+        doStandardSetup();
         shaderSideBySide->bind();
         shaderSideBySide->setUniformValue("mirrorL", qmlCommunication->mirrorLeft());
         shaderSideBySide->setUniformValue("mirrorR", qmlCommunication->mirrorRight());
         break;
     case DVDrawMode::TopBottom:
+        doStandardSetup();
         shaderTopBottom->bind();
         shaderTopBottom->setUniformValue("mirrorL", qmlCommunication->mirrorLeft());
         shaderTopBottom->setUniformValue("mirrorR", qmlCommunication->mirrorRight());
         break;
     case DVDrawMode::InterlacedH:
+        doStandardSetup();
         shaderInterlaced->bind();
         shaderInterlaced->setUniformValue("windowCorner", position());
         shaderInterlaced->setUniformValue("windowSize", size());
@@ -140,6 +145,7 @@ void DVWindow::paintGL() {
         shaderInterlaced->setUniformValue("vertical", false);
         break;
     case DVDrawMode::InterlacedV:
+        doStandardSetup();
         shaderInterlaced->bind();
         shaderInterlaced->setUniformValue("windowCorner", position());
         shaderInterlaced->setUniformValue("windowSize", size());
@@ -147,6 +153,7 @@ void DVWindow::paintGL() {
         shaderInterlaced->setUniformValue("vertical", true);
         break;
     case DVDrawMode::Checkerboard:
+        doStandardSetup();
         shaderInterlaced->bind();
         shaderInterlaced->setUniformValue("windowCorner", position());
         shaderInterlaced->setUniformValue("windowSize", size());
@@ -154,9 +161,23 @@ void DVWindow::paintGL() {
         shaderInterlaced->setUniformValue("vertical", true);
         break;
     case DVDrawMode::Mono:
+        doStandardSetup();
         shaderMono->bind();
         shaderMono->setUniformValue("left", true);
         break;
+    case DVDrawMode::VirtualReality:
+        if (vrManager->render()) {
+            if (vrManager->mirrorUI()) {
+                QOpenGLFramebufferObject::bindDefault();
+                resetOpenGLState();
+                doStandardSetup();
+                shaderMono->bind();
+                shaderMono->setUniformValue("left", true);
+                break;
+            }
+
+            return;
+        }
     default:
         /* Whoops, invalid renderer. Reset to Anaglyph... */
         qmlCommunication->setDrawMode(DVDrawMode::Anaglyph);

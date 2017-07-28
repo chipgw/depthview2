@@ -31,7 +31,8 @@ DV_ENUM(DVDrawMode,
         InterlacedV,
         InterlacedH,
         Checkerboard,
-        Mono)
+        Mono,
+        VirtualReality)
 
 DV_ENUM(DVSourceMode,
         SidebySide,

@@ -11,6 +11,7 @@
 class DVQmlCommunication;
 class DVFolderListing;
 class DVPluginManager;
+class DVVirtualScreenManager;
 
 /* Qt forward declarations. */
 class QQuickItem;
@@ -148,6 +149,7 @@ private:
     DVQmlCommunication* qmlCommunication;
     DVFolderListing* folderListing;
     DVPluginManager* pluginManager;
+    DVVirtualScreenManager* vrManager;
     QtAV::AVPlayer* player;
 
     QSettings settings;

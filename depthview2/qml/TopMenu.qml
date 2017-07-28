@@ -107,6 +107,7 @@ ToolBar {
                             ListElement { text: qsTr("Interlaced Vertical"); mode: DrawMode.InterlacedV }
                             ListElement { text: qsTr("Checkerboard"); mode: DrawMode.Checkerboard }
                             ListElement { text: qsTr("Mono"); mode: DrawMode.Mono }
+                            ListElement { text: qsTr("Virtual Reality"); mode: DrawMode.VirtualReality }
                         }
                         MenuItem {
                             text: model.text

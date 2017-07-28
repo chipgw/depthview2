@@ -11,7 +11,8 @@ SOURCES += src/main.cpp \
     src/dvthumbnailprovider.cpp \
     src/fileassociation.cpp \
     src/dvpluginmanager.cpp \
-    src/dvfilevalidator.cpp
+    src/dvfilevalidator.cpp \
+    src/dvvirtualscreenmanager.cpp
 
 RESOURCES += qml.qrc
 
@@ -37,9 +38,26 @@ HEADERS += \
     include/dvpluginmanager.hpp \
     include/dvrenderinterface.hpp \
     include/dvfilevalidator.hpp \
-    include/dvconfig.hpp
+    include/dvconfig.hpp \
+    include/dvvirtualscreenmanager.hpp \
+    include/dv_vrdriver.hpp
 
 INCLUDEPATH += include
+
+openvr: {
+    win32: {
+        contains(QMAKE_TARGET.arch, x86_64): LIBS += -L$$PWD/../../openvr/lib/win64/
+        else: LIBS += -L$$PWD/../../openvr/lib/win32/
+    }
+    LIBS += -L$$PWD/../../openvr/lib/linux64/ -lopenvr_api
+
+    INCLUDEPATH += $$PWD/../../openvr/headers
+    DEPENDPATH += $$PWD/../../openvr/headers
+
+    SOURCES += src/dv_vrdriver_openvr.cpp
+
+    DEFINES += DV_OPENVR
+}
 
 DISTFILES += \
     android/AndroidManifest.xml \

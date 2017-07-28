@@ -6,6 +6,7 @@
 #include "dvpluginmanager.hpp"
 #include "dvfilevalidator.hpp"
 #include "dvconfig.hpp"
+#include "dvvirtualscreenmanager.hpp"
 #include <QApplication>
 #include <QQuickWindow>
 #include <QQuickItem>
@@ -39,6 +40,7 @@ DVWindow::DVWindow() : QQuickWindow(), settings(SETTINGS_ARGS), renderFBO(nullpt
     qmlCommunication = new DVQmlCommunication(this, settings);
     folderListing = new DVFolderListing(this, settings);
     pluginManager = new DVPluginManager(this, settings);
+    vrManager = new DVVirtualScreenManager(this);
 
     /* Let these classes see each other. */
     qmlCommunication->folderListing = folderListing;

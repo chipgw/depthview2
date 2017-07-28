@@ -1,5 +1,0 @@
-{
-    "displayName": "OpenVR Plugin",
-    "description": "Adds support for outputing to a virtual screen in VR using OpenVR/SteamVR.",
-    "version": "1.0"
-}
