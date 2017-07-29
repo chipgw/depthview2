@@ -34,12 +34,12 @@ For information on running qmake directly, see the [qmake docs].
 
 Configuration options:
 * `CONFIG+=portable` - Create a build that will store settings in the exe directory rather than in the OS defined user settings folder.
+* `CONFIG+=openvr` - Adds support for rendering to a virtual screen in VR. (Looks for OpenVR development files in `../openvr` relative to the project root.)
 * `PLUGINS=<plugins>` - Build with the specified plugins. (Supported plugin names are in parenthesis below.)
 
 Supported plugins:
-* Test plugin (`testplugin`) - A minimal plugin automatically enabled in debug builds for testing purposes.
-* OpenVR plugin (`openvrplugin`) - A plugin to add support for rendering to a virtual screen in VR. (Looks for OpenVR development files in ../openvr relative to the project root.)
 * Gamepad plugin (`gamepadplugin`) - Adds support for input from game controllers using the Qt Gamepad module.
+* Steam Controller plugin (`steamcontroller`) - Adds support for input from the Steam Controller & other gamepads supported through the Steam API. (Looks for Steam SDK in `../steamsdk` relative to the project root.)
 
 License
 -------
