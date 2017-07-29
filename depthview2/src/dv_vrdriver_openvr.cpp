@@ -201,7 +201,7 @@ public:
 
         vrSceneShader.setUniformValue("rect", 0.0f, 0.0f, 1.0f, 1.0f);
 
-        f->glBindTexture(GL_TEXTURE_2D, window->getInterfaceLeftEyeTexture());
+        f->glBindTexture(GL_TEXTURE_2D, eye == vr::Eye_Left ? window->getInterfaceLeftEyeTexture() : window->getInterfaceRightEyeTexture());
 
         /* Draw the screen to eye FBO. */
         f->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, screen.data());

@@ -18,8 +18,8 @@ DV_VRDriver::DV_VRDriver(DVWindow *w) : window(w) {
     lockMouse = false;
     mirrorUI = true;
     snapSurroundPan = true;
-    screenCurve = 0.0;
-    screenSize = 7.0;
+    screenCurve = 0.5;
+    screenSize = 4.0;
     screenDistance = 8.0;
     screenHeight = 2.0;
     renderSizeFac = 1.0;
