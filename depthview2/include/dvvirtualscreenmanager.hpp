@@ -8,6 +8,7 @@
 class DV_VRDriver;
 class DVInputInterface;
 class DVWindow;
+class QQuickItem;
 
 class DVVirtualScreenManager : public QObject {
     Q_OBJECT
@@ -24,6 +25,8 @@ class DVVirtualScreenManager : public QObject {
     Q_PROPERTY(DVSourceMode::Type backgroundSourceMode READ backgroundSourceMode WRITE setBackgroundSourceMode NOTIFY backgroundSourceModeChanged)
     Q_PROPERTY(bool backgroundSwap READ backgroundSwap WRITE setBackgroundSwap NOTIFY backgroundSwapChanged)
     Q_PROPERTY(qreal backgroundPan READ backgroundPan WRITE setBackgroundPan NOTIFY backgroundPanChanged)
+
+    Q_PROPERTY(QQuickItem* backgroundImageTarget READ backgroundImageTarget WRITE setBackgroundImageTarget NOTIFY backgroundImageTargetChanged)
 
 public:
     DVVirtualScreenManager(DVWindow* parent);
@@ -61,6 +64,7 @@ signals:
     void backgroundSourceModeChanged();
     void backgroundSwapChanged();
     void backgroundPanChanged();
+    void backgroundImageTargetChanged();
 
 public:
     bool lockMouse();
@@ -98,4 +102,7 @@ public:
 
     qreal backgroundPan();
     void setBackgroundPan(qreal pan);
+
+    QQuickItem* backgroundImageTarget();
+    void setBackgroundImageTarget(QQuickItem* target);
 };

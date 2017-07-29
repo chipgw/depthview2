@@ -124,6 +124,8 @@ public:
      * End DVRenderInterface functions *
      * ------------------------------- */
 
+    QSettings settings;
+
 public slots:
     void updateQmlSize();
     void onFrameSwapped();
@@ -135,7 +137,6 @@ protected:
     void paintGL();
     void preSync();
 
-protected:
     /* We need to relay these events to qmlWindow. */
     bool event(QEvent *event);
 
@@ -151,8 +152,6 @@ private:
     DVPluginManager* pluginManager;
     DVVirtualScreenManager* vrManager;
     QtAV::AVPlayer* player;
-
-    QSettings settings;
 
     /* Shaders for built-in draw modes. */
     QOpenGLShaderProgram* shaderAnaglyph;

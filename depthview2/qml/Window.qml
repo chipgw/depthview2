@@ -242,4 +242,15 @@ Item {
         context: Qt.ApplicationShortcut
         onActivated: closePopups()
     }
+
+    Image {
+        id: vrBackground
+        source: VRManager.backgroundImage
+        visible: false
+        Connections {
+            /* Give C++ access to the texture for the currently open image or video. */
+            target: VRManager
+            onBackgroundImageTargetChanged: VRManager.backgroundImageTarget = vrBackground
+        }
+    }
 }

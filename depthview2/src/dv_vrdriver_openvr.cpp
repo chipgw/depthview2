@@ -58,7 +58,7 @@ public:
             return;
         }
 
-        /* TODO - Actually use this. Also, support tracked controllers. (Gonna be hard, considering I have none...) */
+        /* TODO - Actually use this. Also, support tracked controllers. */
         renderModels = (vr::IVRRenderModels*)vr::VR_GetGenericInterface(vr::IVRRenderModels_Version, &error);
 
         if (renderModels == nullptr) {
@@ -103,10 +103,6 @@ public:
         distortionNumIndexes = indexes.size();
 
         qDebug("OpenVR inited.");
-
-//        backgroundImageItem = configMenu->findChild<QQuickItem*>("backgroundImage");
-//        /* We need to attach this to the windows root item or else the image will not be usable unless the settings window is open. */
-//        backgroundImage->setParentItem(window->getRootItem());
     }
 
     ~DV_VRDriver_OpenVR() {

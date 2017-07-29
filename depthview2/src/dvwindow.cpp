@@ -53,6 +53,7 @@ DVWindow::DVWindow() : QQuickWindow(), settings(SETTINGS_ARGS), renderFBO(nullpt
     qmlEngine->rootContext()->setContextProperty("DepthView", qmlCommunication);
     qmlEngine->rootContext()->setContextProperty("FolderListing", folderListing);
     qmlEngine->rootContext()->setContextProperty("PluginManager", pluginManager);
+    qmlEngine->rootContext()->setContextProperty("VRManager", vrManager);
 
     /* When the Qt.quit() function is called in QML, close this window. */
     connect(qmlEngine, &QQmlEngine::quit, this, &DVWindow::close);
