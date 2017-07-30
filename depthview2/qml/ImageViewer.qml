@@ -62,6 +62,9 @@ Item {
     property alias videoDuration: media.duration
     property alias videoVolume: media.volume
 
+    property alias audioTracks: media.internalAudioTracks
+    property alias audioTrack: media.audioTrack
+
     readonly property string mediaInfo: FolderListing.currentFileInfo + (FolderListing.currentFileIsVideo ?
                                    qsTr("<br>Duration: ") + timeString(media.metaData.duration) +
                                    qsTr("<h2>Video Info:</h2>") +

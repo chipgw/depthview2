@@ -289,9 +289,7 @@ QQuickItem* DVVirtualScreenManager::backgroundImageTarget() {
 }
 void DVVirtualScreenManager::setBackgroundImageTarget(QQuickItem* target){
     if (p != nullptr && target != p->backgroundImageItem) {
-        qDebug("set");
         p->backgroundImageItem = target;
         emit backgroundImageTarget();
-    } else
-    qDebug("not set");
+    }
 }

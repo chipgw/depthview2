@@ -20,7 +20,7 @@ ToolBar {
         zoom100Button.checked = image.zoom === 1
     }
 
-    readonly property bool isMenuOpen: sourceMode.visible || volumePopup.visible
+    readonly property bool isMenuOpen: sourceMode.visible || volumePopup.visible || audioTracksMenu.visible
 
     function closeMenus() {
         sourceMode.close()
@@ -237,10 +237,46 @@ ToolBar {
             RowLayout {
                 anchors.right: parent.right
 
-                /* Not a "zoom button" but goes in the same corner. */
                 ToolButton {
-                    id: volumeButton
+                    font: googleMaterialFont
 
+                    /* "queue_music". */
+                    text: "\ue03d"
+                    /* Only show if the open video has more than a single track available. */
+                    visible: FolderListing.currentFileIsVideo && image.audioTracks.length > 1
+
+                    /* It is only possible to click this when the popup is closed. */
+                    onClicked: audioTracksMenu.open()
+
+                    Menu {
+                        id: audioTracksMenu
+                        y: -height
+                        modal: true
+
+                        ColumnLayout {
+                            Repeater {
+                                model: image.audioTracks
+
+                                MenuItem {
+                                    /* Only show language if there's actually a language to show. */
+                                    text: modelData.title + (modelData.language.length > 0  ? " (" + modelData.language + ")" : "");
+
+                                    checkable: true
+                                    checked: index === image.audioTrack
+                                    font: uiTextFont
+
+                                    onCheckedChanged:
+                                        if (checked) {
+                                            image.audioTrack = index
+                                            audioTracksMenu.close()
+                                        }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                ToolButton {
                     font: googleMaterialFont
 
                     /* "volume_up", "volume_down", & "volume_off", respectively. */
