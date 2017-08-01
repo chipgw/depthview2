@@ -278,6 +278,195 @@ Dialog {
             }
 
             Flickable {
+                function reset() {
+                    lockMouse.checked = VRManager.lockMouse
+                    mirrorUI.checked = VRManager.mirrorUI
+                    snapSurroundPan.checked = VRManager.snapSurroundPan
+                    screenCurve.value = VRManager.screenCurve
+                    screenDistance.value = VRManager.screenDistance
+                    screenSize.value = VRManager.screenSize
+                    screenHeight.value = VRManager.screenHeight
+                    renderSizeFac.value = VRManager.renderSizeFac
+                    backgroundImagePath.text = FolderListing.decodeURL(VRManager.backgroundImage)
+                    backgroundImageMode.setMode(VRManager.backgroundSourceMode)
+                    backgroundImageSwap.checked = VRManager.backgroundSwap
+                    backgroundImagePan.value = VRManager.backgroundPan
+                }
+                function apply() {
+                    VRManager.lockMouse = lockMouse.checked
+                    VRManager.mirrorUI = mirrorUI.checked
+                    VRManager.snapSurroundPan = snapSurroundPan.checked
+                    VRManager.screenCurve = screenCurve.value
+                    VRManager.screenDistance = screenDistance.value
+                    VRManager.screenSize = screenSize.value
+                    VRManager.screenHeight = screenHeight.value
+                    VRManager.renderSizeFac = renderSizeFac.value
+                    /* TODO - Check if it exists. */
+                    VRManager.backgroundImage = FolderListing.encodeURL(backgroundImagePath.text)
+                    VRManager.backgroundSourceMode = backgroundImageMode.mode
+                    VRManager.backgroundSwap = backgroundImageSwap.checked
+                    VRManager.backgroundPan = backgroundImagePan.value
+                }
+
+                readonly property string title: qsTr("Virtual Reality Settings")
+
+                ScrollBar.vertical: ScrollBar { }
+                contentHeight: vrSettingsContent.childrenRect.height
+
+                /* Only enable panning when the item is tall enough. */
+                interactive: contentHeight > height
+
+                ColumnLayout {
+                    id: vrSettingsContent
+                    width: parent.width
+
+                    Flow {
+                        Layout.fillWidth: true
+                        CheckBox {
+                            id: lockMouse
+                            text: qsTr("Lock Mouse")
+                        }
+                        CheckBox {
+                            id: mirrorUI
+                            text: qsTr("Mirror UI to Window")
+                        }
+                        CheckBox {
+                            id: snapSurroundPan
+                            text: qsTr("Snap Surround Image Pan")
+                        }
+                    }
+
+                    LabeledSlider {
+                        id: screenCurve
+
+                        text: "Screen Curviness"
+
+                        from: 0
+                        to: 1
+                    }
+
+                    LabeledSlider {
+                        id: screenSize
+
+                        text: "Screen Size"
+
+                        from: 1
+                        to: screenDistance.value * 2
+                    }
+
+                    LabeledSlider {
+                        id: screenDistance
+
+                        text: "Screen Distance"
+
+                        from: 1
+                        to: 100
+                    }
+
+                    LabeledSlider {
+                        id: screenHeight
+
+                        text: "Screen Height"
+
+                        from: 1
+                        to: 40
+                    }
+                    LabeledSlider {
+                        id: renderSizeFac
+
+                        text: "Render Size Factor"
+
+                        from: 0.5
+                        to: 1
+                    }
+
+                    GroupBox {
+                        Layout.fillWidth: true
+                        title: qsTr("Background")
+                        GridLayout {
+                            /* TODO - Still not quite happy with this layout... */
+                            width: parent.width
+                            columns: 6
+
+                            TextField {
+                                id: backgroundImagePath
+                                Layout.columnSpan: 6
+                                Layout.fillWidth: true
+
+                                placeholderText: qsTr("Background Image Path...")
+                                validator: FileValidator {
+                                    filterSurround: true
+                                    folderListing: FolderListing
+                                }
+                                color: acceptableInput ? "green" : "red"
+                            }
+
+                            CheckBox {
+                                id: backgroundImageSwap
+                                text: "Swap"
+                                Layout.fillWidth: true
+
+                                enabled: backgroundImageMode.mode !== SourceMode.Mono
+                            }
+
+                            Label {
+                                text: qsTr("Source Mode:")
+                            }
+                            ComboBox {
+                                id: backgroundImageMode
+                                textRole: "text"
+                                model: ListModel {
+                                    ListElement { text: qsTr("Mono"); mode: SourceMode.Mono }
+                                    ListElement { text: qsTr("Side-by-Side"); mode: SourceMode.SidebySide }
+                                    ListElement { text: qsTr("Top/Bottom"); mode: SourceMode.TopBottom }
+                                }
+                                function setMode(mode) {
+                                    if (mode === SourceMode.SidebySideAnamorphic)
+                                        mode = SourceMode.SidebySide
+                                    if (mode === SourceMode.TopBottomAnamorphic)
+                                        mode = SourceMode.TopBottom
+
+                                    for (var i = 0; i < model.count; ++i)
+                                        if (model.get(i).mode === mode)
+                                            currentIndex = i
+                                }
+                                readonly property var mode: model.get(currentIndex).mode
+                            }
+
+                            Label {
+                                text: qsTr("Pan")
+                            }
+
+                            Slider {
+                                id: backgroundImagePan
+                                Layout.fillWidth: true
+                                from: 0
+                                to: 360
+                            }
+
+                            Button {
+                                text: "Use Current"
+                                Layout.columnSpan: 1
+
+                                enabled: FolderListing.currentFileIsSurround
+
+                                onClicked: {
+                                    backgroundImagePath.text = FolderListing.decodeURL(FolderListing.currentDir) + "/" + FolderListing.currentFile
+                                    backgroundImageMode.setMode(FolderListing.currentFileStereoMode)
+                                    backgroundImagePan.value = DepthView.surroundPan.x
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Connections {
+                    target: VRManager
+                    onInitedChanged: reset()
+                }
+            }
+
+            Flickable {
                 readonly property string title: qsTr("Plugin Management")
 
                 ScrollBar.vertical: ScrollBar { }

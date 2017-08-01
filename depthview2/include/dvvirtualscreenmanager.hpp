@@ -27,6 +27,7 @@ class DVVirtualScreenManager : public QObject {
     Q_PROPERTY(qreal backgroundPan READ backgroundPan WRITE setBackgroundPan NOTIFY backgroundPanChanged)
 
     Q_PROPERTY(QQuickItem* backgroundImageTarget READ backgroundImageTarget WRITE setBackgroundImageTarget NOTIFY backgroundImageTargetChanged)
+    Q_PROPERTY(bool isInited READ isInited NOTIFY initedChanged)
 
 public:
     DVVirtualScreenManager(DVWindow* parent);
@@ -66,43 +67,47 @@ signals:
     void backgroundPanChanged();
     void backgroundImageTargetChanged();
 
+    void initedChanged();
+
 public:
-    bool lockMouse();
+    bool lockMouse() const;
     void setLockMouse(bool lock);
 
-    bool mirrorUI();
+    bool mirrorUI() const;
     void setMirrorUI(bool mirror);
 
-    bool snapSurroundPan();
+    bool snapSurroundPan() const;
     void setSnapSurroundPan(bool snap);
 
-    qreal screenCurve();
+    qreal screenCurve() const;
     void setScreenCurve(qreal curve);
 
-    qreal screenSize();
+    qreal screenSize() const;
     void setScreenSize(qreal size);
 
-    qreal screenDistance();
+    qreal screenDistance() const;
     void setScreenDistance(qreal distance);
 
-    qreal screenHeight();
+    qreal screenHeight() const;
     void setScreenHeight(qreal height);
 
-    qreal renderSizeFac();
+    qreal renderSizeFac() const;
     void setRenderSizeFac(qreal fac);
 
-    QUrl backgroundImage();
+    QUrl backgroundImage() const;
     void setBackgroundImage(QUrl image);
 
-    DVSourceMode::Type backgroundSourceMode();
+    DVSourceMode::Type backgroundSourceMode() const;
     void setBackgroundSourceMode(DVSourceMode::Type mode);
 
-    bool backgroundSwap();
+    bool backgroundSwap() const;
     void setBackgroundSwap(bool swap);
 
-    qreal backgroundPan();
+    qreal backgroundPan() const;
     void setBackgroundPan(qreal pan);
 
-    QQuickItem* backgroundImageTarget();
+    QQuickItem* backgroundImageTarget() const;
     void setBackgroundImageTarget(QQuickItem* target);
+
+    bool isInited() const;
 };

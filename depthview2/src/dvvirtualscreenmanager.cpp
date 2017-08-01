@@ -62,6 +62,7 @@ bool DVVirtualScreenManager::init() {
     emit backgroundSwapChanged();
     emit backgroundPanChanged();
     emit backgroundImageTargetChanged();
+    emit initedChanged();
 
     return p != nullptr && !p->errorString.isEmpty();
 }
@@ -139,7 +140,7 @@ bool DVVirtualScreenManager::pollInput(DVInputInterface*) {
     return false;
 }
 
-bool DVVirtualScreenManager::lockMouse() {
+bool DVVirtualScreenManager::lockMouse() const {
     return p != nullptr && p->lockMouse;
 }
 
@@ -152,7 +153,7 @@ void DVVirtualScreenManager::setLockMouse(bool lock) {
     }
 }
 
-bool DVVirtualScreenManager::mirrorUI() {
+bool DVVirtualScreenManager::mirrorUI() const {
     return p != nullptr && p->mirrorUI;
 }
 void DVVirtualScreenManager::setMirrorUI(bool mirror) {
@@ -164,7 +165,7 @@ void DVVirtualScreenManager::setMirrorUI(bool mirror) {
     }
 }
 
-bool DVVirtualScreenManager::snapSurroundPan() {
+bool DVVirtualScreenManager::snapSurroundPan() const {
     return p != nullptr && p->snapSurroundPan;
 }
 void DVVirtualScreenManager::setSnapSurroundPan(bool snap) {
@@ -176,7 +177,7 @@ void DVVirtualScreenManager::setSnapSurroundPan(bool snap) {
     }
 }
 
-qreal DVVirtualScreenManager::screenCurve() {
+qreal DVVirtualScreenManager::screenCurve() const {
     return p != nullptr ? p->screenCurve : 0.0;
 }
 void DVVirtualScreenManager::setScreenCurve(qreal curve) {
@@ -188,7 +189,7 @@ void DVVirtualScreenManager::setScreenCurve(qreal curve) {
     }
 }
 
-qreal DVVirtualScreenManager::screenSize() {
+qreal DVVirtualScreenManager::screenSize() const {
     return p != nullptr ? p->screenSize : 0.0;
 }
 void DVVirtualScreenManager::setScreenSize(qreal size) {
@@ -200,7 +201,7 @@ void DVVirtualScreenManager::setScreenSize(qreal size) {
     }
 }
 
-qreal DVVirtualScreenManager::screenDistance() {
+qreal DVVirtualScreenManager::screenDistance() const {
     return p != nullptr ? p->screenDistance : 0.0;
 }
 void DVVirtualScreenManager::setScreenDistance(qreal distance) {
@@ -212,7 +213,7 @@ void DVVirtualScreenManager::setScreenDistance(qreal distance) {
     }
 }
 
-qreal DVVirtualScreenManager::screenHeight() {
+qreal DVVirtualScreenManager::screenHeight() const {
 return p != nullptr ? p->screenHeight : 0.0;
 }
 void DVVirtualScreenManager::setScreenHeight(qreal height) {
@@ -224,7 +225,7 @@ void DVVirtualScreenManager::setScreenHeight(qreal height) {
     }
 }
 
-qreal DVVirtualScreenManager::renderSizeFac() {
+qreal DVVirtualScreenManager::renderSizeFac() const {
     return p != nullptr ? p->renderSizeFac : 0.0;
 }
 void DVVirtualScreenManager::setRenderSizeFac(qreal fac) {
@@ -236,7 +237,7 @@ void DVVirtualScreenManager::setRenderSizeFac(qreal fac) {
     }
 }
 
-QUrl DVVirtualScreenManager::backgroundImage() {
+QUrl DVVirtualScreenManager::backgroundImage() const {
     return p != nullptr ? p->backgroundImage : QUrl();
 }
 void DVVirtualScreenManager::setBackgroundImage(QUrl image) {
@@ -248,7 +249,7 @@ void DVVirtualScreenManager::setBackgroundImage(QUrl image) {
     }
 }
 
-DVSourceMode::Type DVVirtualScreenManager::backgroundSourceMode() {
+DVSourceMode::Type DVVirtualScreenManager::backgroundSourceMode() const {
     return p != nullptr ? p->backgroundSourceMode : DVSourceMode::Mono;
 }
 void DVVirtualScreenManager::setBackgroundSourceMode(DVSourceMode::Type mode) {
@@ -260,7 +261,7 @@ void DVVirtualScreenManager::setBackgroundSourceMode(DVSourceMode::Type mode) {
     }
 }
 
-bool DVVirtualScreenManager::backgroundSwap() {
+bool DVVirtualScreenManager::backgroundSwap() const {
     return p != nullptr && p->backgroundSwap;
 }
 void DVVirtualScreenManager::setBackgroundSwap(bool swap) {
@@ -272,8 +273,8 @@ void DVVirtualScreenManager::setBackgroundSwap(bool swap) {
     }
 }
 
-qreal DVVirtualScreenManager::backgroundPan() {
-    return p != nullptr && p->backgroundPan;
+qreal DVVirtualScreenManager::backgroundPan() const {
+    return p != nullptr ? p->backgroundPan : 0.0;
 }
 void DVVirtualScreenManager::setBackgroundPan(qreal pan) {
     window->settings.setValue("VRSettings/BackgroundPan", pan);
@@ -284,7 +285,7 @@ void DVVirtualScreenManager::setBackgroundPan(qreal pan) {
     }
 }
 
-QQuickItem* DVVirtualScreenManager::backgroundImageTarget() {
+QQuickItem* DVVirtualScreenManager::backgroundImageTarget() const {
     return p != nullptr ? p->backgroundImageItem : nullptr;
 }
 void DVVirtualScreenManager::setBackgroundImageTarget(QQuickItem* target){
@@ -292,4 +293,8 @@ void DVVirtualScreenManager::setBackgroundImageTarget(QQuickItem* target){
         p->backgroundImageItem = target;
         emit backgroundImageTarget();
     }
+}
+
+bool DVVirtualScreenManager::isInited() const {
+    return p != nullptr;
 }
