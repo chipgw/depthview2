@@ -291,6 +291,7 @@ Dialog {
                     backgroundImageMode.setMode(VRManager.backgroundSourceMode)
                     backgroundImageSwap.checked = VRManager.backgroundSwap
                     backgroundImagePan.value = VRManager.backgroundPan
+                    backgroundImageDim.value = VRManager.backgroundDim
                 }
                 function apply() {
                     VRManager.lockMouse = lockMouse.checked
@@ -306,6 +307,7 @@ Dialog {
                     VRManager.backgroundSourceMode = backgroundImageMode.mode
                     VRManager.backgroundSwap = backgroundImageSwap.checked
                     VRManager.backgroundPan = backgroundImagePan.value
+                    VRManager.backgroundDim = backgroundImageDim.value
                 }
 
                 readonly property string title: qsTr("Virtual Reality Settings")
@@ -386,7 +388,7 @@ Dialog {
                         GridLayout {
                             /* TODO - Still not quite happy with this layout... */
                             width: parent.width
-                            columns: 6
+                            columns: 7
 
                             TextField {
                                 id: backgroundImagePath
@@ -399,6 +401,18 @@ Dialog {
                                     folderListing: FolderListing
                                 }
                                 color: acceptableInput ? "green" : "red"
+                            }
+                            Button {
+                                text: "Use Current"
+                                Layout.columnSpan: 1
+
+                                enabled: FolderListing.currentFileIsSurround
+
+                                onClicked: {
+                                    backgroundImagePath.text = FolderListing.decodeURL(FolderListing.currentDir) + "/" + FolderListing.currentFile
+                                    backgroundImageMode.setMode(FolderListing.currentFileStereoMode)
+                                    backgroundImagePan.value = DepthView.surroundPan.x
+                                }
                             }
 
                             CheckBox {
@@ -444,17 +458,15 @@ Dialog {
                                 to: 360
                             }
 
-                            Button {
-                                text: "Use Current"
-                                Layout.columnSpan: 1
+                            Label {
+                                text: qsTr("Dim")
+                            }
 
-                                enabled: FolderListing.currentFileIsSurround
-
-                                onClicked: {
-                                    backgroundImagePath.text = FolderListing.decodeURL(FolderListing.currentDir) + "/" + FolderListing.currentFile
-                                    backgroundImageMode.setMode(FolderListing.currentFileStereoMode)
-                                    backgroundImagePan.value = DepthView.surroundPan.x
-                                }
+                            Slider {
+                                id: backgroundImageDim
+                                Layout.fillWidth: true
+                                from: 0
+                                to: 1
                             }
                         }
                     }

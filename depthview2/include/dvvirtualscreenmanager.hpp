@@ -25,6 +25,7 @@ class DVVirtualScreenManager : public QObject {
     Q_PROPERTY(DVSourceMode::Type backgroundSourceMode READ backgroundSourceMode WRITE setBackgroundSourceMode NOTIFY backgroundSourceModeChanged)
     Q_PROPERTY(bool backgroundSwap READ backgroundSwap WRITE setBackgroundSwap NOTIFY backgroundSwapChanged)
     Q_PROPERTY(qreal backgroundPan READ backgroundPan WRITE setBackgroundPan NOTIFY backgroundPanChanged)
+    Q_PROPERTY(qreal backgroundDim READ backgroundDim WRITE setBackgroundDim NOTIFY backgroundDimChanged)
 
     Q_PROPERTY(QQuickItem* backgroundImageTarget READ backgroundImageTarget WRITE setBackgroundImageTarget NOTIFY backgroundImageTargetChanged)
     Q_PROPERTY(bool isInited READ isInited NOTIFY initedChanged)
@@ -65,6 +66,7 @@ signals:
     void backgroundSourceModeChanged();
     void backgroundSwapChanged();
     void backgroundPanChanged();
+    void backgroundDimChanged();
     void backgroundImageTargetChanged();
 
     void initedChanged();
@@ -105,6 +107,9 @@ public:
 
     qreal backgroundPan() const;
     void setBackgroundPan(qreal pan);
+
+    qreal backgroundDim() const;
+    void setBackgroundDim(qreal dim);
 
     QQuickItem* backgroundImageTarget() const;
     void setBackgroundImageTarget(QQuickItem* target);

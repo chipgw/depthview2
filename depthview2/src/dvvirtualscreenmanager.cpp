@@ -28,6 +28,7 @@ DV_VRDriver::DV_VRDriver(DVWindow* w) : window(w) {
 
     backgroundImage = window->settings.contains("BackgroundImage") ? window->settings.value("BackgroundImage").toUrl() : QUrl();
     backgroundPan = window->settings.contains("BackgroundPan") ? window->settings.value("BackgroundPan").toReal() : 0.0;
+    backgroundDim = window->settings.contains("BackgroundDim") ? window->settings.value("BackgroundDim").toReal() : 0.0;
     backgroundSourceMode = window->settings.contains("BackgroundSourceMode") ?
                 window->settings.value("BackgroundSourceMode").value<DVSourceMode::Type>() : DVSourceMode::Mono;
 
@@ -61,6 +62,7 @@ bool DVVirtualScreenManager::init() {
     emit backgroundSourceModeChanged();
     emit backgroundSwapChanged();
     emit backgroundPanChanged();
+    emit backgroundDimChanged();
     emit backgroundImageTargetChanged();
     emit initedChanged();
 
@@ -70,6 +72,8 @@ bool DVVirtualScreenManager::init() {
 bool DVVirtualScreenManager::deinit() {
     if (p != nullptr)
         delete p;
+
+    emit initedChanged();
 
     return !p->errorString.isEmpty();
 }
@@ -282,6 +286,18 @@ void DVVirtualScreenManager::setBackgroundPan(qreal pan) {
     if (p != nullptr && p->backgroundPan != pan) {
         p->backgroundPan = pan;
         emit backgroundPanChanged();
+    }
+}
+
+qreal DVVirtualScreenManager::backgroundDim() const {
+    return p != nullptr ? p->backgroundDim : 0.0;
+}
+void DVVirtualScreenManager::setBackgroundDim(qreal dim) {
+    window->settings.setValue("VRSettings/BackgroundDim", dim);
+
+    if (p != nullptr && p->backgroundDim != dim) {
+        p->backgroundDim = dim;
+        emit backgroundDimChanged();
     }
 }
 

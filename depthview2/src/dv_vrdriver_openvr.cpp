@@ -158,7 +158,7 @@ public:
         }
     }
 
-    void renderEyeScene(vr::EVREye eye, const QMatrix4x4& head, QSGTexture* imgTexture, QRectF imgRect, qreal imgPan) {
+    void renderEyeScene(vr::EVREye eye, const QMatrix4x4& head, QSGTexture* imgTexture, QRectF imgRect, qreal imgPan, bool isBackground) {
         QOpenGLExtraFunctions* f = window->openglContext()->extraFunctions();
 
         /* A matrix for each eye, to tell where it is relative to the user's head. */
@@ -185,17 +185,20 @@ public:
 
             imgTexture->bind();
 
+            if (isBackground)
+                vrSceneShader.setUniformValue("outputFac", float(1.0 - backgroundDim));
+
             /* Use the sphere provided by the normal surround rendering. */
             window->renderStandardSphere();
 
-            if (window->isSurround()) {
+            if (!isBackground) {
                 f->glEnable(GL_BLEND);
                 f->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             }
         }
         vrSceneShader.setUniformValue("cameraMatrix", eyeMat);
-
         vrSceneShader.setUniformValue("rect", 0.0f, 0.0f, 1.0f, 1.0f);
+        vrSceneShader.setUniformValue("outputFac", 1.0f);
 
         f->glBindTexture(GL_TEXTURE_2D, eye == vr::Eye_Left ? window->getInterfaceLeftEyeTexture() : window->getInterfaceRightEyeTexture());
 
@@ -242,6 +245,8 @@ public:
         QRectF currentTextureLeft, currentTextureRight;
         QSGTexture* currentTexture = nullptr;
         qreal currentTexturePan = 0;
+        /* Whether the value of currentTexture is the background image (true) or an opened image (false). */
+        bool isBackground = false;
 
         if (window->isSurround()) {
             currentTexture = window->getCurrentTexture(currentTextureLeft, currentTextureRight);
@@ -259,6 +264,8 @@ public:
             currentTexturePan = backgroundPan;
 
             window->getTextureRects(currentTextureLeft, currentTextureRight, currentTexture, backgroundSwap, backgroundSourceMode);
+
+            isBackground = true;
         }
 
         /* Get the tracked position of the user's head. */
@@ -271,8 +278,8 @@ public:
 
         f->glEnableVertexAttribArray(0);
         f->glEnableVertexAttribArray(1);
-        renderEyeScene(vr::Eye_Left, head, currentTexture, currentTextureLeft, currentTexturePan);
-        renderEyeScene(vr::Eye_Right, head, currentTexture, currentTextureRight, currentTexturePan);
+        renderEyeScene(vr::Eye_Left, head, currentTexture, currentTextureLeft, currentTexturePan, isBackground);
+        renderEyeScene(vr::Eye_Right, head, currentTexture, currentTextureRight, currentTexturePan, isBackground);
 
         /* Get ready to render distortion. */
         distortionShader.bind();

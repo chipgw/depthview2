@@ -33,6 +33,7 @@ public:
     DVSourceMode::Type backgroundSourceMode;
     bool backgroundSwap;
     qreal backgroundPan;
+    qreal backgroundDim;
 
     QVector<QVector3D> screen;
     QVector<QVector2D> screenUV;
