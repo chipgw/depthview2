@@ -38,6 +38,12 @@ DV_VRDriver::DV_VRDriver(DVWindow* w) : window(w) {
 DVVirtualScreenManager::DVVirtualScreenManager(DVWindow* parent) : QObject(parent) {
     p = nullptr;
     window = parent;
+
+    /* Update screen geometry when any of the screen settings change. */
+    connect(this, &DVVirtualScreenManager::screenCurveChanged, this, &DVVirtualScreenManager::updateScreen);
+    connect(this, &DVVirtualScreenManager::screenSizeChanged, this, &DVVirtualScreenManager::updateScreen);
+    connect(this, &DVVirtualScreenManager::screenDistanceChanged, this, &DVVirtualScreenManager::updateScreen);
+    connect(this, &DVVirtualScreenManager::screenHeightChanged, this, &DVVirtualScreenManager::updateScreen);
 }
 
 DVVirtualScreenManager::~DVVirtualScreenManager() {
@@ -83,9 +89,6 @@ QString DVVirtualScreenManager::getErrorString() {
 }
 
 bool DVVirtualScreenManager::render() {
-    /* TODO - Update only when the render size changes. */
-    updateScreen();
-
     return p != nullptr && p->render();
 }
 

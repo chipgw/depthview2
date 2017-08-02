@@ -75,6 +75,10 @@ DVWindow::DVWindow() : QQuickWindow(), settings(SETTINGS_ARGS), renderFBO(nullpt
     connect(this, &QQuickWindow::afterRendering, this, &DVWindow::paintGL, Qt::DirectConnection);
     connect(this, &QQuickWindow::beforeRendering, this, &DVWindow::preSync, Qt::DirectConnection);
 
+    /* Update the screen when the window size changes. */
+    connect(this, &QWindow::widthChanged, vrManager, &DVVirtualScreenManager::updateScreen);
+    connect(this, &QWindow::heightChanged, vrManager, &DVVirtualScreenManager::updateScreen);
+
     /* We render a cursor inside QML so it is shown for both eyes. */
     setCursor(Qt::BlankCursor);
 
