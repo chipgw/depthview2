@@ -116,6 +116,8 @@ ToolBar {
                             checkable: true
                             checked: DepthView.drawMode === model.mode
 
+                            visible: model.mode !== DrawMode.VirtualReality || VRManager.isInited
+
                             onCheckedChanged:
                                 if (checked) {
                                     DepthView.drawMode = model.mode
