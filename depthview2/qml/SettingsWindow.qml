@@ -474,7 +474,7 @@ Dialog {
 
                 Connections {
                     target: VRManager
-                    onInitedChanged: reset()
+                    onInitedChanged: if (VRManager.isInited) reset()
                 }
             }
 
