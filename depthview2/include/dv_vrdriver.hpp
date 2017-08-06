@@ -13,7 +13,7 @@ protected:
     DV_VRDriver(DVWindow* w);
 
 public:
-    virtual ~DV_VRDriver() = 0;
+    virtual ~DV_VRDriver() = default;
     virtual bool render() = 0;
 
     virtual void frameSwapped() = 0;
