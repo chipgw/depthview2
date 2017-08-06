@@ -35,7 +35,7 @@ public:
     ~DVVirtualScreenManager();
 
     bool init();
-    bool deinit();
+    void deinit();
 
     QString getErrorString();
 

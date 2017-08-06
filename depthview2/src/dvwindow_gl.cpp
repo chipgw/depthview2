@@ -103,6 +103,15 @@ void DVWindow::initializeGL() {
     pluginManager->postQmlInit();
 }
 
+void DVWindow::shutdownGL() {
+    delete renderFBO;
+
+    sphereVerts.destroy();
+    sphereTris.destroy();
+
+    vrManager->deinit();
+}
+
 void DVWindow::preSync() {
     /* Get input from the plugins. */
     pluginManager->doPluginInput(this);

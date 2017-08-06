@@ -75,13 +75,10 @@ bool DVVirtualScreenManager::init() {
     return p != nullptr && !p->errorString.isEmpty();
 }
 
-bool DVVirtualScreenManager::deinit() {
+void DVVirtualScreenManager::deinit() {
     if (p != nullptr)
         delete p;
-
-    emit initedChanged();
-
-    return !p->errorString.isEmpty();
+    p = nullptr;
 }
 
 QString DVVirtualScreenManager::getErrorString() {

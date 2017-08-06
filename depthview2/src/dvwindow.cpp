@@ -72,6 +72,7 @@ DVWindow::DVWindow() : QQuickWindow(), settings(SETTINGS_ARGS), renderFBO(nullpt
 
     connect(this, &QQuickWindow::frameSwapped, this, &DVWindow::onFrameSwapped, Qt::DirectConnection);
     connect(this, &QQuickWindow::sceneGraphInitialized, this, &DVWindow::initializeGL, Qt::DirectConnection);
+    connect(this, &QQuickWindow::sceneGraphInvalidated, this, &DVWindow::shutdownGL, Qt::DirectConnection);
     connect(this, &QQuickWindow::afterRendering, this, &DVWindow::paintGL, Qt::DirectConnection);
     connect(this, &QQuickWindow::beforeRendering, this, &DVWindow::preSync, Qt::DirectConnection);
 
@@ -125,8 +126,6 @@ DVWindow::DVWindow() : QQuickWindow(), settings(SETTINGS_ARGS), renderFBO(nullpt
 
 DVWindow::~DVWindow() {
     pluginManager->unloadPlugins();
-
-    delete renderFBO;
 
     if (qmlCommunication->saveWindowState()) {
         /* Save the window geometry so that it can be restored next run. */

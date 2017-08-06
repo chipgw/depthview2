@@ -134,6 +134,7 @@ public slots:
 
 protected:
     void initializeGL();
+    void shutdownGL();
     void paintGL();
     void preSync();
 
