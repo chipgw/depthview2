@@ -168,7 +168,7 @@ public:
         const vr::HmdMatrix44_t& eyeProj = vrSystem->GetProjectionMatrix(eye,  0.1f, 1000.0f);
 
         /* Convert them all to QMatrix4x4 and combine them. */
-        QMatrix4x4 eyeMat = QMatrix4x4(*eyeProj.m) * QMatrix4x4(QMatrix4x3(*eyeMatrix.m)) * head;
+        QMatrix4x4 eyeMat = QMatrix4x4(*eyeProj.m) * QMatrix4x4(QMatrix4x3(*eyeMatrix.m)).inverted() * head;
 
         /* Setup for the eye. */
         renderFBO[eye]->bind();
