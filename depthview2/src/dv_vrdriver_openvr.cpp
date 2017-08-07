@@ -9,23 +9,62 @@
 #include <QOpenGLShaderProgram>
 #include <QOpenGLFramebufferObject>
 #include <QOpenGLBuffer>
+#include <QOpenGLTexture>
 #include <QDebug>
+#include <QMap>
+#include <QThread>
 #include <cmath>
 #include <openvr.h>
 
+struct ModelComponent {
+    QOpenGLBuffer VBO;
+    QOpenGLBuffer IBO;
+
+    ModelComponent(const vr::RenderModel_t& model, const vr::RenderModel_TextureMap_t& tex, QOpenGLExtraFunctions* f)
+        : VBO(QOpenGLBuffer::VertexBuffer), IBO(QOpenGLBuffer::IndexBuffer), texture(QOpenGLTexture::Target2D) {
+        /* Upload the verts to the GPU. */
+        VBO.create(); VBO.bind();
+        VBO.allocate(model.rVertexData, sizeof(vr::RenderModel_Vertex_t) * model.unVertexCount);
+        /* Upload the indexes to the GPU. */
+        IBO.create(); IBO.bind();
+        IBO.allocate(model.rIndexData, sizeof(uint16_t) * model.unTriangleCount * 3);
+
+        vertexCount = model.unTriangleCount * 3;
+
+        /* Prepare to upload the texture. */
+        texture.create(); texture.bind();
+        f->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex.unWidth, tex.unHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex.rubTextureMapData);
+
+        /* We want mipmaps. */
+        f->glGenerateMipmap(GL_TEXTURE_2D);
+        f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
+        GLfloat largest;
+        f->glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &largest);
+        f->glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, largest);
+    }
+
+    QOpenGLTexture texture;
+    GLsizei vertexCount;
+};
+
 class DV_VRDriver_OpenVR : public DV_VRDriver {
+    /* Model name -> (component name -> component model data). */
+    QMap<QByteArray, QMap<QByteArray, ModelComponent*>> renderModels;
+
+    /* List of all loaded model components by their component model name. */
+    QMap<QByteArray, ModelComponent*> loadedComponents;
+
+    /* Tracked device -> model name. */
+    QByteArray modelForDevice[vr::k_unMaxTrackedDeviceCount];
+
 public:
-    DV_VRDriver_OpenVR(DVWindow* w) : DV_VRDriver(w),
-        distortionVBO(QOpenGLBuffer::VertexBuffer), distortionIBO(QOpenGLBuffer::IndexBuffer) {
+    DV_VRDriver_OpenVR(DVWindow* w) : DV_VRDriver(w), distortionVBO(QOpenGLBuffer::VertexBuffer), distortionIBO(QOpenGLBuffer::IndexBuffer) {
         if (!vr::VR_IsHmdPresent()) {
             errorString = "No HMD detected.";
             return;
         }
-
-        /* These wil be inited on first usage. */
-        vrSystem = nullptr;
-        renderFBO[0] = renderFBO[1] = nullptr;
-        resolveFBO[0] = resolveFBO[1] = nullptr;
 
         vrSceneShader.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/glsl/openvrscene.vsh");
         vrSceneShader.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/glsl/openvrscene.fsh");
@@ -46,24 +85,12 @@ public:
         /* Bind so we set the texture sampler uniform values. */
         distortionShader.bind();
 
-        /* The source texture will be bound to TEXTURE0. */
-        distortionShader.setUniformValue("texture", 0);
-
         vr::EVRInitError error = vr::VRInitError_None;
         vrSystem = vr::VR_Init(&error, vr::VRApplication_Scene);
 
         if (error != vr::VRInitError_None) {
             vrSystem = nullptr;
             errorString = "Error initing VR system.";
-            return;
-        }
-
-        /* TODO - Actually use this. Also, support tracked controllers. */
-        renderModels = (vr::IVRRenderModels*)vr::VR_GetGenericInterface(vr::IVRRenderModels_Version, &error);
-
-        if (renderModels == nullptr) {
-            vrSystem = nullptr;
-            errorString = "Error getting render model interface.";
             return;
         }
 
@@ -77,8 +104,8 @@ public:
         vrSystem->GetRecommendedRenderTargetSize(&renderWidth, &renderHeight);
 
         /* Set up an FBO for each eye. */
-        renderFBO[0] = new QOpenGLFramebufferObject(renderWidth, renderHeight);
-        renderFBO[1] = new QOpenGLFramebufferObject(renderWidth, renderHeight);
+        renderFBO[0] = new QOpenGLFramebufferObject(renderWidth, renderHeight, QOpenGLFramebufferObject::Depth);
+        renderFBO[1] = new QOpenGLFramebufferObject(renderWidth, renderHeight, QOpenGLFramebufferObject::Depth);
         resolveFBO[0] = new QOpenGLFramebufferObject(renderWidth, renderHeight);
         resolveFBO[1] = new QOpenGLFramebufferObject(renderWidth, renderHeight);
 
@@ -102,6 +129,9 @@ public:
         /* Store the number of indexes for rendering. */
         distortionNumIndexes = indexes.size();
 
+        /* Load the models for attached devices. */
+        for (uint32_t i = 0; i < vr::k_unMaxTrackedDeviceCount; ++i) setupDeviceModel(i);
+
         qDebug("OpenVR inited.");
     }
 
@@ -109,9 +139,21 @@ public:
         delete renderFBO[0]; delete renderFBO[1];
         delete resolveFBO[0]; delete resolveFBO[1];
 
+        /* Delete all loaded render models. */
+        for (ModelComponent* m : loadedComponents) delete m;
+
         vr::VR_Shutdown();
 
         qDebug("OpenVR shutdown.");
+    }
+
+    void handleVREvent(const vr::VREvent_t& e) {
+        switch (e.eventType) {
+        case vr::VREvent_TrackedDeviceActivated:
+            /* Load the model for the newly attached device. */
+            setupDeviceModel(e.trackedDeviceIndex);
+            break;
+        }
     }
 
     void calculateEyeDistortion(vr::EVREye eye, QVector<QVector2D>& verts, QVector<GLushort>& indexes, int offset) {
@@ -175,8 +217,6 @@ public:
         f->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         if (imgTexture != nullptr) {
-            f->glDisable(GL_BLEND);
-
             QMatrix4x4 sphereMat;
             sphereMat.scale(900.0f);
             sphereMat.rotate(imgPan, 0.0f, 1.0f, 0.0f);
@@ -191,21 +231,68 @@ public:
             /* Use the sphere provided by the normal surround rendering. */
             window->renderStandardSphere();
 
-            if (!isBackground) {
+            if (!isBackground)
                 f->glEnable(GL_BLEND);
-                f->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            }
         }
         vrSceneShader.setUniformValue("cameraMatrix", eyeMat);
         vrSceneShader.setUniformValue("rect", 0.0f, 0.0f, 1.0f, 1.0f);
         vrSceneShader.setUniformValue("outputFac", 1.0f);
 
+        /* Get the UI texture for the current eye from the window. */
         f->glBindTexture(GL_TEXTURE_2D, eye == vr::Eye_Left ? window->getInterfaceLeftEyeTexture() : window->getInterfaceRightEyeTexture());
 
         /* Draw the screen to eye FBO. */
-        f->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, screen.data());
-        f->glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, screenUV.data());
+        vrSceneShader.setAttributeArray(0, screen.data());
+        vrSceneShader.setAttributeArray(1, screenUV.data());
         f->glDrawArrays(GL_TRIANGLE_STRIP, 0, screen.size());
+
+        /* Don't use blending for tracked models. */
+        f->glDisable(GL_BLEND);
+
+        for (uint32_t trackedDevice = 0; trackedDevice < vr::k_unMaxTrackedDeviceCount; ++trackedDevice) {
+            /* Only render valid devices of the controller class. */
+            if (!renderModels.contains(modelForDevice[trackedDevice]) || vrSystem->GetTrackedDeviceClass(trackedDevice) != vr::TrackedDeviceClass_Controller)
+                continue;
+
+            const vr::TrackedDevicePose_t& pose = trackedDevicePose[trackedDevice];
+            /* Don't render when the tracking data isn't valid. */
+            if (!pose.bPoseIsValid) continue;
+
+            QMatrix4x4 deviceToEye = eyeMat * QMatrix4x4(QMatrix4x3(*pose.mDeviceToAbsoluteTracking.m));
+
+            const auto& componentsByName = renderModels[modelForDevice[trackedDevice]];
+
+            /* Go through each component to render it. */
+            for (auto component = componentsByName.cbegin(), end = componentsByName.cend(); component != end; ++component) {
+                /* Get the current state of the controller. */
+                vr::VRControllerState_t controllerState; vrSystem->GetControllerState(trackedDevice, &controllerState, sizeof(controllerState));
+
+                /* I'm making assumptions here... */
+                const vr::RenderModel_ControllerMode_State_t renderModelState = { false };
+
+                /* This is where we get the render model system to put the component matrix. */
+                vr::RenderModel_ComponentState_t componentState;
+
+                /* Get the component state information from OpenVR. */
+                vr::VRRenderModels()->GetComponentState(modelForDevice[trackedDevice].data(), component.key().data(), &controllerState, &renderModelState, &componentState);
+
+                vrSceneShader.setUniformValue("cameraMatrix", deviceToEye * QMatrix4x4(QMatrix4x3(*componentState.mTrackingToComponentRenderModel.m)));
+
+                component.value()->VBO.bind();
+                component.value()->IBO.bind();
+
+                /* This model also has normals, but there isn't any lighting so they're unnecessary. */
+                vrSceneShader.setAttributeBuffer(0, GL_FLOAT, offsetof(vr::RenderModel_Vertex_t, vPosition), 3, sizeof(vr::RenderModel_Vertex_t));
+                vrSceneShader.setAttributeBuffer(1, GL_FLOAT, offsetof(vr::RenderModel_Vertex_t, rfTextureCoord), 2, sizeof(vr::RenderModel_Vertex_t));
+
+                component.value()->texture.bind();
+
+                f->glDrawElements(GL_TRIANGLES, component.value()->vertexCount, GL_UNSIGNED_SHORT, 0);
+
+                component.value()->VBO.release();
+                component.value()->IBO.release();
+            }
+        }
 
         renderFBO[eye]->release();
     }
@@ -214,11 +301,9 @@ public:
         resolveFBO[eye]->bind();
         f->glClear(GL_COLOR_BUFFER_BIT);
 
-        /* Render right lens (second half of index array) */
         f->glBindTexture(GL_TEXTURE_2D, renderFBO[eye]->texture());
-        f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        /* First half = left lens, second half = right lens. */
         f->glDrawElements(GL_TRIANGLES, distortionNumIndexes/2, GL_UNSIGNED_SHORT, (const void*)(distortionNumIndexes * eye));
 
         resolveFBO[eye]->release();
@@ -234,13 +319,19 @@ public:
     bool render() {
         QOpenGLExtraFunctions* f = window->openglContext()->extraFunctions();
 
-        if (vrSystem == nullptr)
-            return false;
+        if (vrSystem == nullptr) return false;
+
+        /* Handle events from OpenVR. */
+        vr::VREvent_t event;
+        while (vrSystem->PollNextEvent(&event, sizeof(event)))
+            handleVREvent(event);
 
         vr::VRCompositor()->WaitGetPoses(trackedDevicePose, vr::k_unMaxTrackedDeviceCount, NULL, 0);
 
         f->glClearColor(0.1f, 0.1f, 0.1f, 0.0f);
         f->glClear(GL_COLOR_BUFFER_BIT);
+        f->glEnable(GL_DEPTH_TEST);
+        f->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         QRectF currentTextureLeft, currentTextureRight;
         QSGTexture* currentTexture = nullptr;
@@ -287,13 +378,13 @@ public:
         distortionIBO.bind();
         f->glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
 
-        /* Set up vertex arrays. */
+        /* Set up vertex buffers for distortion rendering. */
         f->glEnableVertexAttribArray(2);
         f->glEnableVertexAttribArray(3);
-        f->glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(QVector2D) * 4, (void*)(0));
-        f->glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(QVector2D) * 4, (void*)(sizeof(QVector2D)));
-        f->glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(QVector2D) * 4, (void*)(sizeof(QVector2D) * 2));
-        f->glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(QVector2D) * 4, (void*)(sizeof(QVector2D) * 3));
+        distortionShader.setAttributeBuffer(0, GL_FLOAT, 0,                     2, sizeof(QVector2D) * 4);
+        distortionShader.setAttributeBuffer(1, GL_FLOAT, sizeof(QVector2D),     2, sizeof(QVector2D) * 4);
+        distortionShader.setAttributeBuffer(2, GL_FLOAT, sizeof(QVector2D) * 2, 2, sizeof(QVector2D) * 4);
+        distortionShader.setAttributeBuffer(3, GL_FLOAT, sizeof(QVector2D) * 3, 2, sizeof(QVector2D) * 4);
 
         /* Render the distortion for both eyes and submit. */
         return renderEyeDistortion(vr::Eye_Left, f) && renderEyeDistortion(vr::Eye_Right, f);
@@ -312,11 +403,93 @@ public:
     intptr_t distortionNumIndexes;
 
     vr::IVRSystem* vrSystem;
-    vr::IVRRenderModels* renderModels;
     vr::TrackedDevicePose_t trackedDevicePose[vr::k_unMaxTrackedDeviceCount];
 
     QOpenGLShaderProgram vrSceneShader;
     QOpenGLShaderProgram distortionShader;
+
+    /* Get a tracked device property string. */
+    QByteArray getTrackedDeviceString(vr::TrackedDeviceIndex_t deviceIndex, vr::TrackedDeviceProperty prop) {
+        uint32_t bufferLen = vrSystem->GetStringTrackedDeviceProperty(deviceIndex, prop, nullptr, 0, nullptr);
+
+        if (bufferLen == 0) return "";
+
+        QByteArray buffer(bufferLen, 0);
+        vrSystem->GetStringTrackedDeviceProperty(deviceIndex, prop, buffer.data(), buffer.length(), nullptr);
+
+        return buffer;
+    }
+
+    void setupDeviceModel(vr::TrackedDeviceIndex_t deviceIndex) {
+        if (deviceIndex >= vr::k_unMaxTrackedDeviceCount) return;
+
+        QByteArray modelName = getTrackedDeviceString(deviceIndex, vr::Prop_RenderModelName_String);
+
+        /* OpenVR doesn't have a model to load. */
+        if (modelName.isEmpty()) return;
+
+        modelForDevice[deviceIndex] = modelName;
+
+        /* If the model is loaded already we're good to go, otherwise try to load it. */
+        if (renderModels.contains(modelName)) return;
+
+        /* Easy access to the current model's components. This will create a value in the renderModels map for the current model. */
+        auto& componentMap = renderModels[modelName];
+
+        for (uint32_t i = 0; i < vr::VRRenderModels()->GetComponentCount(modelName.data()); ++i) {
+            /* Get the name of the component. */
+            QByteArray componentName(vr::VRRenderModels()->GetComponentName(modelName.data(), i, nullptr, 0), 0);
+            vr::VRRenderModels()->GetComponentName(modelName.data(), i, componentName.data(), componentName.length());
+
+            /* The component model name is not the same as the component name, it is used to get the model data and to save it in the loadedModels map. */
+            QByteArray componentModelName(vr::VRRenderModels()->GetComponentRenderModelName(modelName.data(), componentName.data(), nullptr, 0), 0);
+            vr::VRRenderModels()->GetComponentRenderModelName(modelName.data(), componentName.data(), componentModelName.data(), componentModelName.length());
+
+            /* There isn't any model for this component. */
+            if (componentModelName.isEmpty()) continue;
+
+            /* Check the loaded models to see if we already have it. */
+            if (loadedComponents.contains(componentModelName)) {
+                componentMap[componentName] = loadedComponents[componentModelName];
+                continue;
+            }
+
+            /* If there was none already loaded, try to load it. */
+            vr::RenderModel_t* model;
+            vr::RenderModel_TextureMap_t* texture;
+            vr::EVRRenderModelError error;
+
+            /* Wait for the model to load. */
+            do {
+                error = vr::VRRenderModels()->LoadRenderModel_Async(componentModelName.data(), &model);
+                QThread::msleep(200);
+            } while (error == vr::VRRenderModelError_Loading);
+
+            if (error != vr::VRRenderModelError_None) {
+                qDebug("Failed to load component %s for render model %s for device %d - %s", modelName.data(), componentModelName.data(), deviceIndex,
+                       vr::VRRenderModels()->GetRenderModelErrorNameFromEnum(error));
+                continue;
+            }
+
+            /* Wait for the texture to load. */
+            do {
+                error = vr::VRRenderModels()->LoadTexture_Async(model->diffuseTextureId, &texture);
+                QThread::msleep(200);
+            } while (error == vr::VRRenderModelError_Loading);
+
+            if (error != vr::VRRenderModelError_None) {
+                qDebug("Failed to load texture %d for render model %s", model->diffuseTextureId, componentModelName.data());
+                vr::VRRenderModels()->FreeRenderModel(model);
+                continue;
+            }
+
+            /* Create the OpenGL buffers from the loaded data. and save it both in the current model and the list of all loaded components. */
+            componentMap[componentName] = loadedComponents[componentModelName] = new ModelComponent(*model, *texture, window->openglContext()->extraFunctions());
+
+            /* We don't need the model data any more, it has been uploaded to the GPU. */
+            vr::VRRenderModels()->FreeRenderModel(model); vr::VRRenderModels()->FreeTexture(texture);
+        }
+    }
 };
 
 DV_VRDriver* DV_VRDriver::createOpenVRDriver(DVWindow* window) {
