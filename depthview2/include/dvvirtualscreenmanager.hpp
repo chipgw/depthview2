@@ -43,8 +43,6 @@ public:
 
     QSize getRenderSize(const QSize& windowSize);
 
-    bool pollInput(DVInputInterface* inputInterface);
-
 private:
     DV_VRDriver* p;
     DVWindow* window;

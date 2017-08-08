@@ -12,6 +12,7 @@
 #include <QOpenGLBuffer>
 #include <QDebug>
 #include <cmath>
+#include <array>
 
 DV_VRDriver::DV_VRDriver(DVWindow* w) : window(w) {
     window->settings.beginGroup("VRSettings");
@@ -33,6 +34,53 @@ DV_VRDriver::DV_VRDriver(DVWindow* w) : window(w) {
                 window->settings.value("BackgroundSourceMode").value<DVSourceMode::Type>() : DVSourceMode::Mono;
 
     window->settings.endGroup();
+}
+
+const DV_VRDriver::RayHit DV_VRDriver::screenTrace(const Ray& ray) const {
+    RayHit hit;
+
+    /* Do a triangle trace on the entire screen. */
+    for (int i = 0; i + 2 < screen.size(); ++i)
+        if (triangleTrace(ray, hit, {screen[i], screen[i+1], screen[i+2]}, {screenUV[i], screenUV[i+1], screenUV[i+2]})) break;
+
+    return hit;
+}
+
+bool DV_VRDriver::triangleTrace(const Ray& ray, RayHit& hit, std::array<QVector3D, 3> triangle, std::array<QVector2D, 3> triangleUV) const {
+    QVector3D v0v1 = triangle[1] - triangle[0];
+    QVector3D v0v2 = triangle[2] - triangle[0];
+
+    QVector3D pvec = QVector3D::crossProduct(ray.direction, v0v2);
+    float det = QVector3D::dotProduct(v0v1, pvec);
+
+    if (qAbs(det) < std::numeric_limits<float>::epsilon()) return false;
+
+    float invDet = 1.0f / det;
+
+    QVector3D tv = ray.origin - triangle[0];
+
+    float t,a,b;
+
+    a = QVector3D::dotProduct(tv, pvec) * invDet;
+    if (a < 0.0f || a > 1.0f)
+        return false;
+
+    QVector3D qv = QVector3D::crossProduct(tv, v0v1);
+
+    b = QVector3D::dotProduct(ray.direction, qv) * invDet;
+    if (b < 0.0f || a + b > 1.0f)
+        return false;
+
+    t = QVector3D::dotProduct(v0v2, qv) * invDet;
+
+    if (t <= 0.0f)
+        return false;
+
+    /* Convert the calculated values to a world position and UV coordinate. */
+    hit.hitPoint = ray.origin + ray.direction * t;
+    hit.uvCoord = triangleUV[1] * a + triangleUV[2] * b + triangleUV[0] * (1.0f - a - b);
+
+    return hit.isValid = true;
 }
 
 DVVirtualScreenManager::DVVirtualScreenManager(DVWindow* parent) : QObject(parent) {
@@ -137,11 +185,6 @@ void DVVirtualScreenManager::updateScreen() {
 
         p->screenUV += {{U, 0.0f}, {U, 1.0f}};
     }
-}
-
-bool DVVirtualScreenManager::pollInput(DVInputInterface*) {
-    /* TODO - Use tracked motion controllers... */
-    return false;
 }
 
 bool DVVirtualScreenManager::lockMouse() const {

@@ -59,6 +59,9 @@ class DV_VRDriver_OpenVR : public DV_VRDriver {
     /* Tracked device -> model name. */
     QByteArray modelForDevice[vr::k_unMaxTrackedDeviceCount];
 
+    /* Which device are we using to simulate mouse events? */
+    uint32_t mouseDevice = vr::k_unTrackedDeviceIndexInvalid;
+
 public:
     DV_VRDriver_OpenVR(DVWindow* w) : DV_VRDriver(w), distortionVBO(QOpenGLBuffer::VertexBuffer), distortionIBO(QOpenGLBuffer::IndexBuffer) {
         if (!vr::VR_IsHmdPresent()) {
@@ -147,13 +150,91 @@ public:
         qDebug("OpenVR shutdown.");
     }
 
-    void handleVREvent(const vr::VREvent_t& e) {
-        switch (e.eventType) {
-        case vr::VREvent_TrackedDeviceActivated:
-            /* Load the model for the newly attached device. */
-            setupDeviceModel(e.trackedDeviceIndex);
-            break;
+    RayHit deviceScreenPoint(uint32_t dev) {
+        if (dev >= vr::k_unMaxTrackedDeviceCount) return RayHit();
+
+        const vr::TrackedDevicePose_t& pose = trackedDevicePose[dev];
+
+        /* The tracking data isn't valid, we can't do anything. */
+        if (!pose.bPoseIsValid) return RayHit();
+
+        QMatrix4x4 deviceToTracking = QMatrix4x4(QMatrix4x3(*pose.mDeviceToAbsoluteTracking.m));
+        QMatrix4x4 aimToTracking = deviceToTracking * getComponentMatrix(dev, vr::k_pch_Controller_Component_Tip, false);
+
+        Ray ray;
+        ray.origin = aimToTracking * QVector3D();
+        ray.direction = (aimToTracking * QVector4D(0.0f, 0.0f, -0.1f, 0.0f)).toVector3D();
+
+        return screenTrace(ray);
+    }
+
+    void handleVREvents() {
+        vr::VRCompositor()->WaitGetPoses(trackedDevicePose, vr::k_unMaxTrackedDeviceCount, nullptr, 0);
+
+        RayHit mouseHit = deviceScreenPoint(mouseDevice);
+        QPointF mousePoint = mouseHit.isValid ? window->pointFromScreenUV(mouseHit.uvCoord) : QPointF();
+
+        if (mouseHit.isValid) {
+            /* TODO - Are there buttons down? */
+            QCoreApplication::postEvent(window, new QMouseEvent(QEvent::MouseMove, mousePoint, mousePoint, QPointF(),
+                                                                Qt::NoButton, 0, 0, Qt::MouseEventSynthesizedByApplication));
         }
+
+        /* Handle events from OpenVR. */
+        vr::VREvent_t e;
+        while (vrSystem->PollNextEvent(&e, sizeof(e))) {
+            switch (e.eventType) {
+            case vr::VREvent_TrackedDeviceActivated:
+                /* Load the model for the newly attached device. */
+                setupDeviceModel(e.trackedDeviceIndex);
+
+                if (mouseDevice == vr::k_unTrackedDeviceIndexInvalid && vrSystem->GetTrackedDeviceClass(e.trackedDeviceIndex) == vr::TrackedDeviceClass_Controller)
+                    mouseDevice = e.trackedDeviceIndex;
+                break;
+            case vr::VREvent_ButtonPress:
+                if (mouseDevice == vr::k_unTrackedDeviceIndexInvalid && vrSystem->GetTrackedDeviceClass(e.trackedDeviceIndex) == vr::TrackedDeviceClass_Controller)
+                    mouseDevice = e.trackedDeviceIndex;
+
+                switch (e.data.controller.button) {
+                case vr::k_EButton_SteamVR_Trigger:
+                    if (e.trackedDeviceIndex == mouseDevice && mouseHit.isValid)
+                        /* TODO - Handle other buttons and modifiers. */
+                        QCoreApplication::postEvent(window, new QMouseEvent(QEvent::MouseButtonPress, mousePoint, mousePoint, QPointF(),
+                                                                            Qt::LeftButton, Qt::LeftButton, 0, Qt::MouseEventSynthesizedByApplication));
+                    break;
+                }
+                break;
+            case vr::VREvent_ButtonUnpress:
+                switch (e.data.controller.button) {
+                case vr::k_EButton_SteamVR_Trigger:
+                    if (e.trackedDeviceIndex == mouseDevice && mouseHit.isValid)
+                        /* TODO - Handle other buttons and modifiers, and also check to see if a press event was sent first. */
+                        QCoreApplication::postEvent(window, new QMouseEvent(QEvent::MouseButtonRelease, mousePoint, mousePoint, QPointF(),
+                                                                            Qt::LeftButton, 0, 0, Qt::MouseEventSynthesizedByApplication));
+//                    else if (e.trackedDeviceIndex != mouseDevice)
+                    break;
+                default:
+                    qDebug("%i", e.data.controller.button);
+                }
+                break;
+            }
+        }
+    }
+
+    QMatrix4x4 getComponentMatrix(uint32_t device, const char* componentName, bool render = true) {
+        /* Get the current state of the controller. */
+        vr::VRControllerState_t controllerState; vrSystem->GetControllerState(device, &controllerState, sizeof(controllerState));
+
+        /* I'm making assumptions here... */
+        const vr::RenderModel_ControllerMode_State_t renderModelState = { false };
+
+        /* This is where we get the render model system to put the component matrix. */
+        vr::RenderModel_ComponentState_t componentState;
+
+        /* Get the component state information from OpenVR. */
+        vr::VRRenderModels()->GetComponentState(modelForDevice[device].data(), componentName, &controllerState, &renderModelState, &componentState);
+
+        return QMatrix4x4(QMatrix4x3(render ? *componentState.mTrackingToComponentRenderModel.m : *componentState.mTrackingToComponentLocal.m));
     }
 
     void calculateEyeDistortion(vr::EVREye eye, QVector<QVector2D>& verts, QVector<GLushort>& indexes, int offset) {
@@ -249,34 +330,42 @@ public:
         /* Don't use blending for tracked models. */
         f->glDisable(GL_BLEND);
 
-        for (uint32_t trackedDevice = 0; trackedDevice < vr::k_unMaxTrackedDeviceCount; ++trackedDevice) {
+        for (uint32_t device = 0; device < vr::k_unMaxTrackedDeviceCount; ++device) {
             /* Only render valid devices of the controller class. */
-            if (!renderModels.contains(modelForDevice[trackedDevice]) || vrSystem->GetTrackedDeviceClass(trackedDevice) != vr::TrackedDeviceClass_Controller)
+            if (!renderModels.contains(modelForDevice[device]) || vrSystem->GetTrackedDeviceClass(device) != vr::TrackedDeviceClass_Controller)
                 continue;
 
-            const vr::TrackedDevicePose_t& pose = trackedDevicePose[trackedDevice];
+            const vr::TrackedDevicePose_t& pose = trackedDevicePose[device];
             /* Don't render when the tracking data isn't valid. */
             if (!pose.bPoseIsValid) continue;
 
-            QMatrix4x4 deviceToEye = eyeMat * QMatrix4x4(QMatrix4x3(*pose.mDeviceToAbsoluteTracking.m));
+            QMatrix4x4 deviceToTracking = QMatrix4x4(QMatrix4x3(*pose.mDeviceToAbsoluteTracking.m));
+            QMatrix4x4 deviceToEye = eyeMat * deviceToTracking;
 
-            const auto& componentsByName = renderModels[modelForDevice[trackedDevice]];
+            if (device == mouseDevice) {
+                QMatrix4x4 aimToTracking = deviceToTracking * getComponentMatrix(device, vr::k_pch_Controller_Component_Tip, false);
+
+                Ray ray;
+                ray.origin = aimToTracking * QVector3D();
+                ray.direction = (aimToTracking * QVector4D(0.f, 0.f, -1.f, 0.f)).toVector3D();
+
+                const RayHit hit = screenTrace(ray);
+
+                vrSceneShader.setUniformValue("cameraMatrix", eyeMat);
+
+                QVector<QVector3D> line = {ray.origin, hit.isValid ? hit.hitPoint : (ray.origin + ray.direction)};
+
+                vrSceneShader.setAttributeArray(0, line.data());
+
+                /* TODO - Currently this just renders with whatever texture happens to be bound... */
+                f->glDrawArrays(GL_LINES, 0, line.length());
+            }
+
+            const auto& componentsByName = renderModels[modelForDevice[device]];
 
             /* Go through each component to render it. */
             for (auto component = componentsByName.cbegin(), end = componentsByName.cend(); component != end; ++component) {
-                /* Get the current state of the controller. */
-                vr::VRControllerState_t controllerState; vrSystem->GetControllerState(trackedDevice, &controllerState, sizeof(controllerState));
-
-                /* I'm making assumptions here... */
-                const vr::RenderModel_ControllerMode_State_t renderModelState = { false };
-
-                /* This is where we get the render model system to put the component matrix. */
-                vr::RenderModel_ComponentState_t componentState;
-
-                /* Get the component state information from OpenVR. */
-                vr::VRRenderModels()->GetComponentState(modelForDevice[trackedDevice].data(), component.key().data(), &controllerState, &renderModelState, &componentState);
-
-                vrSceneShader.setUniformValue("cameraMatrix", deviceToEye * QMatrix4x4(QMatrix4x3(*componentState.mTrackingToComponentRenderModel.m)));
+                vrSceneShader.setUniformValue("cameraMatrix", deviceToEye * getComponentMatrix(device, component.key().data()));
 
                 component.value()->VBO.bind();
                 component.value()->IBO.bind();
@@ -321,12 +410,7 @@ public:
 
         if (vrSystem == nullptr) return false;
 
-        /* Handle events from OpenVR. */
-        vr::VREvent_t event;
-        while (vrSystem->PollNextEvent(&event, sizeof(event)))
-            handleVREvent(event);
-
-        vr::VRCompositor()->WaitGetPoses(trackedDevicePose, vr::k_unMaxTrackedDeviceCount, NULL, 0);
+        handleVREvents();
 
         f->glClearColor(0.1f, 0.1f, 0.1f, 0.0f);
         f->glClear(GL_COLOR_BUFFER_BIT);

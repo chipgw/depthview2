@@ -383,3 +383,7 @@ void DVWindow::mute() {
 void DVWindow::setVolume(qreal volume) {
     player->audio()->setVolume(volume);
 }
+
+QPointF DVWindow::pointFromScreenUV(const QVector2D& uv) const {
+    return QPointF(uv.x() * qmlSize.width(), (1.0f - uv.y()) * qmlSize.height());
+}

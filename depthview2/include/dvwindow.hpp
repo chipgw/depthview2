@@ -124,6 +124,8 @@ public:
      * End DVRenderInterface functions *
      * ------------------------------- */
 
+    QPointF pointFromScreenUV(const QVector2D& uv) const;
+
     QSettings settings;
 
 public slots:
