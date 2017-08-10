@@ -176,15 +176,20 @@ void DVWindow::paintGL() {
         break;
     case DVDrawMode::VirtualReality:
         if (vrManager->render()) {
+            QOpenGLFramebufferObject::bindDefault();
+            resetOpenGLState();
+
             if (vrManager->mirrorUI()) {
-                QOpenGLFramebufferObject::bindDefault();
-                resetOpenGLState();
                 doStandardSetup();
                 shaderMono->bind();
                 shaderMono->setUniformValue("left", true);
                 break;
             }
 
+            /* Make sure the viewport is the correct size, QML may have changed it. */
+            openglContext()->extraFunctions()->glViewport(0, 0, width(), height());
+            openglContext()->extraFunctions()->glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+            openglContext()->extraFunctions()->glClear(GL_COLOR_BUFFER_BIT);
             return;
         }
     default:
