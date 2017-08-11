@@ -250,9 +250,9 @@ void DVWindow::loadShader(QOpenGLShaderProgram& shader, const char* vshader, con
     shader.bind();
 
     /* Left image is TEXTURE0. */
-    shader.setUniformValue("textureL", 0);
+    shader.setUniformValue("textureL", DVStereoEye::LeftEye);
     /* Right image is TEXTURE1. */
-    shader.setUniformValue("textureR", 1);
+    shader.setUniformValue("textureR", DVStereoEye::RightEye);
 }
 
 void DVWindow::createFBO() {
@@ -287,12 +287,8 @@ const QOpenGLFramebufferObject& DVWindow::getInterfaceFramebuffer() {
     return *renderFBO;
 }
 
-unsigned int DVWindow::getInterfaceLeftEyeTexture() {
-    return renderFBO->textures()[qmlCommunication->swapEyes() ? 1 : 0];
-}
-
-unsigned int DVWindow::getInterfaceRightEyeTexture() {
-    return renderFBO->textures()[qmlCommunication->swapEyes() ? 0 : 1];
+GLuint DVWindow::getInterfaceTexture(DVStereoEye::Type eye) const {
+    return renderFBO->textures()[qmlCommunication->swapEyes() ? 1-eye : eye];
 }
 
 QSGTexture* DVWindow::getCurrentTexture(QRectF& left, QRectF& right) {
@@ -434,8 +430,8 @@ void DVWindow::doStandardSetup() {
     f->glViewport(0, 0, width(), height());
 
     f->glActiveTexture(GL_TEXTURE0);
-    f->glBindTexture(GL_TEXTURE_2D, renderFBO->textures()[qmlCommunication->swapEyes() ? 1 : 0]);
+    f->glBindTexture(GL_TEXTURE_2D, getInterfaceTexture(DVStereoEye::LeftEye));
 
     f->glActiveTexture(GL_TEXTURE1);
-    f->glBindTexture(GL_TEXTURE_2D, renderFBO->textures()[qmlCommunication->swapEyes() ? 0 : 1]);
+    f->glBindTexture(GL_TEXTURE_2D, getInterfaceTexture(DVStereoEye::RightEye));
 }

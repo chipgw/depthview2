@@ -49,3 +49,7 @@ DV_ENUM(DVInputMode,
 DV_ENUM(DVPluginType,
         InvalidPlugin,
         InputPlugin)
+
+DV_ENUM(DVStereoEye,
+        LeftEye,
+        RightEye)

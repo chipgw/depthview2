@@ -94,8 +94,7 @@ public:
     virtual const QOpenGLFramebufferObject& getInterfaceFramebuffer();
 
     /* Get the OpenGL textures for each eye. */
-    virtual unsigned int getInterfaceLeftEyeTexture();
-    virtual unsigned int getInterfaceRightEyeTexture();
+    virtual GLuint getInterfaceTexture(DVStereoEye::Type eye) const;
 
     /* Returns the texture handle the current image / video, and sets left & right to where on the texture each eye is. */
     QSGTexture* getCurrentTexture(QRectF& left, QRectF& right);
