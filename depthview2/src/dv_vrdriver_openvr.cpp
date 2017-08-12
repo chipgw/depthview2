@@ -320,7 +320,7 @@ public:
         vrSceneShader.setUniformValue("outputFac", 1.0f);
 
         /* Get the UI texture for the current eye from the window. In both eye enums left=0 and right=1. */
-        f->glBindTexture(GL_TEXTURE_2D, (DVStereoEye::Type)eye);
+        f->glBindTexture(GL_TEXTURE_2D, window->getInterfaceTexture((DVStereoEye::Type)eye));
 
         /* Draw the screen to eye FBO. */
         vrSceneShader.setAttributeArray(0, screen.data());
