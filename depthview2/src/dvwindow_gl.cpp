@@ -394,6 +394,8 @@ void DVWindow::doStandardSetup() {
     QOpenGLExtraFunctions* f = openglContext()->extraFunctions();
 
     if (qmlCommunication->openImageTexture() && qmlCommunication->openImageTexture()->texture() && folderListing->isCurrentFileSurround()) {
+        f->glViewport(0, 0, qmlSize.width(), qmlSize.height());
+
         f->glEnable(GL_BLEND);
         f->glBlendFunc(GL_ONE_MINUS_DST_ALPHA, GL_DST_ALPHA);
 
@@ -426,7 +428,6 @@ void DVWindow::doStandardSetup() {
         f->glDisable(GL_BLEND);
     }
 
-    /* Make sure the viewport is the correct size, QML may have changed it. */
     f->glViewport(0, 0, width(), height());
 
     f->glActiveTexture(GL_TEXTURE0);
