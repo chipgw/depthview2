@@ -33,6 +33,39 @@ public:
     /* Parse command line arguments from QApplication. */
     void doCommandLine(class QCommandLineParser& parser);
 
+    /* Get the FBO that QML is rendered to. */
+    virtual const QOpenGLFramebufferObject& getInterfaceFramebuffer();
+
+    /* Get the OpenGL textures for each eye. */
+    virtual GLuint getInterfaceTexture(DVStereoEye::Type eye) const;
+
+    /* Returns the texture handle the current image / video, and sets left & right to where on the texture each eye is. */
+    QSGTexture* getCurrentTexture(QRectF& left, QRectF& right);
+
+    /* Get the rectangles of a texture based on the source mode and swap. */
+    void getTextureRects(QRectF& left, QRectF& right, QSGTexture* texture, bool swap, DVSourceMode::Type mode);
+
+    /* Get whether the current image is surround. */
+    virtual bool isSurround();
+
+    virtual QPointF getSurroundPan();
+    virtual qreal getSurroundFOV();
+
+    /* Draw the default sphere (for surround images). */
+    void renderStandardSphere();
+
+    /* Draw the default fullscreen quad. */
+    void renderStandardQuad();
+
+    /* Set up the renderer exactly as all the built-in modes have it set up.
+     * The left and right image textures will be bound to TEXTURE0 and TEXTURE1, respectively,
+     * the viewport is set to the window size, and surround images will be rendered under the UI. */
+    void doStandardSetup();
+
+    QPointF pointFromScreenUV(const QVector2D& uv) const;
+
+    QSettings settings;
+
     /* -------------------------------- *
      * Begin DVInputInterface functions *
      * -------------------------------- */
@@ -85,47 +118,6 @@ public:
     /* ------------------------------ *
      * End DVInputInterface functions *
      * ------------------------------ */
-
-    /* --------------------------------- *
-     * Begin DVRenderInterface functions *
-     * --------------------------------- */
-
-    /* Get the FBO that QML is rendered to. */
-    virtual const QOpenGLFramebufferObject& getInterfaceFramebuffer();
-
-    /* Get the OpenGL textures for each eye. */
-    virtual GLuint getInterfaceTexture(DVStereoEye::Type eye) const;
-
-    /* Returns the texture handle the current image / video, and sets left & right to where on the texture each eye is. */
-    QSGTexture* getCurrentTexture(QRectF& left, QRectF& right);
-
-    /* Get the rectangles of a texture based on the source mode and swap. */
-    void getTextureRects(QRectF& left, QRectF& right, QSGTexture* texture, bool swap, DVSourceMode::Type mode);
-
-    /* Get whether the current image is surround. */
-    virtual bool isSurround();
-
-    virtual QPointF getSurroundPan();
-    virtual qreal getSurroundFOV();
-
-    /* Draw the default sphere (for surround images). */
-    void renderStandardSphere();
-
-    /* Draw the default fullscreen quad. */
-    void renderStandardQuad();
-
-    /* Set up the renderer exactly as all the built-in modes have it set up.
-     * The left and right image textures will be bound to TEXTURE0 and TEXTURE1, respectively,
-     * the viewport is set to the window size, and surround images will be rendered under the UI. */
-    void doStandardSetup();
-
-    /* ------------------------------- *
-     * End DVRenderInterface functions *
-     * ------------------------------- */
-
-    QPointF pointFromScreenUV(const QVector2D& uv) const;
-
-    QSettings settings;
 
 public slots:
     void updateQmlSize();

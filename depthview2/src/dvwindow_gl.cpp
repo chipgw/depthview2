@@ -30,8 +30,8 @@
 struct Vertex {
     QVector3D pos;
     QVector2D tex;
-    float padding[3];
 };
+#define vert_offset(x) (const GLvoid*)offsetof(Vertex, x)
 
 void makeSphere(uint32_t slices, uint32_t stacks, QOpenGLBuffer& sphereVerts, QOpenGLBuffer& sphereTris, GLuint& sphereTriCount) {
     QVector<Vertex> verts;
@@ -354,8 +354,8 @@ void DVWindow::renderStandardSphere() {
     sphereTris.bind();
 
     /* Set up the attribute buffers once for all planets. */
-    f->glVertexAttribPointer(vertex, 3, GL_FLOAT, GL_TRUE, sizeof(Vertex), (const void*)offsetof(Vertex, pos));
-    f->glVertexAttribPointer(uv,     2, GL_FLOAT, GL_TRUE, sizeof(Vertex), (const void*)offsetof(Vertex, tex));
+    f->glVertexAttribPointer(vertex, 3, GL_FLOAT, GL_TRUE, sizeof(Vertex), vert_offset(pos));
+    f->glVertexAttribPointer(uv,     2, GL_FLOAT, GL_TRUE, sizeof(Vertex), vert_offset(tex));
 
     f->glDrawElements(GL_TRIANGLES, sphereTriCount, GL_UNSIGNED_INT, nullptr);
 
