@@ -127,7 +127,7 @@ signals:
     void uiThemeChanged();
 
     /* Used for setting the cursor position. */
-    void mouseMoved(const QPointF& pos);
+    void mouseMoved(const QPointF& pos, bool synthesized);
 
     /* Used to show/hide ui based on touchscreen input. */
     void touchEvent();

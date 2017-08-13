@@ -54,7 +54,7 @@ Popup {
                     onClicked: accept()
 
                     ToolTip {
-                        y: fakeCursor.height
+                        y: fakeCursorImage.height
                         visible: mouseArea.containsMouse
 
                         text: qsTr("Type: ") + fileTypeString + "<br>" +
@@ -172,7 +172,7 @@ Popup {
                         }
 
                         ToolTip {
-                            y: fakeCursor.height
+                            y: fakeCursorImage.height
 
                             /* Don't use button.hovered because it breaks when the file browser closes. */
                             visible: button.contains(button.mapFromItem(null, fakeCursor.x, fakeCursor.y)) && root.visible
@@ -225,7 +225,7 @@ Popup {
                             onClicked: FolderListing.deleteBookmark(modelData)
                         }
                         ToolTip {
-                            y: fakeCursor.height
+                            y: fakeCursorImage.height
 
                             /* Don't use button.hovered because it breaks when the file browser closes. */
                             visible: bookmarkButton.contains(bookmarkButton.mapFromItem(null, fakeCursor.x, fakeCursor.y)) && root.visible

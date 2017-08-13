@@ -138,8 +138,7 @@ bool DVVirtualScreenManager::render() {
 }
 
 void DVVirtualScreenManager::frameSwapped() {
-    if (p != nullptr)
-        p->frameSwapped();
+    if (p != nullptr) p->frameSwapped();
 }
 
 QSize DVVirtualScreenManager::getRenderSize(const QSize& windowSize) {

@@ -115,13 +115,19 @@ Item {
         y: root.height / 8
     }
 
-    Image {
+    Item {
         /* Start out off-screen so if the position doesn't get set it won't show up in the corner. */
-        x: -width
-        y: -height
+        x: -fakeCursorImage.width
+        y: -fakeCursorImage.height
 
         id: fakeCursor
-        source: "qrc:/images/cursor.png"
+        property bool isDot: false
+
+        Image {
+            id: fakeCursorImage
+            source: parent.isDot ? "qrc:/images/vrcursor.png" : "qrc:/images/cursor.png"
+            anchors.centerIn: parent.isDot ? parent : undefined
+        }
 
         /* Visible when the timer is running or when the UI is visible. */
         visible: mouseTimer.running || FolderListing.fileBrowserOpen || topMenu.state === "" || bottomMenu.state === ""
@@ -159,6 +165,9 @@ Item {
         onMouseMoved: {
             fakeCursor.x = pos.x
             fakeCursor.y = pos.y
+
+            /* Use the dot cursor when mouse events are synthesized from motion controller input. */
+            fakeCursor.isDot = synthesized
 
             mouseTimer.restart()
         }

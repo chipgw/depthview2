@@ -62,6 +62,8 @@ class DV_VRDriver_OpenVR : public DV_VRDriver {
     /* Which device are we using to simulate mouse events? */
     uint32_t mouseDevice = vr::k_unTrackedDeviceIndexInvalid;
 
+    QOpenGLTexture* lineTexture;
+
 public:
     DV_VRDriver_OpenVR(DVWindow* w) : DV_VRDriver(w), distortionVBO(QOpenGLBuffer::VertexBuffer), distortionIBO(QOpenGLBuffer::IndexBuffer) {
         if (!vr::VR_IsHmdPresent()) {
@@ -134,6 +136,8 @@ public:
 
         /* Load the models for attached devices. */
         for (uint32_t i = 0; i < vr::k_unMaxTrackedDeviceCount; ++i) setupDeviceModel(i);
+
+        lineTexture = new QOpenGLTexture(QImage(":/images/vrline.png"));
 
         qDebug("OpenVR inited.");
     }
@@ -353,12 +357,15 @@ public:
 
                 vrSceneShader.setUniformValue("cameraMatrix", eyeMat);
 
-                QVector<QVector3D> line = {ray.origin, hit.isValid ? hit.hitPoint : (ray.origin + ray.direction)};
+                QVector3D line[] = {ray.origin, hit.isValid ? hit.hitPoint : (ray.origin + ray.direction)};
+                QVector2D lineUV[] = { QVector2D(0.0f, 0.0f), QVector2D(1.0f, 1.0f)};
 
-                vrSceneShader.setAttributeArray(0, line.data());
+                vrSceneShader.setAttributeArray(0, line);
+                vrSceneShader.setAttributeArray(1, lineUV);
 
-                /* TODO - Currently this just renders with whatever texture happens to be bound... */
-                f->glDrawArrays(GL_LINES, 0, line.length());
+                lineTexture->bind();
+
+                f->glDrawArrays(GL_LINES, 0, sizeof(line) / sizeof(*line));
             }
 
             const auto& componentsByName = renderModels[modelForDevice[device]];

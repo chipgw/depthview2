@@ -25,5 +25,7 @@
         <file>glsl/openvrdistortion.vsh</file>
         <file>glsl/openvrscene.fsh</file>
         <file>glsl/openvrscene.vsh</file>
+        <file>images/vrcursor.png</file>
+        <file>images/vrline.png</file>
     </qresource>
 </RCC>
