@@ -18,13 +18,14 @@ protected:
     };
 
     struct RayHit {
+        Ray ray;
         QVector2D uvCoord;
         QVector3D hitPoint;
         bool isValid = false;
     };
 
     const RayHit screenTrace(const Ray& ray) const;
-    bool triangleTrace(const Ray& ray, RayHit& hit, std::array<QVector3D, 3> triangle, std::array<QVector2D, 3> triangleUV) const;
+    bool triangleTrace(RayHit& hit, std::array<QVector3D, 3> triangle, std::array<QVector2D, 3> triangleUV) const;
 
 public:
     virtual ~DV_VRDriver() = default;

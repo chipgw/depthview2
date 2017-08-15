@@ -1,5 +1,7 @@
 #include "dv_vrdriver.hpp"
 #include "dvwindow.hpp"
+#include "dvqmlcommunication.hpp"
+#include "dvfolderlisting.hpp"
 #include <QOpenGLExtraFunctions>
 #include <QSGTextureProvider>
 #include <QQuickItem>
@@ -13,7 +15,7 @@
 #include <QDebug>
 #include <QMap>
 #include <QThread>
-#include <cmath>
+#include <QtMath>
 #include <openvr.h>
 
 struct ModelComponent {
@@ -63,6 +65,8 @@ class DV_VRDriver_OpenVR : public DV_VRDriver {
     uint32_t mouseDevice = vr::k_unTrackedDeviceIndexInvalid;
 
     QOpenGLTexture* lineTexture;
+
+    QVector3D panTrackingVector;
 
 public:
     DV_VRDriver_OpenVR(DVWindow* w) : DV_VRDriver(w), distortionVBO(QOpenGLBuffer::VertexBuffer), distortionIBO(QOpenGLBuffer::IndexBuffer) {
@@ -184,6 +188,17 @@ public:
                                                                 Qt::NoButton, 0, 0, Qt::MouseEventSynthesizedByApplication));
         }
 
+        if (!panTrackingVector.isNull()) {
+            /* Get the angle between the direction vector between last frame and this frame, ignoring the z axis. */
+            qreal angleDelta = qRadiansToDegrees(qAtan2(panTrackingVector.z(), panTrackingVector.x())
+                                                 - qAtan2(mouseHit.ray.direction.z(), mouseHit.ray.direction.x()));
+
+            window->qmlCommunication->setSurroundPan(window->qmlCommunication->surroundPan() + QPointF(angleDelta, 0.0f));
+
+            /* Store the new direction vector for next frame. */
+            panTrackingVector = mouseHit.ray.direction;
+        }
+
         /* Handle events from OpenVR. */
         vr::VREvent_t e;
         while (vrSystem->PollNextEvent(&e, sizeof(e))) {
@@ -206,6 +221,9 @@ public:
                         QCoreApplication::postEvent(window, new QMouseEvent(QEvent::MouseButtonPress, mousePoint, mousePoint, QPointF(),
                                                                             Qt::LeftButton, Qt::LeftButton, 0, Qt::MouseEventSynthesizedByApplication));
                     break;
+                case vr::k_EButton_Grip:
+                    if (e.trackedDeviceIndex == mouseDevice)
+                        panTrackingVector = mouseHit.ray.direction;
                 }
                 break;
             case vr::VREvent_ButtonUnpress:
@@ -217,6 +235,10 @@ public:
                                                                             Qt::LeftButton, 0, 0, Qt::MouseEventSynthesizedByApplication));
 //                    else if (e.trackedDeviceIndex != mouseDevice)
                     break;
+                case vr::k_EButton_Grip:
+                    if (e.trackedDeviceIndex == mouseDevice)
+                        /* Set it to a null vector to stop panning. */
+                        panTrackingVector = QVector3D();
                 default:
                     qDebug("%i", e.data.controller.button);
                 }
@@ -430,9 +452,9 @@ public:
         /* Whether the value of currentTexture is the background image (true) or an opened image (false). */
         bool isBackground = false;
 
-        if (window->isSurround()) {
+        if (window->folderListing->isCurrentFileSurround()) {
             currentTexture = window->getCurrentTexture(currentTextureLeft, currentTextureRight);
-            currentTexturePan = window->getSurroundPan().x();
+            currentTexturePan = window->qmlCommunication->surroundPan().x();
 
             if (snapSurroundPan)
                 /* Snap the pan value to multiples of 22.5 degrees to limit nausea. */

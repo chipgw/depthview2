@@ -38,26 +38,27 @@ DV_VRDriver::DV_VRDriver(DVWindow* w) : window(w) {
 
 const DV_VRDriver::RayHit DV_VRDriver::screenTrace(const Ray& ray) const {
     RayHit hit;
+    hit.ray = ray;
 
     /* Do a triangle trace on the entire screen. */
     for (int i = 0; i + 2 < screen.size(); ++i)
-        if (triangleTrace(ray, hit, {screen[i], screen[i+1], screen[i+2]}, {screenUV[i], screenUV[i+1], screenUV[i+2]})) break;
+        if (triangleTrace(hit, {screen[i], screen[i+1], screen[i+2]}, {screenUV[i], screenUV[i+1], screenUV[i+2]})) break;
 
     return hit;
 }
 
-bool DV_VRDriver::triangleTrace(const Ray& ray, RayHit& hit, std::array<QVector3D, 3> triangle, std::array<QVector2D, 3> triangleUV) const {
+bool DV_VRDriver::triangleTrace(RayHit& hit, std::array<QVector3D, 3> triangle, std::array<QVector2D, 3> triangleUV) const {
     QVector3D v0v1 = triangle[1] - triangle[0];
     QVector3D v0v2 = triangle[2] - triangle[0];
 
-    QVector3D pvec = QVector3D::crossProduct(ray.direction, v0v2);
+    QVector3D pvec = QVector3D::crossProduct(hit.ray.direction, v0v2);
     float det = QVector3D::dotProduct(v0v1, pvec);
 
     if (qAbs(det) < std::numeric_limits<float>::epsilon()) return false;
 
     float invDet = 1.0f / det;
 
-    QVector3D tv = ray.origin - triangle[0];
+    QVector3D tv = hit.ray.origin - triangle[0];
 
     float t,a,b;
 
@@ -67,7 +68,7 @@ bool DV_VRDriver::triangleTrace(const Ray& ray, RayHit& hit, std::array<QVector3
 
     QVector3D qv = QVector3D::crossProduct(tv, v0v1);
 
-    b = QVector3D::dotProduct(ray.direction, qv) * invDet;
+    b = QVector3D::dotProduct(hit.ray.direction, qv) * invDet;
     if (b < 0.0f || a + b > 1.0f)
         return false;
 
@@ -77,7 +78,7 @@ bool DV_VRDriver::triangleTrace(const Ray& ray, RayHit& hit, std::array<QVector3
         return false;
 
     /* Convert the calculated values to a world position and UV coordinate. */
-    hit.hitPoint = ray.origin + ray.direction * t;
+    hit.hitPoint = hit.ray.origin + hit.ray.direction * t;
     hit.uvCoord = triangleUV[1] * a + triangleUV[2] * b + triangleUV[0] * (1.0f - a - b);
 
     return hit.isValid = true;

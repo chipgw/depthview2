@@ -45,12 +45,6 @@ public:
     /* Get the rectangles of a texture based on the source mode and swap. */
     void getTextureRects(QRectF& left, QRectF& right, QSGTexture* texture, bool swap, DVSourceMode::Type mode);
 
-    /* Get whether the current image is surround. */
-    virtual bool isSurround();
-
-    virtual QPointF getSurroundPan();
-    virtual qreal getSurroundFOV();
-
     /* Draw the default sphere (for surround images). */
     void renderStandardSphere();
 
@@ -119,6 +113,9 @@ public:
      * End DVInputInterface functions *
      * ------------------------------ */
 
+    DVQmlCommunication* qmlCommunication;
+    DVFolderListing* folderListing;
+
 public slots:
     void updateQmlSize();
     void onFrameSwapped();
@@ -141,8 +138,6 @@ private:
 
     QSize qmlSize;
 
-    DVQmlCommunication* qmlCommunication;
-    DVFolderListing* folderListing;
     DVPluginManager* pluginManager;
     DVVirtualScreenManager* vrManager;
     QtAV::AVPlayer* player;
