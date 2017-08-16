@@ -97,10 +97,6 @@ void DVWindow::initializeGL() {
     makeSphere(256, 128, sphereVerts, sphereTris, sphereTriCount);
 
     vrManager->init();
-
-    qmlCommunication->postQmlInit();
-    folderListing->postQmlInit();
-    pluginManager->postQmlInit();
 }
 
 void DVWindow::shutdownGL() {

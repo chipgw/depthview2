@@ -44,7 +44,6 @@ public:
     QSettings& settings;
 
     explicit DVQmlCommunication(QWindow* parent, QSettings& s);
-    void postQmlInit();
 
     /* The current draw mode. */
     DVDrawMode::Type drawMode() const;

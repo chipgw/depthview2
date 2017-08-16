@@ -35,10 +35,6 @@ DVPluginManager::DVPluginManager(QObject* parent, QSettings& s) : QAbstractListM
         resetPluginDatabase();
 }
 
-void DVPluginManager::postQmlInit() {
-    /* Nothing */
-}
-
 void DVPluginManager::loadPlugins(QQmlEngine* engine) {
     qmlEngine = engine;
 

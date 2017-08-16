@@ -38,7 +38,6 @@ class DVPluginManager : public QAbstractListModel {
 
 public:
     explicit DVPluginManager(QObject* parent, QSettings& s);
-    void postQmlInit();
 
     /* Load static and dynamic plugins and init them. */
     void loadPlugins(QQmlEngine* engine);

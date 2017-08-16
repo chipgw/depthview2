@@ -32,10 +32,6 @@ DVQmlCommunication::DVQmlCommunication(QWindow* parent, QSettings& s) : QObject(
         QQuickStyle::setStyle(settings.value("ControlsTheme").toString());
 }
 
-void DVQmlCommunication::postQmlInit() {
-    /* UNUSED */
-}
-
 DVDrawMode::Type DVQmlCommunication::drawMode() const {
     return m_drawMode;
 }

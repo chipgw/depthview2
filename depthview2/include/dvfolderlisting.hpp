@@ -63,7 +63,6 @@ class DVFolderListing : public QAbstractListModel {
 
 public:
     explicit DVFolderListing(QObject* parent, QSettings& s);
-    void postQmlInit();
 
     /* Just the name of the current file, no path. */
     QString currentFile() const;

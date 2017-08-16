@@ -47,25 +47,20 @@ DVFolderListing::DVFolderListing(QObject* parent, QSettings& s) : QAbstractListM
     /* TODO - Figure out a way to detect when there is actually a change rather than just putting it on a timer. */
     connect(&driveTimer, &QTimer::timeout, this, &DVFolderListing::storageDevicePathsChanged);
     driveTimer.start(8000);
-}
 
-void DVFolderListing::postQmlInit() {
-    if (!m_currentFile.exists())
-        /* Must be done after QML is all set up so that the file browser popup gets the signal. */
-        setFileBrowserOpen(settings.value("StartupFileBrowser").toBool());
+    m_fileBrowserOpen = settings.value("StartupFileBrowser").toBool();
 }
 
 void DVFolderListing::openNext() {
     /* Just files with the default name filter please. */
     QFileInfoList entryList = m_currentDir.entryInfoList(QDir::Files);
 
-    if(!entryList.empty()){
+    if (!entryList.empty()){
         /* Try to find the current file in the list. */
-        int index = entryList.indexOf(m_currentFile);
-        ++index;
+        int index = entryList.indexOf(m_currentFile) + 1;
 
         /* Wrap the index value if it ends up outside the list bounds. */
-        if(index >= entryList.count())
+        if (index >= entryList.count())
             index = 0;
 
         openFile(entryList[index]);
@@ -76,14 +71,12 @@ void DVFolderListing::openPrevious() {
     /* Just files with the default name filter please. */
     QFileInfoList entryList = m_currentDir.entryInfoList(QDir::Files);
 
-    if(!entryList.empty()){
+    if (!entryList.empty()){
         /* Try to find the current file in the list. */
-        int index = entryList.indexOf(m_currentFile);
-
-        --index;
+        int index = entryList.indexOf(m_currentFile) - 1;
 
         /* Wrap the index value if it ends up outside the list bounds. */
-        if(index < 0)
+        if (index < 0)
             index = entryList.count() - 1;
 
         openFile(entryList[index]);
