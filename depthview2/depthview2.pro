@@ -29,14 +29,12 @@ HEADERS += \
     include/dvenums.hpp \
     include/dvqmlcommunication.hpp \
     include/dvinputplugin.hpp \
-    include/dvrenderplugin.hpp \
     include/version.hpp \
     include/dvfolderlisting.hpp \
     include/dvinputinterface.hpp \
     include/dvthumbnailprovider.hpp \
     include/fileassociation.hpp \
     include/dvpluginmanager.hpp \
-    include/dvrenderinterface.hpp \
     include/dvfilevalidator.hpp \
     include/dvconfig.hpp \
     include/dvvirtualscreenmanager.hpp \
