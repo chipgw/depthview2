@@ -182,11 +182,10 @@ public:
         RayHit mouseHit = deviceScreenPoint(mouseDevice);
         QPointF mousePoint = mouseHit.isValid ? window->pointFromScreenUV(mouseHit.uvCoord) : QPointF();
 
-        if (mouseHit.isValid) {
+        if (mouseHit.isValid)
             /* TODO - Are there buttons down? */
             QCoreApplication::postEvent(window, new QMouseEvent(QEvent::MouseMove, mousePoint, mousePoint, QPointF(),
                                                                 Qt::NoButton, 0, 0, Qt::MouseEventSynthesizedByApplication));
-        }
 
         if (!panTrackingVector.isNull()) {
             /* Get the angle between the direction vector between last frame and this frame, ignoring the z axis. */
@@ -239,8 +238,7 @@ public:
                     if (e.trackedDeviceIndex == mouseDevice)
                         /* Set it to a null vector to stop panning. */
                         panTrackingVector = QVector3D();
-                default:
-                    qDebug("%i", e.data.controller.button);
+                    break;
                 }
                 break;
             }
@@ -338,6 +336,7 @@ public:
             /* Use the sphere provided by the normal surround rendering. */
             window->renderStandardSphere();
 
+            /* Screen is opaque for backgrounds, but it is transparent for open images. */
             if (!isBackground)
                 f->glEnable(GL_BLEND);
         }
@@ -368,6 +367,7 @@ public:
             QMatrix4x4 deviceToTracking = QMatrix4x4(QMatrix4x3(*pose.mDeviceToAbsoluteTracking.m));
             QMatrix4x4 deviceToEye = eyeMat * deviceToTracking;
 
+            /* Draw a line from the mouse controller to the screen where it's aiming. */
             if (device == mouseDevice) {
                 QMatrix4x4 aimToTracking = deviceToTracking * getComponentMatrix(device, vr::k_pch_Controller_Component_Tip, false);
 
@@ -377,10 +377,12 @@ public:
 
                 const RayHit hit = screenTrace(ray);
 
+                /* Line is rendered in world space. */
                 vrSceneShader.setUniformValue("cameraMatrix", eyeMat);
 
-                QVector3D line[] = {ray.origin, hit.isValid ? hit.hitPoint : (ray.origin + ray.direction)};
-                QVector2D lineUV[] = { QVector2D(0.0f, 0.0f), QVector2D(1.0f, 1.0f)};
+                /* If the hit isn't valid we just draw a line one unit out in the aim direction. */
+                QVector3D line[] = { ray.origin, hit.isValid ? hit.hitPoint : (ray.origin + ray.direction) };
+                QVector2D lineUV[] = { QVector2D(0.0f, 0.0f), QVector2D(1.0f, 1.0f) };
 
                 vrSceneShader.setAttributeArray(0, line);
                 vrSceneShader.setAttributeArray(1, lineUV);
@@ -415,7 +417,7 @@ public:
         renderFBO[eye]->release();
     }
 
-    bool renderEyeDistortion(vr::EVREye eye, QOpenGLExtraFunctions *f) {
+    bool renderEyeDistortion(vr::EVREye eye, QOpenGLExtraFunctions* f) {
         resolveFBO[eye]->bind();
         f->glClear(GL_COLOR_BUFFER_BIT);
 
@@ -437,12 +439,12 @@ public:
     bool render() {
         QOpenGLExtraFunctions* f = window->openglContext()->extraFunctions();
 
+        /* We can't render if VR isn't inited. */
         if (vrSystem == nullptr) return false;
 
         handleVREvents();
 
         f->glClearColor(0.1f, 0.1f, 0.1f, 0.0f);
-        f->glClear(GL_COLOR_BUFFER_BIT);
         f->glEnable(GL_DEPTH_TEST);
         f->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
