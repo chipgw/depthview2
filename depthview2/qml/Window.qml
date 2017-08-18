@@ -126,7 +126,8 @@ Item {
         Image {
             id: fakeCursorImage
             source: parent.isDot ? "qrc:/images/vrcursor.png" : "qrc:/images/cursor.png"
-            anchors.centerIn: parent.isDot ? parent : undefined
+            x: parent.isDot ? -width / 2 : 0
+            y: parent.isDot ? -height / 2 : 0
         }
 
         /* Visible when the timer is running or when the UI is visible. */
