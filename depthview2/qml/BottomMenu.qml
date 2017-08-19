@@ -310,6 +310,9 @@ ToolBar {
                     checkable: true
                     checked: image.zoom === -1
 
+                    /* Hide when viewing surround images in VR. */
+                    visible: DepthView.drawMode !== DrawMode.VirtualReality || !FolderListing.currentFileIsSurround
+
                     onCheckedChanged: {
                         /* If this button was checked, set the zoom value to -1. */
                         if (checked)
@@ -327,6 +330,9 @@ ToolBar {
 
                     checkable: true
                     checked: image.zoom === 1
+
+                    /* Hide when viewing surround images in VR. */
+                    visible: DepthView.drawMode !== DrawMode.VirtualReality || !FolderListing.currentFileIsSurround
 
                     onCheckedChanged: {
                         /* If this button was checked, set the zoom value to 1. */
