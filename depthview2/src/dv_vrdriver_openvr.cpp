@@ -158,7 +158,7 @@ public:
         qDebug("OpenVR shutdown.");
     }
 
-    RayHit deviceScreenPoint(uint32_t dev) {
+    RayHit deviceScreenPoint(vr::TrackedDeviceIndex_t dev) {
         if (dev >= vr::k_unMaxTrackedDeviceCount) return RayHit();
 
         const vr::TrackedDevicePose_t& pose = trackedDevicePose[dev];
@@ -221,7 +221,7 @@ public:
                                                                             Qt::LeftButton, Qt::LeftButton, 0, Qt::MouseEventSynthesizedByApplication));
                     break;
                 case vr::k_EButton_Grip:
-                    if (e.trackedDeviceIndex == mouseDevice)
+                    if (e.trackedDeviceIndex == mouseDevice && window->inputMode() == DVInputMode::ImageViewer)
                         panTrackingVector = mouseHit.ray.direction;
                 }
                 break;
@@ -238,6 +238,45 @@ public:
                     if (e.trackedDeviceIndex == mouseDevice)
                         /* Set it to a null vector to stop panning. */
                         panTrackingVector = QVector3D();
+                    break;
+                case vr::k_EButton_A:
+                    if (e.trackedDeviceIndex == mouseDevice)
+                        switch (window->inputMode()) {
+                        case DVInputMode::VideoPlayer:
+                            window->playPauseVideo();
+                            break;
+                        case DVInputMode::FileBrowser:
+                            break;
+                        case DVInputMode::ImageViewer:
+                            window->zoomFit();
+                            break;
+                        }
+                    else
+                        switch (window->inputMode()) {
+                        case DVInputMode::VideoPlayer:
+                            break;
+                        case DVInputMode::FileBrowser:
+                            window->accept();
+                            break;
+                        case DVInputMode::ImageViewer:
+                            break;
+                        }
+                    break;
+                case vr::k_EButton_ApplicationMenu:
+                    if (e.trackedDeviceIndex == mouseDevice)
+                        switch (window->inputMode()) {
+                        case DVInputMode::VideoPlayer:
+                            break;
+                        case DVInputMode::FileBrowser:
+                            break;
+                        case DVInputMode::ImageViewer:
+                            window->zoomActual();
+                            break;
+                        }
+                    else if (window->inputMode() == DVInputMode::FileBrowser)
+                        window->cancel();
+                    else
+                        window->openFileBrowser();
                     break;
                 }
                 break;
