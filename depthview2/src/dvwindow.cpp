@@ -312,17 +312,23 @@ void DVWindow::openFileBrowser() {
 
 void DVWindow::goBack() {
     if (folderListing->fileBrowserOpen() && folderListing->canGoBack())
-        folderListing->goBack();
+        /* Call as a queued connection in case this is called from the OpenGL thread,
+         * because resetting the model must be done in the QML thread. */
+        QMetaObject::invokeMethod(folderListing, "goBack", Qt::QueuedConnection);
 }
 
 void DVWindow::goForward() {
     if (folderListing->fileBrowserOpen() && folderListing->canGoForward())
-        folderListing->goForward();
+        /* Call as a queued connection in case this is called from the OpenGL thread,
+         * because resetting the model must be done in the QML thread. */
+        QMetaObject::invokeMethod(folderListing, "goForward", Qt::QueuedConnection);
 }
 
 void DVWindow::goUp() {
     if (folderListing->fileBrowserOpen() && folderListing->canGoUp())
-        folderListing->goUp();
+        /* Call as a queued connection in case this is called from the OpenGL thread,
+         * because resetting the model must be done in the QML thread. */
+        QMetaObject::invokeMethod(folderListing, "goUp", Qt::QueuedConnection);
 }
 
 void DVWindow::fileInfo() {
