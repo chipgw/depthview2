@@ -15,6 +15,7 @@
 #include <QDebug>
 #include <QMap>
 #include <QThread>
+#include <QBitArray>
 #include <QtMath>
 #include <openvr.h>
 
@@ -63,6 +64,10 @@ class DV_VRDriver_OpenVR : public DV_VRDriver {
 
     /* Which device are we using to simulate mouse events? */
     uint32_t mouseDevice = vr::k_unTrackedDeviceIndexInvalid;
+
+    vr::VRControllerState_t controllerStates[vr::k_unMaxTrackedDeviceCount];
+
+    vr::TrackedDevicePose_t trackedDevicePose[vr::k_unMaxTrackedDeviceCount];
 
     QOpenGLTexture* lineTexture;
 
@@ -176,6 +181,21 @@ public:
         return screenTrace(ray);
     }
 
+    QBitArray getAxisAsButtons(vr::TrackedDeviceIndex_t device, int axis, const vr::VRControllerState_t& newState, float threshold) {
+        QBitArray arr(4);
+
+#define get_axis(coord) (qAbs(newState.rAxis[axis].coord) > threshold && qAbs(controllerStates[device].rAxis[axis].coord) <= threshold)
+
+        arr.setBit(0, get_axis(x) && newState.rAxis[axis].x > 0);
+        arr.setBit(1, get_axis(x) && newState.rAxis[axis].x < 0);
+        arr.setBit(2, get_axis(y) && newState.rAxis[axis].y > 0);
+        arr.setBit(3, get_axis(y) && newState.rAxis[axis].y < 0);
+
+#undef get_axis
+
+        return arr;
+    }
+
     void handleVREvents() {
         vr::VRCompositor()->WaitGetPoses(trackedDevicePose, vr::k_unMaxTrackedDeviceCount, nullptr, 0);
 
@@ -196,6 +216,68 @@ public:
 
             /* Store the new direction vector for next frame. */
             panTrackingVector = mouseHit.ray.direction;
+        }
+
+        for (vr::TrackedDeviceIndex_t device = 0; device < vr::k_unMaxTrackedDeviceCount; ++device) {
+            if (vrSystem->GetTrackedDeviceClass(device) != vr::TrackedDeviceClass_Controller)
+                continue;
+
+            /* Get the current state of the controller. */
+            vr::VRControllerState_t controllerState;
+            vrSystem->GetControllerState(device, &controllerState, sizeof(controllerState));
+
+            for (int axis = 0; axis < 5; ++axis) {
+                switch (vrSystem->GetInt32TrackedDeviceProperty(device, static_cast<vr::ETrackedDeviceProperty>(vr::Prop_Axis0Type_Int32 + axis))) {
+                case vr::k_eControllerAxis_Joystick:
+                    QBitArray bits = getAxisAsButtons(device, axis, controllerState, 0.5f);
+
+                    if (device == mouseDevice) {
+                        switch (window->inputMode()) {
+                        case DVInputMode::VideoPlayer:
+                            break;
+                        case DVInputMode::FileBrowser:
+                            /* Positive X. */
+                            if (bits.testBit(0))
+                                window->goForward();
+                            /* Negative X. */
+                            else if (bits.testBit(1))
+                                window->goBack();
+
+                            /* Positive Y. */
+                            if (bits.testBit(2))
+                                window->goUp();
+
+                            break;
+                        case DVInputMode::ImageViewer:
+                            break;
+                        }
+                    } else if (window->inputMode() == DVInputMode::FileBrowser) {
+                        /* Positive X. */
+                        if (bits.testBit(0))
+                            window->right();
+                        /* Negative X. */
+                        else if (bits.testBit(1))
+                            window->left();
+
+                        /* Positive Y. */
+                        if (bits.testBit(2))
+                            window->up();
+                        /* Negative Y. */
+                        else if (bits.testBit(3))
+                            window->down();
+                    } else {
+                        /* Positive X. */
+                        if (bits.testBit(0))
+                            window->nextFile();
+                        /* Negative X. */
+                        else if (bits.testBit(1))
+                            window->previousFile();
+                    }
+                    break;
+                }
+            }
+
+            controllerStates[device] = controllerState;
         }
 
         /* Handle events from OpenVR. */
@@ -285,9 +367,6 @@ public:
     }
 
     QMatrix4x4 getComponentMatrix(uint32_t device, const char* componentName, bool render = true) {
-        /* Get the current state of the controller. */
-        vr::VRControllerState_t controllerState; vrSystem->GetControllerState(device, &controllerState, sizeof(controllerState));
-
         /* I'm making assumptions here... */
         const vr::RenderModel_ControllerMode_State_t renderModelState = { false };
 
@@ -295,7 +374,7 @@ public:
         vr::RenderModel_ComponentState_t componentState;
 
         /* Get the component state information from OpenVR. */
-        vr::VRRenderModels()->GetComponentState(modelForDevice[device].data(), componentName, &controllerState, &renderModelState, &componentState);
+        vr::VRRenderModels()->GetComponentState(modelForDevice[device].data(), componentName, &controllerStates[device], &renderModelState, &componentState);
 
         return QMatrix4x4(QMatrix4x3(render ? *componentState.mTrackingToComponentRenderModel.m : *componentState.mTrackingToComponentLocal.m));
     }
@@ -394,7 +473,7 @@ public:
         /* Don't use blending for tracked models. */
         f->glDisable(GL_BLEND);
 
-        for (uint32_t device = 0; device < vr::k_unMaxTrackedDeviceCount; ++device) {
+        for (vr::TrackedDeviceIndex_t device = 0; device < vr::k_unMaxTrackedDeviceCount; ++device) {
             /* Only render valid devices of the controller class. */
             if (!renderModels.contains(modelForDevice[device]) || vrSystem->GetTrackedDeviceClass(device) != vr::TrackedDeviceClass_Controller)
                 continue;
@@ -557,7 +636,6 @@ public:
     intptr_t distortionNumIndexes;
 
     vr::IVRSystem* vrSystem;
-    vr::TrackedDevicePose_t trackedDevicePose[vr::k_unMaxTrackedDeviceCount];
 
     QOpenGLShaderProgram vrSceneShader;
     QOpenGLShaderProgram distortionShader;
