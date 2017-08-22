@@ -303,7 +303,7 @@ public:
                                                                             Qt::LeftButton, Qt::LeftButton, 0, Qt::MouseEventSynthesizedByApplication));
                     break;
                 case vr::k_EButton_Grip:
-                    if (e.trackedDeviceIndex == mouseDevice && window->inputMode() == DVInputMode::ImageViewer)
+                    if (e.trackedDeviceIndex == mouseDevice && window->inputMode() != DVInputMode::FileBrowser)
                         panTrackingVector = mouseHit.ray.direction;
                 }
                 break;
@@ -320,6 +320,8 @@ public:
                     if (e.trackedDeviceIndex == mouseDevice)
                         /* Set it to a null vector to stop panning. */
                         panTrackingVector = QVector3D();
+                    else
+                        window->fileInfo();
                     break;
                 case vr::k_EButton_A:
                     if (e.trackedDeviceIndex == mouseDevice)
