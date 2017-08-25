@@ -64,6 +64,7 @@ class DV_VRDriver_OpenVR : public DV_VRDriver {
 
     /* Which device are we using to simulate mouse events? */
     uint32_t mouseDevice = vr::k_unTrackedDeviceIndexInvalid;
+    Qt::MouseButtons mouseButtonsDown;
 
     vr::VRControllerState_t controllerStates[vr::k_unMaxTrackedDeviceCount];
 
@@ -196,6 +197,34 @@ public:
         return arr;
     }
 
+    void sendMousePress(const QPointF& point, Qt::MouseButton button) {
+        /* Don't press if already down. */
+        if (mouseButtonsDown.testFlag(button))
+            return;
+
+        mouseButtonsDown |= button;
+
+        /* TODO - Handle modifiers. */
+        QCoreApplication::postEvent(window, new QMouseEvent(QEvent::MouseButtonPress, point, point, QPointF(),
+                                                            button, Qt::LeftButton, 0, Qt::MouseEventSynthesizedByApplication));
+    }
+
+    void sendMouseRelease(const QPointF& point, Qt::MouseButton button) {
+        /* Don't release if not down. */
+        if (!mouseButtonsDown.testFlag(button))
+            return;
+
+        mouseButtonsDown ^= button;
+        /* TODO - Handle modifiers. */
+        QCoreApplication::postEvent(window, new QMouseEvent(QEvent::MouseButtonRelease, point, point, QPointF(),
+                                                            button, mouseButtonsDown, 0, Qt::MouseEventSynthesizedByApplication));
+    }
+
+    void sendMouseMove(const QPointF& point) {
+        QCoreApplication::postEvent(window, new QMouseEvent(QEvent::MouseMove, point, point, QPointF(),
+                                                            Qt::NoButton, mouseButtonsDown, 0, Qt::MouseEventSynthesizedByApplication));
+    }
+
     void handleVREvents() {
         vr::VRCompositor()->WaitGetPoses(trackedDevicePose, vr::k_unMaxTrackedDeviceCount, nullptr, 0);
 
@@ -203,9 +232,10 @@ public:
         QPointF mousePoint = mouseHit.isValid ? window->pointFromScreenUV(mouseHit.uvCoord) : QPointF();
 
         if (mouseHit.isValid)
-            /* TODO - Are there buttons down? */
-            QCoreApplication::postEvent(window, new QMouseEvent(QEvent::MouseMove, mousePoint, mousePoint, QPointF(),
-                                                                Qt::NoButton, 0, 0, Qt::MouseEventSynthesizedByApplication));
+            sendMouseMove(mousePoint);
+        else
+            for (int i = 1; i < Qt::MaxMouseButton; i *= 2)
+                sendMouseRelease(mousePoint, Qt::MouseButton(i));
 
         if (!panTrackingVector.isNull()) {
             /* Get the angle between the direction vector between last frame and this frame, ignoring the z axis. */
@@ -298,9 +328,7 @@ public:
                 switch (e.data.controller.button) {
                 case vr::k_EButton_SteamVR_Trigger:
                     if (e.trackedDeviceIndex == mouseDevice && mouseHit.isValid)
-                        /* TODO - Handle other buttons and modifiers. */
-                        QCoreApplication::postEvent(window, new QMouseEvent(QEvent::MouseButtonPress, mousePoint, mousePoint, QPointF(),
-                                                                            Qt::LeftButton, Qt::LeftButton, 0, Qt::MouseEventSynthesizedByApplication));
+                        sendMousePress(mousePoint, Qt::LeftButton);
                     break;
                 case vr::k_EButton_Grip:
                     if (e.trackedDeviceIndex == mouseDevice && window->inputMode() != DVInputMode::FileBrowser)
@@ -311,9 +339,7 @@ public:
                 switch (e.data.controller.button) {
                 case vr::k_EButton_SteamVR_Trigger:
                     if (e.trackedDeviceIndex == mouseDevice && mouseHit.isValid)
-                        /* TODO - Handle other buttons and modifiers, and also check to see if a press event was sent first. */
-                        QCoreApplication::postEvent(window, new QMouseEvent(QEvent::MouseButtonRelease, mousePoint, mousePoint, QPointF(),
-                                                                            Qt::LeftButton, 0, 0, Qt::MouseEventSynthesizedByApplication));
+                        sendMouseRelease(mousePoint, Qt::LeftButton);
 //                    else if (e.trackedDeviceIndex != mouseDevice)
                     break;
                 case vr::k_EButton_Grip:
