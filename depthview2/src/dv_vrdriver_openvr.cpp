@@ -264,6 +264,12 @@ public:
                     if (device == mouseDevice) {
                         switch (window->inputMode()) {
                         case DVInputMode::VideoPlayer:
+                            /* Positive X. */
+                            if (bits.testBit(0))
+                                window->seekForward();
+                            /* Negative X. */
+                            else if (bits.testBit(1))
+                                window->seekBack();
                             break;
                         case DVInputMode::FileBrowser:
                             /* Positive X. */
