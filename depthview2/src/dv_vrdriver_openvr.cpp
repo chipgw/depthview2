@@ -687,7 +687,8 @@ public:
     }
 
     void setupDeviceModel(vr::TrackedDeviceIndex_t deviceIndex) {
-        if (deviceIndex >= vr::k_unMaxTrackedDeviceCount) return;
+        if (deviceIndex >= vr::k_unMaxTrackedDeviceCount || vrSystem->GetTrackedDeviceClass(deviceIndex) != vr::TrackedDeviceClass_Controller)
+            return;
 
         QByteArray modelName = getTrackedDeviceString(deviceIndex, vr::Prop_RenderModelName_String);
 
@@ -728,7 +729,7 @@ public:
             /* Wait for the model to load. */
             do {
                 error = vr::VRRenderModels()->LoadRenderModel_Async(componentModelName.data(), &model);
-                QThread::msleep(200);
+                QThread::msleep(20);
             } while (error == vr::VRRenderModelError_Loading);
 
             if (error != vr::VRRenderModelError_None) {
@@ -740,7 +741,7 @@ public:
             /* Wait for the texture to load. */
             do {
                 error = vr::VRRenderModels()->LoadTexture_Async(model->diffuseTextureId, &texture);
-                QThread::msleep(200);
+                QThread::msleep(20);
             } while (error == vr::VRRenderModelError_Loading);
 
             if (error != vr::VRRenderModelError_None) {
