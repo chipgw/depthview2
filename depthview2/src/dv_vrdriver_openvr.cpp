@@ -346,7 +346,6 @@ public:
                 case vr::k_EButton_SteamVR_Trigger:
                     if (e.trackedDeviceIndex == mouseDevice && mouseHit.isValid)
                         sendMouseRelease(mousePoint, Qt::LeftButton);
-//                    else if (e.trackedDeviceIndex != mouseDevice)
                     break;
                 case vr::k_EButton_Grip:
                     if (e.trackedDeviceIndex == mouseDevice)
@@ -464,7 +463,7 @@ public:
         const vr::HmdMatrix34_t& eyeMatrix = vrSystem->GetEyeToHeadTransform(eye);
 
         /* Get a projection matrix for each eye. */
-        const vr::HmdMatrix44_t& eyeProj = vrSystem->GetProjectionMatrix(eye,  0.1f, 1000.0f);
+        const vr::HmdMatrix44_t& eyeProj = vrSystem->GetProjectionMatrix(eye, 0.1f, 200.0f);
 
         /* Convert them all to QMatrix4x4 and combine them. */
         QMatrix4x4 eyeMat = QMatrix4x4(*eyeProj.m) * QMatrix4x4(QMatrix4x3(*eyeMatrix.m)).inverted() * head;
@@ -475,7 +474,7 @@ public:
 
         if (imgTexture != nullptr) {
             QMatrix4x4 sphereMat;
-            sphereMat.scale(900.0f);
+            sphereMat.scale(190.0f);
             sphereMat.rotate(imgPan, 0.0f, 1.0f, 0.0f);
             vrSceneShader.setUniformValue("cameraMatrix", eyeMat * sphereMat);
             vrSceneShader.setUniformValue("rect", imgRect.x(), imgRect.y(), imgRect.width(), imgRect.height());
