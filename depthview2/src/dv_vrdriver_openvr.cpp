@@ -185,13 +185,17 @@ public:
     QBitArray getAxisAsButtons(vr::TrackedDeviceIndex_t device, int axis, const vr::VRControllerState_t& newState, float threshold) {
         QBitArray arr(4);
 
-#define get_axis(coord) (qAbs(newState.rAxis[axis].coord) > threshold && qAbs(controllerStates[device].rAxis[axis].coord) <= threshold)
+#define positive(x) x
+#define negative(x) -x
+#define get_axis(coord, negate) (negate(newState.rAxis[axis].coord) > threshold && negate(controllerStates[device].rAxis[axis].coord) <= threshold)
 
-        arr.setBit(0, get_axis(x) && newState.rAxis[axis].x > 0);
-        arr.setBit(1, get_axis(x) && newState.rAxis[axis].x < 0);
-        arr.setBit(2, get_axis(y) && newState.rAxis[axis].y > 0);
-        arr.setBit(3, get_axis(y) && newState.rAxis[axis].y < 0);
+        arr.setBit(0, get_axis(x, positive));
+        arr.setBit(1, get_axis(x, negative));
+        arr.setBit(2, get_axis(y, positive));
+        arr.setBit(3, get_axis(y, negative));
 
+#undef positive
+#undef negative
 #undef get_axis
 
         return arr;
