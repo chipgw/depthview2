@@ -203,23 +203,19 @@ public:
 
     void sendMousePress(const QPointF& point, Qt::MouseButton button) {
         /* Don't press if already down. */
-        if (mouseButtonsDown.testFlag(button))
-            return;
+        if (mouseButtonsDown.testFlag(button)) return;
 
         mouseButtonsDown |= button;
 
-        /* TODO - Handle modifiers. */
         QCoreApplication::postEvent(window, new QMouseEvent(QEvent::MouseButtonPress, point, point, QPointF(),
                                                             button, Qt::LeftButton, 0, Qt::MouseEventSynthesizedByApplication));
     }
 
     void sendMouseRelease(const QPointF& point, Qt::MouseButton button) {
         /* Don't release if not down. */
-        if (!mouseButtonsDown.testFlag(button))
-            return;
+        if (!mouseButtonsDown.testFlag(button)) return;
 
         mouseButtonsDown ^= button;
-        /* TODO - Handle modifiers. */
         QCoreApplication::postEvent(window, new QMouseEvent(QEvent::MouseButtonRelease, point, point, QPointF(),
                                                             button, mouseButtonsDown, 0, Qt::MouseEventSynthesizedByApplication));
     }
@@ -237,7 +233,8 @@ public:
 
         if (mouseHit.isValid)
             sendMouseMove(mousePoint);
-        else
+        else if (mouseButtonsDown != Qt::NoButton)
+            /* If the mouse has left the screen, send a release event for every pressed button. */
             for (int i = 1; i < Qt::MaxMouseButton; i *= 2)
                 sendMouseRelease(mousePoint, Qt::MouseButton(i));
 
