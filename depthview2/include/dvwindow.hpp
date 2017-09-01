@@ -26,6 +26,8 @@ constexpr unsigned int vertex = 0;
 constexpr unsigned int uv     = 1;
 
 class DVWindow : public QQuickWindow, public DVInputInterface {
+    Q_OBJECT
+
 public:
     DVWindow();
     ~DVWindow();
@@ -108,6 +110,10 @@ public:
     void volumeDown();
     void mute();
     void setVolume(qreal volume);
+
+    /* When the volume control functions are called, they call these in the main thread. */
+    Q_INVOKABLE void muteImpl();
+    Q_INVOKABLE void setVolumeImpl(qreal volume);
 
     /* ------------------------------ *
      * End DVInputInterface functions *

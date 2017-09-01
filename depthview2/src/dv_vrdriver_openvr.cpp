@@ -172,8 +172,11 @@ public:
 
         /* Video player primary device mappings. */
         buttonActions[DVInputMode::VideoPlayer][true][vr::k_EButton_A] =                { &DVInputInterface::playPauseVideo };
+        buttonActions[DVInputMode::VideoPlayer][true][vr::k_EButton_ApplicationMenu] =  { &DVInputInterface::mute };
         axisActions[DVInputMode::VideoPlayer][true][PositiveX] =                        { &DVInputInterface::seekForward };
         axisActions[DVInputMode::VideoPlayer][true][NegativeX] =                        { &DVInputInterface::seekBack };
+        axisActions[DVInputMode::VideoPlayer][true][PositiveY] =                        { &DVInputInterface::volumeUp };
+        axisActions[DVInputMode::VideoPlayer][true][NegativeY] =                        { &DVInputInterface::volumeDown };
 
         /* Video player secondary device mappings. */
         buttonActions[DVInputMode::VideoPlayer][false][vr::k_EButton_Grip] =            { &DVInputInterface::fileInfo };

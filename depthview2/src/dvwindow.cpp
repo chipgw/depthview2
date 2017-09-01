@@ -376,18 +376,30 @@ void DVWindow::seekAmount(qint64 msec) {
 }
 
 void DVWindow::volumeUp() {
-    player->audio()->setVolume(qMin(player->audio()->volume() + 0.1, 1.0));
+    /* Call as a queued connection in case this is called from the OpenGL thread. */
+    staticMetaObject.invokeMethod(this, "setVolumeImpl", Qt::QueuedConnection, Q_ARG(qreal, qMin(player->audio()->volume() + 0.1, 1.0)));
 }
 
 void DVWindow::volumeDown() {
-    player->audio()->setVolume(qMax(player->audio()->volume() - 0.1, 0.0));
+    /* Call as a queued connection in case this is called from the OpenGL thread. */
+    staticMetaObject.invokeMethod(this, "setVolumeImpl", Qt::QueuedConnection, Q_ARG(qreal, qMax(player->audio()->volume() - 0.1, 0.0)));
 }
 
 void DVWindow::mute() {
-    player->audio()->setMute(!player->audio()->isMute());
+    /* Call as a queued connection in case this is called from the OpenGL thread. */
+    staticMetaObject.invokeMethod(this, "muteImpl", Qt::QueuedConnection);
 }
 
 void DVWindow::setVolume(qreal volume) {
+    /* Call as a queued connection in case this is called from the OpenGL thread. */
+    staticMetaObject.invokeMethod(this, "setVolumeImpl", Qt::QueuedConnection, Q_ARG(qreal, volume));
+}
+
+void DVWindow::muteImpl() {
+    player->audio()->setMute(!player->audio()->isMute());
+}
+
+void DVWindow::setVolumeImpl(qreal volume) {
     player->audio()->setVolume(volume);
 }
 
