@@ -74,6 +74,14 @@ class DV_VRDriver_OpenVR : public DV_VRDriver {
 
     QVector3D panTrackingVector;
 
+    typedef void (DVInputInterface::*Action)();
+
+    enum AxisAsButton { PositiveX, NegativeX, PositiveY, NegativeY, AxisAsButton_Max };
+
+    /* First index = input more, second index = whether the device is the mouse device, third index = the button. */
+    Action buttonActions[3][2][vr::k_EButton_Max];
+    Action axisActions[3][2][AxisAsButton_Max];
+
 public:
     DV_VRDriver_OpenVR(DVWindow* w) : DV_VRDriver(w), distortionVBO(QOpenGLBuffer::VertexBuffer), distortionIBO(QOpenGLBuffer::IndexBuffer) {
         if (!vr::VR_IsHmdPresent()) {
@@ -149,6 +157,43 @@ public:
 
         lineTexture = new QOpenGLTexture(QImage(":/images/vrline.png"));
 
+        /* Make sure any unmapped buttons are null, because garbage would cause a crash. */
+        memset(buttonActions, 0, sizeof buttonActions); memset(axisActions, 0, sizeof axisActions);
+
+        /* Image viewer primary device mappings. */
+        buttonActions[DVInputMode::ImageViewer][true][vr::k_EButton_A] =                { &DVInputInterface::zoomFit };
+        buttonActions[DVInputMode::ImageViewer][true][vr::k_EButton_ApplicationMenu] =  { &DVInputInterface::zoomActual };
+
+        /* Image viewer secondary device mappings. */
+        buttonActions[DVInputMode::ImageViewer][false][vr::k_EButton_ApplicationMenu] = { &DVInputInterface::openFileBrowser };
+        buttonActions[DVInputMode::ImageViewer][false][vr::k_EButton_Grip] =            { &DVInputInterface::fileInfo };
+        axisActions[DVInputMode::ImageViewer][false][PositiveX] =                       { &DVInputInterface::nextFile };
+        axisActions[DVInputMode::ImageViewer][false][NegativeX] =                       { &DVInputInterface::previousFile };
+
+        /* Video player primary device mappings. */
+        buttonActions[DVInputMode::VideoPlayer][true][vr::k_EButton_A] =                { &DVInputInterface::playPauseVideo };
+        axisActions[DVInputMode::VideoPlayer][true][PositiveX] =                        { &DVInputInterface::seekForward };
+        axisActions[DVInputMode::VideoPlayer][true][NegativeX] =                        { &DVInputInterface::seekBack };
+
+        /* Video player secondary device mappings. */
+        buttonActions[DVInputMode::VideoPlayer][false][vr::k_EButton_Grip] =            { &DVInputInterface::fileInfo };
+        buttonActions[DVInputMode::VideoPlayer][false][vr::k_EButton_ApplicationMenu] = { &DVInputInterface::openFileBrowser };
+        axisActions[DVInputMode::VideoPlayer][false][PositiveX] =                       { &DVInputInterface::nextFile };
+        axisActions[DVInputMode::VideoPlayer][false][NegativeX] =                       { &DVInputInterface::previousFile };
+
+        /* File browser primary device mappings. */
+        axisActions[DVInputMode::FileBrowser][true][PositiveX] =                        { &DVInputInterface::goForward };
+        axisActions[DVInputMode::FileBrowser][true][NegativeX] =                        { &DVInputInterface::goBack };
+        axisActions[DVInputMode::FileBrowser][true][PositiveY] =                        { &DVInputInterface::goUp };
+
+        /* File browser secondary device mappings. */
+        buttonActions[DVInputMode::FileBrowser][false][vr::k_EButton_A] =               { &DVInputInterface::accept };
+        buttonActions[DVInputMode::FileBrowser][false][vr::k_EButton_ApplicationMenu] = { &DVInputInterface::cancel };
+        axisActions[DVInputMode::FileBrowser][false][PositiveX] =                       { &DVInputInterface::right };
+        axisActions[DVInputMode::FileBrowser][false][NegativeX] =                       { &DVInputInterface::left };
+        axisActions[DVInputMode::FileBrowser][false][PositiveY] =                       { &DVInputInterface::up };
+        axisActions[DVInputMode::FileBrowser][false][NegativeY] =                       { &DVInputInterface::down };
+
         qDebug("OpenVR inited.");
     }
 
@@ -183,16 +228,16 @@ public:
     }
 
     QBitArray getAxisAsButtons(vr::TrackedDeviceIndex_t device, int axis, const vr::VRControllerState_t& newState, float threshold) {
-        QBitArray arr(4);
+        QBitArray arr(AxisAsButton_Max);
 
 #define positive(x) x
 #define negative(x) -x
 #define get_axis(coord, negate) (negate(newState.rAxis[axis].coord) > threshold && negate(controllerStates[device].rAxis[axis].coord) <= threshold)
 
-        arr.setBit(0, get_axis(x, positive));
-        arr.setBit(1, get_axis(x, negative));
-        arr.setBit(2, get_axis(y, positive));
-        arr.setBit(3, get_axis(y, negative));
+        arr.setBit(PositiveX, get_axis(x, positive));
+        arr.setBit(NegativeX, get_axis(x, negative));
+        arr.setBit(PositiveY, get_axis(y, positive));
+        arr.setBit(NegativeY, get_axis(y, negative));
 
 #undef positive
 #undef negative
@@ -262,54 +307,10 @@ public:
                 case vr::k_eControllerAxis_Joystick:
                     QBitArray bits = getAxisAsButtons(device, axis, controllerState, 0.5f);
 
-                    if (device == mouseDevice) {
-                        switch (window->inputMode()) {
-                        case DVInputMode::VideoPlayer:
-                            /* Positive X. */
-                            if (bits.testBit(0))
-                                window->seekForward();
-                            /* Negative X. */
-                            else if (bits.testBit(1))
-                                window->seekBack();
-                            break;
-                        case DVInputMode::FileBrowser:
-                            /* Positive X. */
-                            if (bits.testBit(0))
-                                window->goForward();
-                            /* Negative X. */
-                            else if (bits.testBit(1))
-                                window->goBack();
+                    for (int i = 0; i < bits.size(); ++i)
+                        if (bits.testBit(i) && axisActions[window->inputMode()][device == mouseDevice][i] != nullptr)
+                            (window->*(axisActions[window->inputMode()][device == mouseDevice][i]))();
 
-                            /* Positive Y. */
-                            if (bits.testBit(2))
-                                window->goUp();
-
-                            break;
-                        case DVInputMode::ImageViewer:
-                            break;
-                        }
-                    } else if (window->inputMode() == DVInputMode::FileBrowser) {
-                        /* Positive X. */
-                        if (bits.testBit(0))
-                            window->right();
-                        /* Negative X. */
-                        else if (bits.testBit(1))
-                            window->left();
-
-                        /* Positive Y. */
-                        if (bits.testBit(2))
-                            window->up();
-                        /* Negative Y. */
-                        else if (bits.testBit(3))
-                            window->down();
-                    } else {
-                        /* Positive X. */
-                        if (bits.testBit(0))
-                            window->nextFile();
-                        /* Negative X. */
-                        else if (bits.testBit(1))
-                            window->previousFile();
-                    }
                     break;
                 }
             }
@@ -343,58 +344,13 @@ public:
                 }
                 break;
             case vr::VREvent_ButtonUnpress:
-                switch (e.data.controller.button) {
-                case vr::k_EButton_SteamVR_Trigger:
-                    if (e.trackedDeviceIndex == mouseDevice && mouseHit.isValid)
-                        sendMouseRelease(mousePoint, Qt::LeftButton);
-                    break;
-                case vr::k_EButton_Grip:
-                    if (e.trackedDeviceIndex == mouseDevice)
-                        /* Set it to a null vector to stop panning. */
-                        panTrackingVector = QVector3D();
-                    else
-                        window->fileInfo();
-                    break;
-                case vr::k_EButton_A:
-                    if (e.trackedDeviceIndex == mouseDevice)
-                        switch (window->inputMode()) {
-                        case DVInputMode::VideoPlayer:
-                            window->playPauseVideo();
-                            break;
-                        case DVInputMode::FileBrowser:
-                            break;
-                        case DVInputMode::ImageViewer:
-                            window->zoomFit();
-                            break;
-                        }
-                    else
-                        switch (window->inputMode()) {
-                        case DVInputMode::VideoPlayer:
-                            break;
-                        case DVInputMode::FileBrowser:
-                            window->accept();
-                            break;
-                        case DVInputMode::ImageViewer:
-                            break;
-                        }
-                    break;
-                case vr::k_EButton_ApplicationMenu:
-                    if (e.trackedDeviceIndex == mouseDevice)
-                        switch (window->inputMode()) {
-                        case DVInputMode::VideoPlayer:
-                            break;
-                        case DVInputMode::FileBrowser:
-                            break;
-                        case DVInputMode::ImageViewer:
-                            window->zoomActual();
-                            break;
-                        }
-                    else if (window->inputMode() == DVInputMode::FileBrowser)
-                        window->cancel();
-                    else
-                        window->openFileBrowser();
-                    break;
-                }
+                if (e.data.controller.button == vr::k_EButton_SteamVR_Trigger && e.trackedDeviceIndex == mouseDevice && mouseHit.isValid)
+                    sendMouseRelease(mousePoint, Qt::LeftButton);
+                else if (e.data.controller.button == vr::k_EButton_Grip && e.trackedDeviceIndex == mouseDevice)
+                    /* Set it to a null vector to stop panning. */
+                    panTrackingVector = QVector3D();
+                else if (buttonActions[window->inputMode()][e.trackedDeviceIndex == mouseDevice][e.data.controller.button] != nullptr)
+                    (window->*(buttonActions[window->inputMode()][e.trackedDeviceIndex == mouseDevice][e.data.controller.button]))();
                 break;
             }
         }
