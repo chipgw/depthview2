@@ -65,6 +65,7 @@ class DV_VRDriver_OpenVR : public DV_VRDriver {
     /* Which device are we using to simulate mouse events? */
     uint32_t mouseDevice = vr::k_unTrackedDeviceIndexInvalid;
     Qt::MouseButtons mouseButtonsDown;
+    bool wasLastHitValid = false;
 
     vr::VRControllerState_t controllerStates[vr::k_unMaxTrackedDeviceCount];
 
@@ -281,10 +282,14 @@ public:
 
         if (mouseHit.isValid)
             sendMouseMove(mousePoint);
-        else if (mouseButtonsDown != Qt::NoButton)
+        else if (wasLastHitValid) {
             /* If the mouse has left the screen, send a release event for every pressed button. */
             for (int i = 1; i < Qt::MaxMouseButton; i *= 2)
                 sendMouseRelease(mousePoint, Qt::MouseButton(i));
+
+            /* Move the cursor off the screen so it won't be visible nor will it keep the top or bottom menu open. */
+            sendMouseMove(window->pointFromScreenUV({-0.5f, 0.5f}));
+        }
 
         if (!panTrackingVector.isNull()) {
             /* Get the angle between the direction vector between last frame and this frame, ignoring the z axis. */
@@ -357,6 +362,8 @@ public:
                 break;
             }
         }
+
+        wasLastHitValid = mouseHit.isValid;
     }
 
     QMatrix4x4 getComponentMatrix(uint32_t device, const char* componentName, bool render = true) {

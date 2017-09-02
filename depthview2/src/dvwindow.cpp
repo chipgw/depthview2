@@ -277,7 +277,7 @@ void DVWindow::doCommandLine(QCommandLineParser& parser) {
     }
 
     /* If there weren't any warnings we don't show the dialog. */
-    if(!warning.isEmpty())
+    if (!warning.isEmpty())
         QMessageBox::warning(nullptr, tr("Invalid Command Line!"), warning);
 }
 
