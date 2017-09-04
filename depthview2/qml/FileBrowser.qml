@@ -44,7 +44,7 @@ Popup {
                 id: fileRect
                 anchors { fill: parent; margins: 8 }
                 radius: 4
-                color: (wrapper.GridView.isCurrentItem || mouseArea.containsMouse) ? "#44444488" : "transparent"
+                color: (wrapper.GridView.isCurrentItem || mouseArea.containsMouse) ? "#4488aacc" : "transparent"
                 border { color: "grey"; width: 4 }
 
                 MouseArea {
