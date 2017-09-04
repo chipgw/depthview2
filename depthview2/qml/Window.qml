@@ -175,7 +175,7 @@ Item {
 
         onTouchEvent: touchTimer.restart()
 
-        onFileInfo: mediaInfoBox.open()
+        onFileInfo: mediaInfoBox.visible = !mediaInfoBox.visible
 
         onZoomActual: image.zoom = 1
         onZoomFit: image.zoom = -1
