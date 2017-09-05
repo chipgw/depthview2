@@ -1,35 +1,8 @@
 #include "gamepadplugin.hpp"
 #include "dvinputinterface.hpp"
-#include <QQmlComponent>
-#include <QQuickItem>
-#include <QQmlContext>
 #include <QGamepad>
 
-bool GamepadPlugin::init(QQmlContext* qmlContext) {
-    Q_INIT_RESOURCE(gamepadplugin);
-
-    QQmlComponent component(qmlContext->engine());
-
-    component.loadUrl(QUrl(QStringLiteral("qrc:/GamepadPlugin/GamepadConfig.qml")));
-
-    /* Wait for it to load... */
-    while(component.isLoading());
-
-    /* The program can't run if there was an error. */
-    if (component.isError()) {
-        errorString = component.errorString();
-        qDebug(qPrintable(errorString));
-        return false;
-    }
-
-    configMenuObject = qobject_cast<QQuickItem*>(component.create(qmlContext));
-
-    /* Critical error! abort! abort! */
-    if (configMenuObject == nullptr) {
-        errorString = "Unable to create configuration QML component.";
-        return false;
-    }
-
+bool GamepadPlugin::init(QQmlContext*) {
     connect(&gamepad, &QGamepad::buttonAChanged,        this, &GamepadPlugin::buttonAChanged);
     connect(&gamepad, &QGamepad::buttonBChanged,        this, &GamepadPlugin::buttonBChanged);
     connect(&gamepad, &QGamepad::buttonCenterChanged,   this, &GamepadPlugin::buttonCenterChanged);
@@ -51,8 +24,6 @@ bool GamepadPlugin::init(QQmlContext* qmlContext) {
 
     connect(QGamepadManager::instance(), &QGamepadManager::gamepadConnected, this, &GamepadPlugin::gamepadConnected);
 
-    gamepadEnable = QQmlProperty(QQmlProperty(configMenuObject, "settings").read().value<QObject*>(), "gamepadEnable");
-
     qDebug("Gamepad plugin inited, controller%sfound.", gamepad.isConnected() ? " " : " not ");
 
     return true;
@@ -73,69 +44,68 @@ void GamepadPlugin::frameSwapped() {
 }
 
 QQuickItem* GamepadPlugin::getConfigMenuObject() {
-    return configMenuObject;
+    /* Plugin has no configuration menu. */
+    return nullptr;
 }
 
 #define JUST_RELEASED(X) (!gamepad.X() && X##JustChanged)
 #define JUST_PRESSED(X) (gamepad.X() && X##JustChanged)
 
 bool GamepadPlugin::pollInput(DVInputInterface* inputInterface) {
-    if (gamepadEnable.read().toBool()) {
-        DVInputMode::Type mode = inputInterface->inputMode();
+    DVInputMode::Type mode = inputInterface->inputMode();
 
-        if (mode == DVInputMode::FileBrowser) {
-            if (JUST_RELEASED(buttonStart))
-                inputInterface->cancel();
+    if (mode == DVInputMode::FileBrowser) {
+        if (JUST_RELEASED(buttonStart))
+            inputInterface->cancel();
+
+        if (JUST_RELEASED(buttonL1))
+            inputInterface->goBack();
+        if (JUST_RELEASED(buttonR1))
+            inputInterface->goForward();
+        if (JUST_RELEASED(buttonY))
+            inputInterface->goUp();
+
+        if (JUST_RELEASED(buttonUp))
+            inputInterface->up();
+        if (JUST_RELEASED(buttonDown))
+            inputInterface->down();
+        if (JUST_RELEASED(buttonLeft))
+            inputInterface->left();
+        if (JUST_RELEASED(buttonRight))
+            inputInterface->right();
+
+        if (JUST_RELEASED(buttonA))
+            inputInterface->accept();
+    } else {
+        if (JUST_RELEASED(buttonStart))
+            inputInterface->openFileBrowser();
+        if (JUST_RELEASED(buttonX))
+            inputInterface->fileInfo();
+
+        if (JUST_RELEASED(buttonLeft))
+            inputInterface->previousFile();
+        if (JUST_RELEASED(buttonRight))
+            inputInterface->nextFile();
+
+        if (mode == DVInputMode::VideoPlayer) {
+            if (JUST_RELEASED(buttonA))
+                inputInterface->playPauseVideo();
 
             if (JUST_RELEASED(buttonL1))
-                inputInterface->goBack();
+                inputInterface->seekBack();
             if (JUST_RELEASED(buttonR1))
-                inputInterface->goForward();
-            if (JUST_RELEASED(buttonY))
-                inputInterface->goUp();
+                inputInterface->seekForward();
 
             if (JUST_RELEASED(buttonUp))
-                inputInterface->up();
+                inputInterface->volumeUp();
             if (JUST_RELEASED(buttonDown))
-                inputInterface->down();
-            if (JUST_RELEASED(buttonLeft))
-                inputInterface->left();
-            if (JUST_RELEASED(buttonRight))
-                inputInterface->right();
-
-            if (JUST_RELEASED(buttonA))
-                inputInterface->accept();
-        } else {
-            if (JUST_RELEASED(buttonStart))
-                inputInterface->openFileBrowser();
-            if (JUST_RELEASED(buttonX))
-                inputInterface->fileInfo();
-
-            if (JUST_RELEASED(buttonLeft))
-                inputInterface->previousFile();
-            if (JUST_RELEASED(buttonRight))
-                inputInterface->nextFile();
-
-            if (mode == DVInputMode::VideoPlayer) {
-                if (JUST_RELEASED(buttonA))
-                    inputInterface->playPauseVideo();
-
-                if (JUST_RELEASED(buttonL1))
-                    inputInterface->seekBack();
-                if (JUST_RELEASED(buttonR1))
-                    inputInterface->seekForward();
-
-                if (JUST_RELEASED(buttonUp))
-                    inputInterface->volumeUp();
-                if (JUST_RELEASED(buttonDown))
-                    inputInterface->volumeDown();
-            }
+                inputInterface->volumeDown();
         }
-
-        /* This happens no matter the mode. */
-        if (JUST_RELEASED(buttonB) || JUST_RELEASED(buttonSelect))
-            inputInterface->cancel();
     }
+
+    /* This happens no matter the mode. */
+    if (JUST_RELEASED(buttonB) || JUST_RELEASED(buttonSelect))
+        inputInterface->cancel();
 
     /* Reset the change tracking variables. */
     resetChangedTracker();

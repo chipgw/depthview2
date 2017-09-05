@@ -20,7 +20,6 @@ int main(int argc, char* argv[]) {
 
     QCommandLineParser parser;
 
-    /* TODO - More arguments. */
     parser.addOptions({
 #ifdef DV_FILE_ASSOCIATION
             {"register", QCoreApplication::translate("main", "")},

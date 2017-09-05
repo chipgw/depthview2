@@ -21,8 +21,6 @@ class SteamControllerPlugin : public QObject, public DVInputPlugin {
     Q_PLUGIN_METADATA(IID DVInputPlugin_iid FILE "steamcontrollerplugin.json")
     Q_INTERFACES(DVInputPlugin)
 
-    QQuickItem* configMenuObject;
-
     ControllerHandle_t controllers[STEAM_CONTROLLER_MAX_COUNT];
     int controllerCount;
 
@@ -38,7 +36,7 @@ class SteamControllerPlugin : public QObject, public DVInputPlugin {
     QString errorString;
 
 public:
-    bool init(QQmlContext* qmlContext);
+    bool init(QQmlContext*);
     bool deinit();
 
     QString getErrorString();

@@ -11,8 +11,6 @@ SOURCES += steamcontrollerplugin.cpp
 
 HEADERS += steamcontrollerplugin.hpp
 
-RESOURCES += steamcontrollerplugin.qrc
-
 win32: {
     contains(QMAKE_TARGET.arch, x86_64): LIBS += -L$$PWD/../../../steamsdk/redistributable_bin/win64/ -lsteam_api64
     else: LIBS += -L$$PWD/../../../steamsdk/redistributable_bin/ -lsteam_api

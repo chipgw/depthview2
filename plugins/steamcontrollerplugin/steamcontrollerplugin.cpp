@@ -3,32 +3,7 @@
 #include <QQmlContext>
 #include <QQuickItem>
 
-bool SteamControllerPlugin::init(QQmlContext* qmlContext) {
-    Q_INIT_RESOURCE(steamcontrollerplugin);
-
-    qmlContext->setContextProperty("Plugin", this);
-
-    QQmlComponent component(qmlContext->engine());
-
-    component.loadUrl(QUrl(QStringLiteral("qrc:/SteamControllerPlugin/SteamControllerConfig.qml")));
-
-    /* Wait for it to load... */
-    while(component.isLoading());
-
-    /* The program can't run if there was an error. */
-    if (component.isError()) {
-        errorString = component.errorString();
-        return false;
-    }
-
-    configMenuObject = qobject_cast<QQuickItem*>(component.create(qmlContext));
-
-    /* Critical error! abort! abort! */
-    if (configMenuObject == nullptr) {
-        errorString = "Unable to create configuration QML component.";
-        return false;
-    }
-
+bool SteamControllerPlugin::init(QQmlContext*) {
     if (!SteamAPI_Init()) {
         errorString = "Unable to initialize Steam API.";
         return false;
@@ -97,7 +72,8 @@ void SteamControllerPlugin::frameSwapped() {
 }
 
 QQuickItem* SteamControllerPlugin::getConfigMenuObject() {
-    return configMenuObject;
+    /* Plugin has no menu. */
+    return nullptr;
 }
 
 bool SteamControllerPlugin::pollInput(DVInputInterface* inputInterface) {

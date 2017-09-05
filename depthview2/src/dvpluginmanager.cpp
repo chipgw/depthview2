@@ -259,6 +259,9 @@ QObjectList DVPluginManager::getPluginConfigMenus() const {
     for (DVInputPlugin* item : inputPlugins)
         list.append((QObject*)item->getConfigMenuObject());
 
+    /* If any plugins have no menu, remove them. */
+    list.removeAll(nullptr);
+
     return list;
 }
 

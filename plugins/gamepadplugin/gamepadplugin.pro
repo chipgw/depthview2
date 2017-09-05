@@ -13,6 +13,4 @@ SOURCES += gamepadplugin.cpp
 
 HEADERS += gamepadplugin.hpp
 
-RESOURCES += gamepadplugin.qrc
-
 DISTFILES += gamepadplugin.json

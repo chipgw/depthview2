@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="/SteamControllerPlugin">
-        <file>SteamControllerConfig.qml</file>
-    </qresource>
-</RCC>

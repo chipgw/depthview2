@@ -12,11 +12,7 @@ class GamepadPlugin : public QObject, public DVInputPlugin {
     Q_PLUGIN_METADATA(IID DVInputPlugin_iid FILE "gamepadplugin.json")
     Q_INTERFACES(DVInputPlugin)
 
-    QQuickItem* configMenuObject;
-
     QGamepad gamepad;
-
-    QQmlProperty gamepadEnable;
 
     QString errorString;
 
@@ -60,7 +56,7 @@ public slots:
     void buttonYChanged(bool value);
 
 public:
-    bool init(QQmlContext* qmlContext);
+    bool init(QQmlContext*);
     bool deinit();
 
     QString getErrorString();
