@@ -109,53 +109,6 @@ public:
         /* Bind so we set the texture sampler uniform values. */
         distortionShader.bind();
 
-        vr::EVRInitError error = vr::VRInitError_None;
-        vrSystem = vr::VR_Init(&error, vr::VRApplication_Scene);
-
-        if (error != vr::VRInitError_None) {
-            vrSystem = nullptr;
-            errorString = "Error initing VR system.";
-            return;
-        }
-
-        if (!vr::VRCompositor()) {
-            vrSystem = nullptr;
-            errorString = "Error getting compositor.";
-            return;
-        }
-
-        /* Get the size for the FBOs. */
-        vrSystem->GetRecommendedRenderTargetSize(&renderWidth, &renderHeight);
-
-        /* Set up an FBO for each eye. */
-        renderFBO[0] = new QOpenGLFramebufferObject(renderWidth, renderHeight, QOpenGLFramebufferObject::Depth);
-        renderFBO[1] = new QOpenGLFramebufferObject(renderWidth, renderHeight, QOpenGLFramebufferObject::Depth);
-        resolveFBO[0] = new QOpenGLFramebufferObject(renderWidth, renderHeight);
-        resolveFBO[1] = new QOpenGLFramebufferObject(renderWidth, renderHeight);
-
-        QVector<QVector2D> verts;
-        QVector<GLushort> indexes;
-
-        /* Calculate the left eye's distortion verts. */
-        calculateEyeDistortion(vr::Eye_Left, verts, indexes, 0);
-        /* Indexes for the right eye must be offset by how many verts there were for the left eye. */
-        calculateEyeDistortion(vr::Eye_Right, verts, indexes, verts.size() / 4);
-
-        /* Upload the distortion verts to the GPU. */
-        distortionVBO.create();
-        distortionVBO.bind();
-        distortionVBO.allocate(verts.data(), verts.size() * sizeof(QVector2D));
-        /* Upload the distortion indexes to the GPU. */
-        distortionIBO.create();
-        distortionIBO.bind();
-        distortionIBO.allocate(indexes.data(), indexes.size() * sizeof(GLushort));
-
-        /* Store the number of indexes for rendering. */
-        distortionNumIndexes = indexes.size();
-
-        /* Load the models for attached devices. */
-        for (uint32_t i = 0; i < vr::k_unMaxTrackedDeviceCount; ++i) setupDeviceModel(i);
-
         lineTexture = new QOpenGLTexture(QImage(":/images/vrline.png"));
 
         /* Make sure any unmapped buttons are null, because garbage would cause a crash. */
@@ -211,6 +164,57 @@ public:
         vr::VR_Shutdown();
 
         qDebug("OpenVR shutdown.");
+    }
+
+    bool initVRSystem() {
+        vr::EVRInitError error = vr::VRInitError_None;
+        vrSystem = vr::VR_Init(&error, vr::VRApplication_Scene);
+
+        if (error != vr::VRInitError_None) {
+            vrSystem = nullptr;
+            errorString = "Error initing VR system.";
+            return false;
+        }
+
+        if (!vr::VRCompositor()) {
+            vrSystem = nullptr;
+            errorString = "Error getting compositor.";
+            return false;
+        }
+
+        /* Get the size for the FBOs. */
+        vrSystem->GetRecommendedRenderTargetSize(&renderWidth, &renderHeight);
+
+        /* Set up an FBO for each eye. */
+        renderFBO[0] = new QOpenGLFramebufferObject(renderWidth, renderHeight, QOpenGLFramebufferObject::Depth);
+        renderFBO[1] = new QOpenGLFramebufferObject(renderWidth, renderHeight, QOpenGLFramebufferObject::Depth);
+        resolveFBO[0] = new QOpenGLFramebufferObject(renderWidth, renderHeight);
+        resolveFBO[1] = new QOpenGLFramebufferObject(renderWidth, renderHeight);
+
+        QVector<QVector2D> verts;
+        QVector<GLushort> indexes;
+
+        /* Calculate the left eye's distortion verts. */
+        calculateEyeDistortion(vr::Eye_Left, verts, indexes, 0);
+        /* Indexes for the right eye must be offset by how many verts there were for the left eye. */
+        calculateEyeDistortion(vr::Eye_Right, verts, indexes, verts.size() / 4);
+
+        /* Upload the distortion verts to the GPU. */
+        distortionVBO.create();
+        distortionVBO.bind();
+        distortionVBO.allocate(verts.data(), verts.size() * sizeof(QVector2D));
+        /* Upload the distortion indexes to the GPU. */
+        distortionIBO.create();
+        distortionIBO.bind();
+        distortionIBO.allocate(indexes.data(), indexes.size() * sizeof(GLushort));
+
+        /* Store the number of indexes for rendering. */
+        distortionNumIndexes = indexes.size();
+
+        /* Load the models for attached devices. */
+        for (uint32_t i = 0; i < vr::k_unMaxTrackedDeviceCount; ++i) setupDeviceModel(i);
+
+        return vrSystem != nullptr;
     }
 
     RayHit deviceScreenPoint(vr::TrackedDeviceIndex_t dev) {
@@ -557,8 +561,8 @@ public:
     bool render() {
         QOpenGLExtraFunctions* f = window->openglContext()->extraFunctions();
 
-        /* We can't render if VR isn't inited. */
-        if (vrSystem == nullptr) return false;
+        /* Init VR system on first use. We can't render if VR doesn't init correctly. */
+        if (vrSystem == nullptr && !initVRSystem()) return false;
 
         handleVREvents();
 
@@ -635,7 +639,7 @@ public:
     QOpenGLBuffer distortionIBO;
     intptr_t distortionNumIndexes;
 
-    vr::IVRSystem* vrSystem;
+    vr::IVRSystem* vrSystem = nullptr;
 
     QOpenGLShaderProgram vrSceneShader;
     QOpenGLShaderProgram distortionShader;
