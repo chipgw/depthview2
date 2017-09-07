@@ -84,9 +84,10 @@ class DV_VRDriver_OpenVR : public DV_VRDriver {
     Action axisActions[3][2][AxisAsButton_Max];
 
 public:
-    DV_VRDriver_OpenVR(DVWindow* w) : DV_VRDriver(w), distortionVBO(QOpenGLBuffer::VertexBuffer), distortionIBO(QOpenGLBuffer::IndexBuffer) {
+    DV_VRDriver_OpenVR(DVWindow* w, DVVirtualScreenManager* m) : DV_VRDriver(w, m),
+        distortionVBO(QOpenGLBuffer::VertexBuffer), distortionIBO(QOpenGLBuffer::IndexBuffer) {
         if (!vr::VR_IsHmdPresent()) {
-            errorString = "No HMD detected.";
+            setError("No HMD detected.");
             return;
         }
 
@@ -172,14 +173,12 @@ public:
 
         if (error != vr::VRInitError_None) {
             vrSystem = nullptr;
-            errorString = "Error initing VR system.";
-            return false;
+            return setError("Error initing VR system.");
         }
 
         if (!vr::VRCompositor()) {
             vrSystem = nullptr;
-            errorString = "Error getting compositor.";
-            return false;
+            return setError("Error getting compositor.");
         }
 
         /* Get the size for the FBOs. */
@@ -551,10 +550,9 @@ public:
         resolveFBO[eye]->release();
 
         vr::Texture_t eyeTexture = { reinterpret_cast<void*>(static_cast<intptr_t>(resolveFBO[eye]->texture())), vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
-        if (vr::VRCompositor()->Submit(eye, &eyeTexture) != vr::VRCompositorError_None) {
-            errorString = "Error submitting texture to OpenVR.";
-            return false;
-        }
+        if (vr::VRCompositor()->Submit(eye, &eyeTexture) != vr::VRCompositorError_None)
+            return setError("Error submitting texture to OpenVR.");
+
         return true;
     }
 
@@ -729,6 +727,6 @@ public:
     }
 };
 
-DV_VRDriver* DV_VRDriver::createOpenVRDriver(DVWindow* window) {
-    return new DV_VRDriver_OpenVR(window);
+DV_VRDriver* DV_VRDriver::createOpenVRDriver(DVWindow* window, DVVirtualScreenManager* manager) {
+    return new DV_VRDriver_OpenVR(window, manager);
 }

@@ -8,9 +8,10 @@ class QQuickItem;
 class DV_VRDriver {
 protected:
     DVWindow* window;
+    DVVirtualScreenManager* manager;
 
     /* Only used by subclasses. */
-    DV_VRDriver(DVWindow* w);
+    DV_VRDriver(DVWindow* w, DVVirtualScreenManager* m);
 
     struct Ray {
         QVector3D origin;
@@ -56,8 +57,10 @@ public:
 
     QString errorString;
 
+    bool setError(const QString& error);
+
 #ifdef DV_OPENVR
-    static DV_VRDriver* createOpenVRDriver(DVWindow* window);
+    static DV_VRDriver* createOpenVRDriver(DVWindow* window, DVVirtualScreenManager *manager);
 #endif
 };
 

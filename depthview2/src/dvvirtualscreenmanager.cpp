@@ -14,7 +14,7 @@
 #include <cmath>
 #include <array>
 
-DV_VRDriver::DV_VRDriver(DVWindow* w) : window(w) {
+DV_VRDriver::DV_VRDriver(DVWindow* w, DVVirtualScreenManager *m) : window(w), manager(m) {
     window->settings.beginGroup("VRSettings");
 
     lockMouse = window->settings.contains("LockMouse") ? window->settings.value("LockMouse").toBool() : false;
@@ -84,6 +84,17 @@ bool DV_VRDriver::triangleTrace(RayHit& hit, std::array<QVector3D, 3> triangle, 
     return hit.isValid = true;
 }
 
+bool DV_VRDriver::setError(const QString& error) {
+    errorString = error;
+
+    qDebug("VR error: %s", qPrintable(error));
+
+    emit manager->errorChanged();
+
+    /* Return false for easy use in functions that return false on errors. */
+    return false;
+}
+
 DVVirtualScreenManager::DVVirtualScreenManager(DVWindow* parent) : QObject(parent) {
     p = nullptr;
     window = parent;
@@ -101,7 +112,7 @@ DVVirtualScreenManager::~DVVirtualScreenManager() {
 
 bool DVVirtualScreenManager::init() {
 #ifdef DV_OPENVR
-    p = DV_VRDriver::createOpenVRDriver(window);
+    p = DV_VRDriver::createOpenVRDriver(window, this);
 #endif
 
     /* Update the settings values now that they've been loaded. */
@@ -120,6 +131,7 @@ bool DVVirtualScreenManager::init() {
     emit backgroundDimChanged();
     emit backgroundImageTargetChanged();
     emit initedChanged();
+    emit errorChanged();
 
     return p != nullptr && !p->errorString.isEmpty();
 }
@@ -356,4 +368,12 @@ void DVVirtualScreenManager::setBackgroundImageTarget(QQuickItem* target){
 
 bool DVVirtualScreenManager::isInited() const {
     return p != nullptr;
+}
+
+bool DVVirtualScreenManager::isError() const {
+    return p != nullptr && !p->errorString.isEmpty();
+}
+
+QString DVVirtualScreenManager::errorString() const {
+    return (p != nullptr) ? p->errorString : "VR not inited.";
 }

@@ -28,7 +28,10 @@ class DVVirtualScreenManager : public QObject {
     Q_PROPERTY(qreal backgroundDim READ backgroundDim WRITE setBackgroundDim NOTIFY backgroundDimChanged)
 
     Q_PROPERTY(QQuickItem* backgroundImageTarget READ backgroundImageTarget WRITE setBackgroundImageTarget NOTIFY backgroundImageTargetChanged)
+
     Q_PROPERTY(bool isInited READ isInited NOTIFY initedChanged)
+    Q_PROPERTY(bool isError READ isError NOTIFY errorChanged)
+    Q_PROPERTY(QString errorString READ errorString NOTIFY errorChanged)
 
 public:
     DVVirtualScreenManager(DVWindow* parent);
@@ -68,6 +71,7 @@ signals:
     void backgroundImageTargetChanged();
 
     void initedChanged();
+    void errorChanged();
 
 public:
     bool lockMouse() const;
@@ -113,4 +117,6 @@ public:
     void setBackgroundImageTarget(QQuickItem* target);
 
     bool isInited() const;
+    bool isError() const;
+    QString errorString() const;
 };
