@@ -47,7 +47,7 @@ public:
     QSize getRenderSize(const QSize& windowSize);
 
 private:
-    DV_VRDriver* p;
+    DV_VRDriver* driver;
     DVWindow* window;
 
 public slots:
