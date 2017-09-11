@@ -4,6 +4,7 @@
 #include <QVector3D>
 
 class QQuickItem;
+class QOpenGLExtraFunctions;
 
 class DV_VRDriver {
 protected:
@@ -30,7 +31,7 @@ protected:
 
 public:
     virtual ~DV_VRDriver() = default;
-    virtual bool render() = 0;
+    virtual bool render(QOpenGLExtraFunctions* f) = 0;
 
     virtual void frameSwapped() = 0;
 

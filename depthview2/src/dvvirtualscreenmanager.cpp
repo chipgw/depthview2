@@ -147,7 +147,7 @@ QString DVVirtualScreenManager::getErrorString() {
 }
 
 bool DVVirtualScreenManager::render() {
-    return driver != nullptr && driver->render();
+    return driver != nullptr && driver->render(window->openglContext()->extraFunctions());
 }
 
 void DVVirtualScreenManager::frameSwapped() {

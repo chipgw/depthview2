@@ -167,7 +167,7 @@ public:
         qDebug("OpenVR shutdown.");
     }
 
-    bool initVRSystem() {
+    bool initVRSystem(QOpenGLExtraFunctions* f) {
         vr::EVRInitError error = vr::VRInitError_None;
         vrSystem = vr::VR_Init(&error, vr::VRApplication_Scene);
 
@@ -211,7 +211,7 @@ public:
         distortionNumIndexes = indexes.size();
 
         /* Load the models for attached devices. */
-        for (uint32_t i = 0; i < vr::k_unMaxTrackedDeviceCount; ++i) setupDeviceModel(i);
+        for (uint32_t i = 0; i < vr::k_unMaxTrackedDeviceCount; ++i) setupDeviceModel(i, f);
 
         return vrSystem != nullptr;
     }
@@ -277,7 +277,7 @@ public:
                                                             Qt::NoButton, mouseButtonsDown, 0, Qt::MouseEventSynthesizedByApplication));
     }
 
-    void handleVREvents() {
+    void handleVREvents(QOpenGLExtraFunctions* f) {
         vr::VRCompositor()->WaitGetPoses(trackedDevicePose, vr::k_unMaxTrackedDeviceCount, nullptr, 0);
 
         RayHit mouseHit = deviceScreenPoint(mouseDevice);
@@ -335,7 +335,7 @@ public:
             switch (e.eventType) {
             case vr::VREvent_TrackedDeviceActivated:
                 /* Load the model for the newly attached device. */
-                setupDeviceModel(e.trackedDeviceIndex);
+                setupDeviceModel(e.trackedDeviceIndex, f);
 
                 if (mouseDevice == vr::k_unTrackedDeviceIndexInvalid && vrSystem->GetTrackedDeviceClass(e.trackedDeviceIndex) == vr::TrackedDeviceClass_Controller)
                     mouseDevice = e.trackedDeviceIndex;
@@ -556,13 +556,11 @@ public:
         return true;
     }
 
-    bool render() {
-        QOpenGLExtraFunctions* f = window->openglContext()->extraFunctions();
-
+    bool render(QOpenGLExtraFunctions* f) {
         /* Init VR system on first use. We can't render if VR doesn't init correctly. */
-        if (vrSystem == nullptr && !initVRSystem()) return false;
+        if (vrSystem == nullptr && !initVRSystem(f)) return false;
 
-        handleVREvents();
+        handleVREvents(f);
 
         f->glClearColor(0.1f, 0.1f, 0.1f, 0.0f);
         f->glEnable(GL_DEPTH_TEST);
@@ -654,7 +652,7 @@ public:
         return buffer;
     }
 
-    void setupDeviceModel(vr::TrackedDeviceIndex_t deviceIndex) {
+    void setupDeviceModel(vr::TrackedDeviceIndex_t deviceIndex, QOpenGLExtraFunctions* f) {
         if (deviceIndex >= vr::k_unMaxTrackedDeviceCount || vrSystem->GetTrackedDeviceClass(deviceIndex) != vr::TrackedDeviceClass_Controller)
             return;
 
@@ -719,7 +717,7 @@ public:
             }
 
             /* Create the OpenGL buffers from the loaded data. and save it both in the current model and the list of all loaded components. */
-            componentMap[componentName] = loadedComponents[componentModelName] = new ModelComponent(*model, *texture, window->openglContext()->extraFunctions());
+            componentMap[componentName] = loadedComponents[componentModelName] = new ModelComponent(*model, *texture, f);
 
             /* We don't need the model data any more, it has been uploaded to the GPU. */
             vr::VRRenderModels()->FreeRenderModel(model); vr::VRRenderModels()->FreeTexture(texture);
