@@ -46,6 +46,12 @@ public:
 
     QSize getRenderSize(const QSize& windowSize);
 
+    bool isCurrentFileSurround() const;
+    qreal surroundPan() const;
+    void setSurroundPan(qreal pan);
+
+    QPointF pointFromScreenUV(const QVector2D& uv) const;
+
 private:
     DV_VRDriver* driver;
     DVWindow* window;

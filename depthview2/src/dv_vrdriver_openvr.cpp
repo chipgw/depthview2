@@ -1,7 +1,5 @@
 #include "dv_vrdriver.hpp"
 #include "dvwindow.hpp"
-#include "dvqmlcommunication.hpp"
-#include "dvfolderlisting.hpp"
 #include <QOpenGLExtraFunctions>
 #include <QSGTextureProvider>
 #include <QQuickItem>
@@ -281,7 +279,7 @@ public:
         vr::VRCompositor()->WaitGetPoses(trackedDevicePose, vr::k_unMaxTrackedDeviceCount, nullptr, 0);
 
         RayHit mouseHit = deviceScreenPoint(mouseDevice);
-        QPointF mousePoint = mouseHit.isValid ? window->pointFromScreenUV(mouseHit.uvCoord) : QPointF();
+        QPointF mousePoint = mouseHit.isValid ? manager->pointFromScreenUV(mouseHit.uvCoord) : QPointF();
 
         if (mouseHit.isValid)
             sendMouseMove(mousePoint);
@@ -291,7 +289,7 @@ public:
                 sendMouseRelease(mousePoint, Qt::MouseButton(i));
 
             /* Move the cursor off the screen so it won't be visible nor will it keep the top or bottom menu open. */
-            sendMouseMove(window->pointFromScreenUV({-0.5f, 0.5f}));
+            sendMouseMove(manager->pointFromScreenUV({-0.5f, 0.5f}));
         }
 
         if (!panTrackingVector.isNull()) {
@@ -299,7 +297,7 @@ public:
             qreal angleDelta = qRadiansToDegrees(qAtan2(panTrackingVector.z(), panTrackingVector.x())
                                                  - qAtan2(mouseHit.ray.direction.z(), mouseHit.ray.direction.x()));
 
-            window->qmlCommunication->setSurroundPan(window->qmlCommunication->surroundPan() + QPointF(angleDelta, 0.0f));
+            manager->setSurroundPan(manager->surroundPan() + angleDelta);
 
             /* Store the new direction vector for next frame. */
             panTrackingVector = mouseHit.ray.direction;
@@ -426,9 +424,7 @@ public:
         }
     }
 
-    void renderEyeScene(vr::EVREye eye, const QMatrix4x4& head, QSGTexture* imgTexture, QRectF imgRect, qreal imgPan, bool isBackground) {
-        QOpenGLExtraFunctions* f = window->openglContext()->extraFunctions();
-
+    void renderEyeScene(vr::EVREye eye, const QMatrix4x4& head, QSGTexture* imgTexture, QRectF imgRect, qreal imgPan, bool isBackground, QOpenGLExtraFunctions* f) {
         /* A matrix for each eye, to tell where it is relative to the user's head. */
         const vr::HmdMatrix34_t& eyeMatrix = vrSystem->GetEyeToHeadTransform(eye);
 
@@ -572,9 +568,9 @@ public:
         /* Whether the value of currentTexture is the background image (true) or an opened image (false). */
         bool isBackground = false;
 
-        if (window->folderListing->isCurrentFileSurround()) {
+        if (manager->isCurrentFileSurround()) {
             currentTexture = window->getCurrentTexture(currentTextureLeft, currentTextureRight);
-            currentTexturePan = window->qmlCommunication->surroundPan().x();
+            currentTexturePan = manager->surroundPan();
 
             if (snapSurroundPan)
                 /* Snap the pan value to multiples of 22.5 degrees to limit nausea. */
@@ -602,8 +598,8 @@ public:
 
         f->glEnableVertexAttribArray(0);
         f->glEnableVertexAttribArray(1);
-        renderEyeScene(vr::Eye_Left, head, currentTexture, currentTextureLeft, currentTexturePan, isBackground);
-        renderEyeScene(vr::Eye_Right, head, currentTexture, currentTextureRight, currentTexturePan, isBackground);
+        renderEyeScene(vr::Eye_Left, head, currentTexture, currentTextureLeft, currentTexturePan, isBackground, f);
+        renderEyeScene(vr::Eye_Right, head, currentTexture, currentTextureRight, currentTexturePan, isBackground, f);
 
         /* Get ready to render distortion. */
         distortionShader.bind();

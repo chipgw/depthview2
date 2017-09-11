@@ -58,9 +58,12 @@ public:
      * the viewport is set to the window size, and surround images will be rendered under the UI. */
     void doStandardSetup();
 
-    QPointF pointFromScreenUV(const QVector2D& uv) const;
-
     QSettings settings;
+
+    DVQmlCommunication* qmlCommunication;
+    DVFolderListing* folderListing;
+
+    QSize qmlSize;
 
     /* -------------------------------- *
      * Begin DVInputInterface functions *
@@ -119,9 +122,6 @@ public:
      * End DVInputInterface functions *
      * ------------------------------ */
 
-    DVQmlCommunication* qmlCommunication;
-    DVFolderListing* folderListing;
-
 public slots:
     void updateQmlSize();
     void onFrameSwapped();
@@ -134,15 +134,12 @@ protected:
     void paintGL();
     void preSync();
 
-    /* We need to relay these events to qmlWindow. */
-    bool event(QEvent *event);
+    bool event(QEvent* event);
 
 private:
     /* QML Stuff. */
     QQmlEngine* qmlEngine;
     QQuickItem* qmlRoot;
-
-    QSize qmlSize;
 
     DVPluginManager* pluginManager;
     DVVirtualScreenManager* vrManager;

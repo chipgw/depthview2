@@ -1,6 +1,8 @@
 #include "dvvirtualscreenmanager.hpp"
 #include "dvwindow.hpp"
 #include "dv_vrdriver.hpp"
+#include "dvqmlcommunication.hpp"
+#include "dvfolderlisting.hpp"
 #include <QOpenGLExtraFunctions>
 #include <QSGTextureProvider>
 #include <QQuickItem>
@@ -376,4 +378,18 @@ bool DVVirtualScreenManager::isError() const {
 
 QString DVVirtualScreenManager::errorString() const {
     return (driver != nullptr) ? driver->errorString : "VR not inited.";
+}
+
+bool DVVirtualScreenManager::isCurrentFileSurround() const {
+    return window->folderListing->isCurrentFileSurround();
+}
+qreal DVVirtualScreenManager::surroundPan() const {
+    return window->qmlCommunication->surroundPan().x();
+}
+void DVVirtualScreenManager::setSurroundPan(qreal pan) {
+    window->qmlCommunication->setSurroundPan(QPointF(pan, 0.0));
+}
+
+QPointF DVVirtualScreenManager::pointFromScreenUV(const QVector2D& uv) const {
+    return QPointF(uv.x() * window->qmlSize.width(), (1.0f - uv.y()) * window->qmlSize.height());
 }
