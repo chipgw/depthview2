@@ -6,6 +6,7 @@
 #include <QSqlQuery>
 #include <QSqlRecord>
 #include <QSqlError>
+#include <QMutexLocker>
 
 DVFolderListing::DVFolderListing(QObject* parent, QSettings& s) : QAbstractListModel(parent),
     settings(s), currentHistory(-1), driveTimer(this), m_fileBrowserOpen(false) {
@@ -263,6 +264,8 @@ QStringList DVFolderListing::bookmarks() const {
 
 QSqlRecord DVFolderListing::getRecordForFile(const QFileInfo& file, bool create) const {
     if (file.exists()) {
+        QMutexLocker locker(&dbOpMutex);
+
         QSqlQuery query;
         query.prepare("SELECT * FROM files WHERE path = (:path)");
         query.bindValue(":path", file.canonicalFilePath());
@@ -306,6 +309,7 @@ void DVFolderListing::setCurrentFileSurround(bool surround) {
     /* Get or create the record for the selected file. */
     QSqlRecord record = getRecordForFile(m_currentFile, true);
 
+    QMutexLocker locker(&dbOpMutex);
     QSqlQuery query;
     query.prepare("UPDATE files SET surround = :mode WHERE path = :path");
     query.bindValue(":mode", surround);
@@ -331,6 +335,7 @@ void DVFolderListing::setCurrentFileStereoMode(DVSourceMode::Type mode) {
     /* Get or create the record for the selected file. */
     QSqlRecord record = getRecordForFile(m_currentFile, true);
 
+    QMutexLocker locker(&dbOpMutex);
     QSqlQuery query;
     query.prepare("UPDATE files SET stereoMode = :mode WHERE path = :path");
     query.bindValue(":mode", mode);
@@ -356,6 +361,7 @@ void DVFolderListing::setCurrentFileStereoSwap(bool swap) {
     /* Get or create the record for the selected file. */
     QSqlRecord record = getRecordForFile(m_currentFile, true);
 
+    QMutexLocker locker(&dbOpMutex);
     QSqlQuery query;
     query.prepare("UPDATE files SET stereoSwap = :swap WHERE path = :path");
     query.bindValue(":swap", swap);
@@ -556,6 +562,8 @@ void DVFolderListing::setFileBrowserOpen(bool open) {
 }
 
 void DVFolderListing::setupFileDatabase() {
+    dbOpMutex.lock();
+
     QSqlRecord table = QSqlDatabase::database().record("files");
     /* Check to see if the table exists. */
     if (table.isEmpty()) {
@@ -579,14 +587,20 @@ void DVFolderListing::setupFileDatabase() {
         QSqlQuery query("ALTER TABLE files ADD surround bool");
         if (query.lastError().isValid()) qWarning("Error setting up table! %s", qPrintable(query.lastError().text()));
     }
+
+    dbOpMutex.unlock();
 }
 
 void DVFolderListing::resetFileDatabase() {
+    dbOpMutex.lock();
+
     /* First we delete the old table. */
     if (!QSqlDatabase::database().record("files").isEmpty()) {
         QSqlQuery query("DROP TABLE files");
         if (query.lastError().isValid()) qWarning("Error deleting old table! %s", qPrintable(query.lastError().text()));
     }
+
+    dbOpMutex.unlock();
 
     /* Then we set up the new one. */
     setupFileDatabase();

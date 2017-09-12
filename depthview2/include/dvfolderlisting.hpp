@@ -5,7 +5,8 @@
 #include <QUrl>
 #include <QAbstractListModel>
 #include <QSqlRecord>
-#include <dvenums.hpp>
+#include <QMutex>
+#include "dvenums.hpp"
 
 class QSettings;
 class DVQmlCommunication;
@@ -30,6 +31,9 @@ class DVFolderListing : public QAbstractListModel {
     QTimer driveTimer;
 
     bool m_fileBrowserOpen;
+
+    /* Only one getRecordForFile can be running at once. */
+    mutable QMutex dbOpMutex;
 
     Q_PROPERTY(QString currentFile READ currentFile NOTIFY currentFileChanged)
     Q_PROPERTY(QUrl currentURL READ currentURL NOTIFY currentFileChanged)
