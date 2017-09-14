@@ -309,7 +309,7 @@ void DVFolderListing::setCurrentFileSurround(bool surround) {
     /* Get or create the record for the selected file. */
     QSqlRecord record = getRecordForFile(m_currentFile, true);
 
-    QMutexLocker locker(&dbOpMutex);
+    dbOpMutex.lock();
     QSqlQuery query;
     query.prepare("UPDATE files SET surround = :mode WHERE path = :path");
     query.bindValue(":mode", surround);
@@ -318,6 +318,9 @@ void DVFolderListing::setCurrentFileSurround(bool surround) {
 
     if (!query.exec())
         qWarning("Unable to update record for file! %s", qPrintable(query.lastError().text()));
+
+    /* Must be unlocked before signal is emitted. */
+    dbOpMutex.unlock();
 
     emit currentFileSurroundChanged();
 
@@ -335,7 +338,7 @@ void DVFolderListing::setCurrentFileStereoMode(DVSourceMode::Type mode) {
     /* Get or create the record for the selected file. */
     QSqlRecord record = getRecordForFile(m_currentFile, true);
 
-    QMutexLocker locker(&dbOpMutex);
+    dbOpMutex.lock();
     QSqlQuery query;
     query.prepare("UPDATE files SET stereoMode = :mode WHERE path = :path");
     query.bindValue(":mode", mode);
@@ -344,6 +347,9 @@ void DVFolderListing::setCurrentFileStereoMode(DVSourceMode::Type mode) {
 
     if (!query.exec())
         qWarning("Unable to update record for file! %s", qPrintable(query.lastError().text()));
+
+    /* Must be unlocked before signal is emitted. */
+    dbOpMutex.unlock();
 
     emit currentFileStereoModeChanged();
 
@@ -361,7 +367,7 @@ void DVFolderListing::setCurrentFileStereoSwap(bool swap) {
     /* Get or create the record for the selected file. */
     QSqlRecord record = getRecordForFile(m_currentFile, true);
 
-    QMutexLocker locker(&dbOpMutex);
+    dbOpMutex.lock();
     QSqlQuery query;
     query.prepare("UPDATE files SET stereoSwap = :swap WHERE path = :path");
     query.bindValue(":swap", swap);
@@ -370,6 +376,9 @@ void DVFolderListing::setCurrentFileStereoSwap(bool swap) {
 
     if (!query.exec())
         qWarning("Unable to update record for file! %s", qPrintable(query.lastError().text()));
+
+    /* Must be unlocked before signal is emitted. */
+    dbOpMutex.unlock();
 
     emit currentFileStereoSwapChanged();
 
