@@ -63,6 +63,7 @@ public:
     DVQmlCommunication* qmlCommunication;
     DVFolderListing* folderListing;
 
+    /* The size of the FBO QML is being rendered to. */
     QSize qmlSize;
 
     /* -------------------------------- *

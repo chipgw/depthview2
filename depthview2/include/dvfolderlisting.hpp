@@ -32,7 +32,7 @@ class DVFolderListing : public QAbstractListModel {
 
     bool m_fileBrowserOpen;
 
-    /* Only one getRecordForFile can be running at once. */
+    /* Only one database operation can be running at once. */
     mutable QMutex dbOpMutex;
 
     Q_PROPERTY(QString currentFile READ currentFile NOTIFY currentFileChanged)
@@ -186,21 +186,18 @@ public:
     DVQmlCommunication* qmlCommunication;
 
 signals:
-    /* No argument because they are used as NOTIFY for multiple properties. */
     void currentFileChanged();
     void currentDirChanged();
 
     void storageDevicePathsChanged();
 
     void historyChanged();
-
     void bookmarksChanged();
+    void startDirChanged();
 
     void fileBrowserOpenChanged();
 
     void currentFileStereoModeChanged();
     void currentFileStereoSwapChanged();
     void currentFileSurroundChanged();
-
-    void startDirChanged();
 };

@@ -39,11 +39,11 @@ class DVPluginManager : public QAbstractListModel {
 public:
     explicit DVPluginManager(QObject* parent, QSettings& s);
 
-    /* Load static and dynamic plugins and init them. */
+    /* Load plugins and init any that are enabled in the database. */
     void loadPlugins(QQmlEngine* engine);
+    /* Load an instance of a plugin into memory based on the detected type. */
     bool loadPlugin(const QString& pluginName);
-    bool initRenderPluginQML(const QString& pluginName);
-    bool initRenderPluginGL(const QString& pluginName);
+    /* Call init() on specified input plugin, and prepare it for use. */
     bool initInputPlugin(const QString& pluginName);
     /* Call deinit() of all loaded plugins, so as to garbage collect anything they created. */
     void unloadPlugins();
@@ -53,6 +53,7 @@ public:
 
     Q_INVOKABLE void resetPluginDatabase();
 
+    /* Get input from all loadedinput plugins. */
     void doPluginInput(DVInputInterface* inputInterface);
 
     QStringList getModes() const;
