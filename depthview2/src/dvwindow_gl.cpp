@@ -1,3 +1,4 @@
+#include "dvconfig.hpp"
 #include "dvwindow.hpp"
 #include "dvqmlcommunication.hpp"
 #include "dvfolderlisting.hpp"
@@ -188,6 +189,7 @@ void DVWindow::paintGL() {
             openglContext()->extraFunctions()->glClear(GL_COLOR_BUFFER_BIT);
             return;
         }
+        DV_FALLTHROUGH;
     default:
         /* Whoops, invalid renderer. Reset to Anaglyph... */
         qmlCommunication->setDrawMode(DVDrawMode::Anaglyph);
