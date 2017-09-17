@@ -3,7 +3,10 @@
 #include <QUrl>
 #include <QPoint>
 #include "dvenums.hpp"
-#include "fileassociation.hpp"
+
+#if defined(Q_OS_WIN32) && !defined(DV_PORTABLE)
+#define DV_FILE_ASSOCIATION
+#endif
 
 class DVFolderListing;
 class QWindow;
@@ -97,7 +100,7 @@ public:
     DVFolderListing* folderListing;
 
 #ifdef DV_FILE_ASSOCIATION
-    Q_INVOKABLE void registerFileTypes();
+    Q_INVOKABLE static void registerFileTypes();
 #endif
 
 signals:

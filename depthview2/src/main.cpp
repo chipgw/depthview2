@@ -3,7 +3,7 @@
 #include <QCommandLineParser>
 #include "version.hpp"
 #include "dvwindow.hpp"
-#include "fileassociation.hpp"
+#include "dvqmlcommunication.hpp"
 
 int main(int argc, char* argv[]) {
     QApplication app(argc, argv);
@@ -44,7 +44,7 @@ int main(int argc, char* argv[]) {
 
 #ifdef DV_FILE_ASSOCIATION
     if (parser.isSet("register")){
-        fileassociation::registerFileTypes();
+        DVQmlCommunication::registerFileTypes();
         return 0;
     }
 #endif

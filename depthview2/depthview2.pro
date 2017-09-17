@@ -9,7 +9,6 @@ SOURCES += src/main.cpp \
     src/version.cpp \
     src/dvfolderlisting.cpp \
     src/dvthumbnailprovider.cpp \
-    src/fileassociation.cpp \
     src/dvpluginmanager.cpp \
     src/dvfilevalidator.cpp \
     src/dvvirtualscreenmanager.cpp
@@ -33,7 +32,6 @@ HEADERS += \
     include/dvfolderlisting.hpp \
     include/dvinputinterface.hpp \
     include/dvthumbnailprovider.hpp \
-    include/fileassociation.hpp \
     include/dvpluginmanager.hpp \
     include/dvfilevalidator.hpp \
     include/dvconfig.hpp \
