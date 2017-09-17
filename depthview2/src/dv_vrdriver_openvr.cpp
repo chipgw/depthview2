@@ -251,45 +251,45 @@ public:
         return arr;
     }
 
-    void sendMousePress(const QPointF& point, Qt::MouseButton button) {
+    void sendMousePress(const QPointF& point, Qt::MouseButton button, DVInputInterface* input) {
         /* Don't press if already down. */
         if (mouseButtonsDown.testFlag(button)) return;
 
         mouseButtonsDown |= button;
 
-        QCoreApplication::postEvent(window, new QMouseEvent(QEvent::MouseButtonPress, point, point, QPointF(),
-                                                            button, Qt::LeftButton, 0, Qt::MouseEventSynthesizedByApplication));
+        QCoreApplication::postEvent(input->inputEventObject(), new QMouseEvent(QEvent::MouseButtonPress, point, point, QPointF(),
+                                                                               button, Qt::LeftButton, 0, Qt::MouseEventSynthesizedByApplication));
     }
 
-    void sendMouseRelease(const QPointF& point, Qt::MouseButton button) {
+    void sendMouseRelease(const QPointF& point, Qt::MouseButton button, DVInputInterface* input) {
         /* Don't release if not down. */
         if (!mouseButtonsDown.testFlag(button)) return;
 
         mouseButtonsDown ^= button;
-        QCoreApplication::postEvent(window, new QMouseEvent(QEvent::MouseButtonRelease, point, point, QPointF(),
-                                                            button, mouseButtonsDown, 0, Qt::MouseEventSynthesizedByApplication));
+        QCoreApplication::postEvent(input->inputEventObject(), new QMouseEvent(QEvent::MouseButtonRelease, point, point, QPointF(),
+                                                                               button, mouseButtonsDown, 0, Qt::MouseEventSynthesizedByApplication));
     }
 
-    void sendMouseMove(const QPointF& point) {
-        QCoreApplication::postEvent(window, new QMouseEvent(QEvent::MouseMove, point, point, QPointF(),
-                                                            Qt::NoButton, mouseButtonsDown, 0, Qt::MouseEventSynthesizedByApplication));
+    void sendMouseMove(const QPointF& point, DVInputInterface* input) {
+        QCoreApplication::postEvent(input->inputEventObject(), new QMouseEvent(QEvent::MouseMove, point, point, QPointF(),
+                                                                               Qt::NoButton, mouseButtonsDown, 0, Qt::MouseEventSynthesizedByApplication));
     }
 
-    void handleVREvents(QOpenGLExtraFunctions* f) {
+    void handleVREvents(QOpenGLExtraFunctions* f, DVInputInterface* input) {
         vr::VRCompositor()->WaitGetPoses(trackedDevicePose, vr::k_unMaxTrackedDeviceCount, nullptr, 0);
 
         RayHit mouseHit = deviceScreenPoint(mouseDevice);
         QPointF mousePoint = mouseHit.isValid ? manager->pointFromScreenUV(mouseHit.uvCoord) : QPointF();
 
         if (mouseHit.isValid)
-            sendMouseMove(mousePoint);
+            sendMouseMove(mousePoint, input);
         else if (wasLastHitValid) {
             /* If the mouse has left the screen, send a release event for every pressed button. */
             for (int i = 1; i < Qt::MaxMouseButton; i *= 2)
-                sendMouseRelease(mousePoint, Qt::MouseButton(i));
+                sendMouseRelease(mousePoint, Qt::MouseButton(i), input);
 
             /* Move the cursor off the screen so it won't be visible nor will it keep the top or bottom menu open. */
-            sendMouseMove(manager->pointFromScreenUV({-0.5f, 0.5f}));
+            sendMouseMove(manager->pointFromScreenUV({-0.5f, 0.5f}), input);
         }
 
         if (!panTrackingVector.isNull()) {
@@ -317,8 +317,8 @@ public:
                     QBitArray bits = getAxisAsButtons(device, axis, controllerState, 0.5f);
 
                     for (int i = 0; i < bits.size(); ++i)
-                        if (bits.testBit(i) && axisActions[window->inputMode()][device == mouseDevice][i] != nullptr)
-                            (window->*(axisActions[window->inputMode()][device == mouseDevice][i]))();
+                        if (bits.testBit(i) && axisActions[input->inputMode()][device == mouseDevice][i] != nullptr)
+                            (input->*(axisActions[input->inputMode()][device == mouseDevice][i]))();
 
                     break;
                 }
@@ -345,21 +345,21 @@ public:
                 switch (e.data.controller.button) {
                 case vr::k_EButton_SteamVR_Trigger:
                     if (e.trackedDeviceIndex == mouseDevice && mouseHit.isValid)
-                        sendMousePress(mousePoint, Qt::LeftButton);
+                        sendMousePress(mousePoint, Qt::LeftButton, input);
                     break;
                 case vr::k_EButton_Grip:
-                    if (e.trackedDeviceIndex == mouseDevice && window->inputMode() != DVInputMode::FileBrowser)
+                    if (e.trackedDeviceIndex == mouseDevice && input->inputMode() != DVInputMode::FileBrowser)
                         panTrackingVector = mouseHit.ray.direction;
                 }
                 break;
             case vr::VREvent_ButtonUnpress:
                 if (e.data.controller.button == vr::k_EButton_SteamVR_Trigger && e.trackedDeviceIndex == mouseDevice && mouseHit.isValid)
-                    sendMouseRelease(mousePoint, Qt::LeftButton);
+                    sendMouseRelease(mousePoint, Qt::LeftButton, input);
                 else if (e.data.controller.button == vr::k_EButton_Grip && e.trackedDeviceIndex == mouseDevice)
                     /* Set it to a null vector to stop panning. */
                     panTrackingVector = QVector3D();
-                else if (buttonActions[window->inputMode()][e.trackedDeviceIndex == mouseDevice][e.data.controller.button] != nullptr)
-                    (window->*(buttonActions[window->inputMode()][e.trackedDeviceIndex == mouseDevice][e.data.controller.button]))();
+                else if (buttonActions[input->inputMode()][e.trackedDeviceIndex == mouseDevice][e.data.controller.button] != nullptr)
+                    (input->*(buttonActions[input->inputMode()][e.trackedDeviceIndex == mouseDevice][e.data.controller.button]))();
                 break;
             }
         }
@@ -552,11 +552,11 @@ public:
         return true;
     }
 
-    bool render(QOpenGLExtraFunctions* f) {
+    bool render(QOpenGLExtraFunctions* f, DVInputInterface* input) {
         /* Init VR system on first use. We can't render if VR doesn't init correctly. */
         if (vrSystem == nullptr && !initVRSystem(f)) return false;
 
-        handleVREvents(f);
+        handleVREvents(f, input);
 
         f->glClearColor(0.1f, 0.1f, 0.1f, 0.0f);
         f->glEnable(GL_DEPTH_TEST);

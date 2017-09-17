@@ -16,7 +16,7 @@
 #include <cmath>
 #include <array>
 
-DV_VRDriver::DV_VRDriver(DVWindow* w, DVVirtualScreenManager *m) : window(w), manager(m) {
+DV_VRDriver::DV_VRDriver(DVWindow* w, DVVirtualScreenManager* m) : window(w), manager(m) {
     window->settings.beginGroup("VRSettings");
 
     lockMouse = window->settings.contains("LockMouse") ? window->settings.value("LockMouse").toBool() : false;
@@ -149,7 +149,7 @@ QString DVVirtualScreenManager::getErrorString() {
 }
 
 bool DVVirtualScreenManager::render() {
-    return driver != nullptr && driver->render(window->openglContext()->extraFunctions());
+    return driver != nullptr && driver->render(window->openglContext()->extraFunctions(), window);
 }
 
 void DVVirtualScreenManager::frameSwapped() {

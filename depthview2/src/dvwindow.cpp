@@ -402,3 +402,7 @@ void DVWindow::muteImpl() {
 void DVWindow::setVolumeImpl(qreal volume) {
     player->audio()->setVolume(volume);
 }
+
+QObject* DVWindow::inputEventObject() {
+    return this;
+}

@@ -31,7 +31,7 @@ protected:
 
 public:
     virtual ~DV_VRDriver() = default;
-    virtual bool render(QOpenGLExtraFunctions* f) = 0;
+    virtual bool render(QOpenGLExtraFunctions* f, DVInputInterface* input) = 0;
 
     virtual void frameSwapped() = 0;
 
