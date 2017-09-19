@@ -262,7 +262,7 @@ QStringList DVFolderListing::bookmarks() const {
     return m_bookmarks;
 }
 
-QSqlRecord DVFolderListing::getRecordForFile(const QFileInfo& file, bool create) const {
+QSqlRecord DVFolderListing::getRecordForFile(const QFileInfo& file) const {
     if (file.exists()) {
         QMutexLocker locker(&dbOpMutex);
 
@@ -272,18 +272,6 @@ QSqlRecord DVFolderListing::getRecordForFile(const QFileInfo& file, bool create)
 
         if (query.exec() && query.next())
             return query.record();
-
-        /* If it didn't exist, optionally create it. */
-        if (create) {
-            query.prepare("INSERT INTO files (path) VALUES (:path)");
-            query.bindValue(":path", file.canonicalFilePath());
-
-            if (query.exec())
-                /* The INSERT query does not return a record, so use this function again to retrieve the record. */
-                return getRecordForFile(file);
-
-            qWarning("Unable to create record for file! %s", qPrintable(query.lastError().text()));
-        }
     }
 
     return QSqlRecord();
@@ -303,87 +291,57 @@ bool DVFolderListing::isCurrentFileSurround() const {
 }
 
 void DVFolderListing::setCurrentFileSurround(bool surround) {
-    if (surround == isCurrentFileSurround())
-        return;
+    if (surround == isCurrentFileSurround()) return;
 
-    /* Get or create the record for the selected file. */
-    QSqlRecord record = getRecordForFile(m_currentFile, true);
-
-    dbOpMutex.lock();
-    QSqlQuery query;
-    query.prepare("UPDATE files SET surround = :mode WHERE path = :path");
-    query.bindValue(":mode", surround);
-    /* Use the record's path value. */
-    query.bindValue(":path", record.value(0));
-
-    if (!query.exec())
-        qWarning("Unable to update record for file! %s", qPrintable(query.lastError().text()));
-
-    /* Must be unlocked before signal is emitted. */
-    dbOpMutex.unlock();
+    updateRecordForFile(m_currentFile, "surround", surround, IsSurroundRole);
 
     emit currentFileSurroundChanged();
-
-    QModelIndex changedIndex = createIndex(m_currentDir.entryInfoList().indexOf(m_currentFile), 0);
-    emit dataChanged(changedIndex, changedIndex, {IsSurroundRole});
 }
 
 DVSourceMode::Type DVFolderListing::currentFileStereoMode() const {
     return fileStereoMode(m_currentFile);
 }
 void DVFolderListing::setCurrentFileStereoMode(DVSourceMode::Type mode) {
-    if (mode == currentFileStereoMode())
-        return;
+    if (mode == currentFileStereoMode()) return;
 
-    /* Get or create the record for the selected file. */
-    QSqlRecord record = getRecordForFile(m_currentFile, true);
-
-    dbOpMutex.lock();
-    QSqlQuery query;
-    query.prepare("UPDATE files SET stereoMode = :mode WHERE path = :path");
-    query.bindValue(":mode", mode);
-    /* Use the record's path value. */
-    query.bindValue(":path", record.value(0));
-
-    if (!query.exec())
-        qWarning("Unable to update record for file! %s", qPrintable(query.lastError().text()));
-
-    /* Must be unlocked before signal is emitted. */
-    dbOpMutex.unlock();
+    updateRecordForFile(m_currentFile, "stereoMode", mode, FileStereoModeRole);
 
     emit currentFileStereoModeChanged();
-
-    QModelIndex changedIndex = createIndex(m_currentDir.entryInfoList().indexOf(m_currentFile), 0);
-    emit dataChanged(changedIndex, changedIndex, {FileStereoModeRole});
 }
 
 bool DVFolderListing::currentFileStereoSwap() const {
     return fileStereoSwap(m_currentFile);
 }
 void DVFolderListing::setCurrentFileStereoSwap(bool swap) {
-    if (swap == currentFileStereoSwap())
-        return;
+    if (swap == currentFileStereoSwap()) return;
 
-    /* Get or create the record for the selected file. */
-    QSqlRecord record = getRecordForFile(m_currentFile, true);
+    updateRecordForFile(m_currentFile, "stereoSwap", swap, FileStereoSwapRole);
 
+    emit currentFileStereoSwapChanged();
+}
+
+void DVFolderListing::updateRecordForFile(const QFileInfo& file, const QString& propertyName, QVariant value, Roles role) {
     dbOpMutex.lock();
-    QSqlQuery query;
-    query.prepare("UPDATE files SET stereoSwap = :swap WHERE path = :path");
-    query.bindValue(":swap", swap);
-    /* Use the record's path value. */
-    query.bindValue(":path", record.value(0));
 
-    if (!query.exec())
-        qWarning("Unable to update record for file! %s", qPrintable(query.lastError().text()));
+    QSqlQuery query;
+
+    /* Create record for file if it didn't already exist.
+     * Don't bother passing the prop/value, because the UPDATE query will be executed either way. */
+    query.prepare("INSERT OR IGNORE INTO files (path) VALUES (:path)");
+    query.bindValue(":path", file.canonicalFilePath());
+    if (!query.exec()) qWarning("Unable to create record for file! %s", qPrintable(query.lastError().text()));
+
+    /* Update the record with the new value. */
+    query.prepare("UPDATE files SET " + propertyName + " = :val WHERE path = :path");
+    query.bindValue(":val", value);
+    query.bindValue(":path", file.canonicalFilePath());
+    if (!query.exec()) qWarning("Unable to update record for file! %s", qPrintable(query.lastError().text()));
 
     /* Must be unlocked before signal is emitted. */
     dbOpMutex.unlock();
 
-    emit currentFileStereoSwapChanged();
-
     QModelIndex changedIndex = createIndex(m_currentDir.entryInfoList().indexOf(m_currentFile), 0);
-    emit dataChanged(changedIndex, changedIndex, {FileStereoSwapRole});
+    emit dataChanged(changedIndex, changedIndex, {role});
 }
 
 qint64 DVFolderListing::currentFileSize() const {
@@ -577,7 +535,7 @@ void DVFolderListing::setupFileDatabase() {
     /* Check to see if the table exists. */
     if (table.isEmpty()) {
         /* Don't bother setting up the fields here, as that might as well just be left to the stuff below. */
-        QSqlQuery query("create table files (path string)");
+        QSqlQuery query("CREATE TABLE files (path string PRIMARY KEY)");
         if (query.lastError().isValid()) qWarning("Error creating table! %s", qPrintable(query.lastError().text()));
     }
 

@@ -137,7 +137,7 @@ public:
         FileTypeStringRole
     };
 
-    QSqlRecord getRecordForFile(const QFileInfo& file, bool create = false) const;
+    QSqlRecord getRecordForFile(const QFileInfo& file) const;
 
     bool isCurrentFileStereoImage() const;
     bool isCurrentFileImage() const;
@@ -151,6 +151,8 @@ public:
 
     bool currentFileStereoSwap() const;
     void setCurrentFileStereoSwap(bool swap);
+
+    void updateRecordForFile(const QFileInfo& file, const QString& propertyName, QVariant value, Roles role);
 
     qint64 currentFileSize() const;
     QString currentFileInfo() const;
