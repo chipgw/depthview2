@@ -354,8 +354,7 @@ QString DVFolderListing::currentFileInfo() const {
             .arg(bytesToString(m_currentFile.size())).arg(m_currentFile.created().toString());
 
     QString owner = m_currentFile.owner();
-    if (!owner.isEmpty())
-        info += tr("<br>Owner: ") + owner;
+    if (!owner.isEmpty()) info += tr("<br>Owner: ") + owner;
 
     return info;
 }
@@ -380,13 +379,7 @@ bool DVFolderListing::isFileSurround(const QFileInfo &file) const {
 
     QSqlRecord record = getRecordForFile(file);
 
-    if (!record.isEmpty()) {
-        QVariant value = record.value("surround");
-        if (!value.isNull())
-            return value.toBool();
-    }
-
-    return false;
+    return !record.isEmpty() && !record.value("surround").isNull() && record.value("surround").toBool();
 }
 
 DVSourceMode::Type DVFolderListing::fileStereoMode(const QFileInfo& file) const {
@@ -396,12 +389,9 @@ DVSourceMode::Type DVFolderListing::fileStereoMode(const QFileInfo& file) const 
 
     QSqlRecord record = getRecordForFile(file);
 
-    /* First check the record fot the file. */
-    if (!record.isEmpty()) {
-        QVariant value = record.value("stereoMode");
-        if (!value.isNull())
-            return value.value<DVSourceMode::Type>();
-    }
+    /* First check the record for the file. */
+    if (!record.isEmpty() && !record.value("stereoMode").isNull())
+        return record.value("stereoMode").value<DVSourceMode::Type>();
 
     /* If it isn't a stereo file and there isn't a value stored, just disable 3D until something is set. */
     return DVSourceMode::Mono;
@@ -410,12 +400,9 @@ DVSourceMode::Type DVFolderListing::fileStereoMode(const QFileInfo& file) const 
 bool DVFolderListing::fileStereoSwap(const QFileInfo& file) const {
     QSqlRecord record = getRecordForFile(file);
 
-    /* First check the record fot the file. */
-    if (!record.isEmpty()) {
-        QVariant value = record.value("stereoSwap");
-        if (!value.isNull())
-            return value.toBool();
-    }
+    /* First check the record for the file. */
+    if (!record.isEmpty() && !record.value("stereoSwap").isNull())
+        return record.value("stereoSwap").toBool();
 
     /* If there was no valid stored value, return true for stereo image files (jps & pns) and false for everything else. */
     return isFileStereoImage(file);
