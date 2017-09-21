@@ -41,7 +41,7 @@ void DVQmlCommunication::setDrawMode(DVDrawMode::Type mode) {
     if (m_drawMode != mode) {
         m_drawMode = mode;
         settings.setValue("DrawMode", DVDrawMode::toString(mode));
-        emit drawModeChanged(mode);
+        emit drawModeChanged();
     }
 }
 

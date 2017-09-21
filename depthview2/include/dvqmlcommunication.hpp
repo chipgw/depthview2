@@ -105,7 +105,7 @@ public:
 
 signals:
     void isLeftChanged(bool isLeft);
-    void drawModeChanged(DVDrawMode::Type mode);
+    void drawModeChanged();
     void anamorphicDualViewChanged(bool anamorphicDualView);
 
     void mirrorLeftChanged(bool mirror);
