@@ -32,10 +32,6 @@ DVQmlCommunication::DVQmlCommunication(QWindow* parent, QSettings& s) : QObject(
         QQuickStyle::setStyle(settings.value("ControlsTheme").toString());
 }
 
-DVDrawMode::Type DVQmlCommunication::drawMode() const {
-    return m_drawMode;
-}
-
 void DVQmlCommunication::setDrawMode(DVDrawMode::Type mode) {
     /* Only emit if changed. */
     if (m_drawMode != mode) {
@@ -50,10 +46,6 @@ void DVQmlCommunication::initDrawMode(DVDrawMode::Type mode) {
     settings.setValue("DrawMode", DVDrawMode::toString(mode));
 }
 
-bool DVQmlCommunication::anamorphicDualView() const {
-    return m_anamorphicDualView;
-}
-
 void DVQmlCommunication::setAnamorphicDualView(bool anamorphic) {
     /* Only emit if changed. */
     if (m_anamorphicDualView != anamorphic) {
@@ -63,10 +55,6 @@ void DVQmlCommunication::setAnamorphicDualView(bool anamorphic) {
     }
 }
 
-bool DVQmlCommunication::mirrorLeft() const {
-    return m_mirrorLeft;
-}
-
 void DVQmlCommunication::setMirrorLeft(bool mirror) {
     /* Only emit if changed. */
     if (m_mirrorLeft != mirror) {
@@ -74,10 +62,6 @@ void DVQmlCommunication::setMirrorLeft(bool mirror) {
         settings.setValue("MirrorLeft", mirror);
         emit mirrorLeftChanged(mirror);
     }
-}
-
-bool DVQmlCommunication::mirrorRight() const {
-    return m_mirrorRight;
 }
 
 void DVQmlCommunication::setMirrorRight(bool mirror) {
@@ -109,10 +93,6 @@ void DVQmlCommunication::ownerWindowStateChanged(Qt::WindowState windowState) {
     emit fullscreenChanged(windowState == Qt::WindowFullScreen);
 }
 
-qreal DVQmlCommunication::greyFacL() const {
-    return m_greyFacL;
-}
-
 void DVQmlCommunication::setGreyFacL(qreal fac) {
     /* Limit to [0, 1] range. */
     fac = qBound(0.0, fac, 1.0);
@@ -123,10 +103,6 @@ void DVQmlCommunication::setGreyFacL(qreal fac) {
         settings.setValue("GreyFacL", fac);
         emit greyFacLChanged(fac);
     }
-}
-
-qreal DVQmlCommunication::greyFacR() const {
-    return m_greyFacR;
 }
 
 void DVQmlCommunication::setGreyFacR(qreal fac) {
@@ -141,9 +117,6 @@ void DVQmlCommunication::setGreyFacR(qreal fac) {
     }
 }
 
-bool DVQmlCommunication::swapEyes() const {
-    return m_swapEyes;
-}
 void DVQmlCommunication::setSwapEyes(bool swap) {
     if (swap != m_swapEyes) {
         m_swapEyes = swap;
@@ -234,10 +207,6 @@ void DVQmlCommunication::setOpenImageTarget(QQuickItem *target) {
     }
 }
 
-QPointF DVQmlCommunication::surroundPan() const {
-    return m_surroundPan;
-}
-
 void DVQmlCommunication::setSurroundPan(QPointF val) {
     if (val != m_surroundPan) {
         m_surroundPan.setX(val.x() - 360.0 * floor(val.x() / 360.0));
@@ -245,10 +214,6 @@ void DVQmlCommunication::setSurroundPan(QPointF val) {
 
         emit surroundPanChanged();
     }
-}
-
-qreal DVQmlCommunication::surroundFOV() const {
-    return m_surroundFOV;
 }
 
 void DVQmlCommunication::setSurroundFOV(qreal val) {

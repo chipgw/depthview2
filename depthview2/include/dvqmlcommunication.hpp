@@ -46,28 +46,28 @@ public:
     explicit DVQmlCommunication(QWindow* parent, QSettings& s);
 
     /* The current draw mode. */
-    DVDrawMode::Type drawMode() const;
+    DVDrawMode::Type drawMode() const { return m_drawMode; }
     void setDrawMode(DVDrawMode::Type mode);
     void initDrawMode(DVDrawMode::Type mode);
 
-    bool anamorphicDualView() const;
+    bool anamorphicDualView() const { return m_anamorphicDualView; }
     void setAnamorphicDualView(bool anamorphic);
 
-    bool mirrorLeft() const;
+    bool mirrorLeft() const { return m_mirrorLeft; }
     void setMirrorLeft(bool mirror);
 
-    bool mirrorRight() const;
+    bool mirrorRight() const { return m_mirrorRight; }
     void setMirrorRight(bool mirror);
 
-    qreal greyFacL() const;
+    qreal greyFacL() const { return m_greyFacL; }
     void setGreyFacL(qreal fac);
-    qreal greyFacR() const;
+    qreal greyFacR() const { return m_greyFacR; }
     void setGreyFacR(qreal fac);
 
     bool fullscreen() const;
     void setFullscreen(bool fullscreen);
 
-    bool swapEyes() const;
+    bool swapEyes() const { return m_swapEyes; }
     void setSwapEyes(bool swap);
 
     Q_INVOKABLE QString versionString();
@@ -89,9 +89,9 @@ public:
     QSGTextureProvider* openImageTexture();
     void setOpenImageTarget(QQuickItem* target);
 
-    QPointF surroundPan() const;
+    QPointF surroundPan() const { return m_surroundPan; }
     void setSurroundPan(QPointF val);
-    qreal surroundFOV() const;
+    qreal surroundFOV() const { return m_surroundFOV; }
     void setSurroundFOV(qreal val);
 
     DVFolderListing* folderListing;
@@ -162,11 +162,9 @@ public slots:
     void ownerWindowStateChanged(Qt::WindowState windowState);
 
 private:
-    bool m_mirrorLeft;
-    bool m_mirrorRight;
+    bool m_mirrorLeft, m_mirrorRight;
 
-    qreal m_greyFacL;
-    qreal m_greyFacR;
+    qreal m_greyFacL, m_greyFacR;
 
     DVDrawMode::Type m_drawMode;
     bool m_anamorphicDualView;
