@@ -29,7 +29,7 @@ DV_VRDriver::DV_VRDriver(DVWindow* w, DVVirtualScreenManager* m) : window(w), ma
     screenHeight = window->settings.contains("ScreenHeight") ? window->settings.value("ScreenHeight").toReal() : 2.0;
     renderSizeFac = window->settings.contains("RenderSizeFac") ? window->settings.value("RenderSizeFac").toReal() : 1.0;
 
-    backgroundImage = window->settings.contains("BackgroundImage") ? window->settings.value("BackgroundImage").toUrl() : QUrl();
+    backgroundImage = QUrl::fromLocalFile(window->settings.contains("BackgroundImage") ? window->settings.value("BackgroundImage").toString() : "");
     backgroundPan = window->settings.contains("BackgroundPan") ? window->settings.value("BackgroundPan").toReal() : 0.0;
     backgroundDim = window->settings.contains("BackgroundDim") ? window->settings.value("BackgroundDim").toReal() : 0.0;
     backgroundSourceMode = window->settings.contains("BackgroundSourceMode") ?
@@ -149,7 +149,7 @@ QString DVVirtualScreenManager::getErrorString() {
 }
 
 bool DVVirtualScreenManager::render() {
-    return driver != nullptr && driver->render(window->openglContext()->extraFunctions(), window);
+    return driver != nullptr && !isError() && driver->render(window->openglContext()->extraFunctions(), window);
 }
 
 void DVVirtualScreenManager::frameSwapped() {
@@ -165,8 +165,7 @@ float interpolate(float v1, float v2, float a) {
 }
 
 void DVVirtualScreenManager::updateScreen() {
-    if (driver == nullptr)
-        return;
+    if (driver == nullptr) return;
 
     /* Get the properties from QML. */
     float distance = driver->screenDistance;
@@ -302,7 +301,7 @@ QUrl DVVirtualScreenManager::backgroundImage() const {
     return driver != nullptr ? driver->backgroundImage : QUrl();
 }
 void DVVirtualScreenManager::setBackgroundImage(QUrl image) {
-    window->settings.setValue("VRSettings/BackgroundImage", image);
+    window->settings.setValue("VRSettings/BackgroundImage", image.toLocalFile());
 
     if (driver != nullptr && driver->backgroundImage != image) {
         driver->backgroundImage = image;

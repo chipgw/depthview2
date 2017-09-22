@@ -411,6 +411,7 @@ Dialog {
                                 onClicked: {
                                     backgroundImagePath.text = FolderListing.decodeURL(FolderListing.currentDir) + "/" + FolderListing.currentFile
                                     backgroundImageMode.setMode(FolderListing.currentFileStereoMode)
+                                    backgroundImageSwap.checked = FolderListing.currentFileStereoSwap
                                     backgroundImagePan.value = DepthView.surroundPan.x
                                 }
                             }

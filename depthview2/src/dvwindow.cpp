@@ -265,7 +265,6 @@ void DVWindow::doCommandLine(QCommandLineParser& parser) {
         if(mode == -1)
             warning += tr("<p>Invalid renderer \"%1\" passed to \"--renderer\" argument!</p>").arg(renderer);
 
-
         qmlCommunication->initDrawMode(DVDrawMode::Type(mode));
     }
 

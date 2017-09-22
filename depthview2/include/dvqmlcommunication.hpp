@@ -3,10 +3,7 @@
 #include <QUrl>
 #include <QPoint>
 #include "dvenums.hpp"
-
-#if defined(Q_OS_WIN32) && !defined(DV_PORTABLE)
-#define DV_FILE_ASSOCIATION
-#endif
+#include "dvconfig.hpp"
 
 class DVFolderListing;
 class QWindow;

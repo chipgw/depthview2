@@ -240,8 +240,8 @@ QPointF DVQmlCommunication::surroundPan() const {
 
 void DVQmlCommunication::setSurroundPan(QPointF val) {
     if (val != m_surroundPan) {
-        m_surroundPan = val;
-        m_surroundPan.setY(qBound(-89.0, m_surroundPan.y(), 89.0));
+        m_surroundPan.setX(val.x() - 360.0 * floor(val.x() / 360.0));
+        m_surroundPan.setY(qBound(-89.0, val.y(), 89.0));
 
         emit surroundPanChanged();
     }
