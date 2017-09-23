@@ -9,6 +9,7 @@
 #include <QQuickStyle>
 #include <QProcess>
 #include <QQuickItem>
+#include <QtMath>
 
 DVQmlCommunication::DVQmlCommunication(QWindow* parent, QSettings& s) : QObject(parent),
     settings(s), owner(parent), lastWindowState(Qt::WindowNoState), m_swapEyes(false), imageTarget(nullptr) {
@@ -209,7 +210,7 @@ void DVQmlCommunication::setOpenImageTarget(QQuickItem *target) {
 
 void DVQmlCommunication::setSurroundPan(QPointF val) {
     if (val != m_surroundPan) {
-        m_surroundPan.setX(val.x() - 360.0 * floor(val.x() / 360.0));
+        m_surroundPan.setX(val.x() - 360.0 * qFloor(val.x() / 360.0));
         m_surroundPan.setY(qBound(-89.0, val.y(), 89.0));
 
         emit surroundPanChanged();
