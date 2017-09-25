@@ -16,17 +16,17 @@ DVQmlCommunication::DVQmlCommunication(QWindow* parent, QSettings& s) : QObject(
     /* We need to detect when the window state changes sowe can updatethe fullscreen property accordingly. */
     connect(owner, &QWindow::windowStateChanged, this, &DVQmlCommunication::ownerWindowStateChanged);
 
-    m_drawMode = settings.contains("DrawMode") ? DVDrawMode::fromString(settings.value("DrawMode").toByteArray()) : DVDrawMode::Anaglyph;
+    m_drawMode = DVDrawMode::fromString(settings.value("DrawMode", "Anaglyph").toByteArray());
 
-    m_greyFacL = settings.contains("GreyFacL") ? settings.value("GreyFacL").toReal() : 0.0;
-    m_greyFacR = settings.contains("GreyFacR") ? settings.value("GreyFacR").toReal() : 0.0;
+    m_greyFacL = settings.value("GreyFacL", 0.0).toReal();
+    m_greyFacR =settings.value("GreyFacR", 0.0).toReal();
 
-    m_swapEyes = settings.contains("SwapEyes") ? settings.value("SwapEyes").toBool() : false;
+    m_swapEyes = settings.value("SwapEyes", false).toBool();
 
-    m_anamorphicDualView = settings.contains("Anamorphic") ? settings.value("Anamorphic").toBool() : false;
+    m_anamorphicDualView = settings.value("Anamorphic", false).toBool();
 
-    m_mirrorLeft = settings.contains("MirrorLeft") ? settings.value("MirrorLeft").toBool() : false;
-    m_mirrorRight = settings.contains("MirrorRight") ? settings.value("MirrorRight").toBool() : false;
+    m_mirrorLeft = settings.value("MirrorLeft", false).toBool();
+    m_mirrorRight = settings.value("MirrorRight", false).toBool();
 
     /* This constructor gets called before QML is set up, so this works. */
     if (settings.contains("ControlsTheme"))
@@ -195,10 +195,7 @@ QQuickItem* DVQmlCommunication::openImageTarget() {
 }
 
 QSGTextureProvider* DVQmlCommunication::openImageTexture() {
-    if (imageTarget && imageTarget->isTextureProvider())
-        return imageTarget->textureProvider();
-
-    return nullptr;
+    return (imageTarget && imageTarget->isTextureProvider()) ? imageTarget->textureProvider() : nullptr;
 }
 
 void DVQmlCommunication::setOpenImageTarget(QQuickItem *target) {

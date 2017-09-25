@@ -19,21 +19,20 @@
 DV_VRDriver::DV_VRDriver(DVWindow* w, DVVirtualScreenManager* m) : window(w), manager(m) {
     window->settings.beginGroup("VRSettings");
 
-    lockMouse = window->settings.contains("LockMouse") ? window->settings.value("LockMouse").toBool() : false;
-    mirrorUI = window->settings.contains("MirrorUI") ? window->settings.value("MirrorUI").toBool() : true;
-    snapSurroundPan = window->settings.contains("SnapSurroundPan") ? window->settings.value("SnapSurroundPan").toBool() : true;
+    lockMouse = window->settings.value("LockMouse", false).toBool();
+    mirrorUI = window->settings.value("MirrorUI", true).toBool();
+    snapSurroundPan = window->settings.value("SnapSurroundPan", true).toBool();
 
-    screenCurve = window->settings.contains("ScreenCurve") ? window->settings.value("ScreenCurve").toReal() : 0.5;
-    screenSize = window->settings.contains("ScreenSize") ? window->settings.value("ScreenSize").toReal() : 4.0;
-    screenDistance = window->settings.contains("ScreenDistance") ? window->settings.value("ScreenDistance").toReal() : 8.0;
-    screenHeight = window->settings.contains("ScreenHeight") ? window->settings.value("ScreenHeight").toReal() : 2.0;
-    renderSizeFac = window->settings.contains("RenderSizeFac") ? window->settings.value("RenderSizeFac").toReal() : 1.0;
+    screenCurve = window->settings.value("ScreenCurve", 0.5).toReal();
+    screenSize = window->settings.value("ScreenSize", 4.0).toReal();
+    screenDistance = window->settings.value("ScreenDistance", 8.0).toReal();
+    screenHeight = window->settings.value("ScreenHeight", 2.0).toReal();
+    renderSizeFac = window->settings.value("RenderSizeFac", 1.0).toReal();
 
-    backgroundImage = QUrl::fromLocalFile(window->settings.contains("BackgroundImage") ? window->settings.value("BackgroundImage").toString() : "");
-    backgroundPan = window->settings.contains("BackgroundPan") ? window->settings.value("BackgroundPan").toReal() : 0.0;
-    backgroundDim = window->settings.contains("BackgroundDim") ? window->settings.value("BackgroundDim").toReal() : 0.0;
-    backgroundSourceMode = window->settings.contains("BackgroundSourceMode") ?
-                window->settings.value("BackgroundSourceMode").value<DVSourceMode::Type>() : DVSourceMode::Mono;
+    backgroundImage = QUrl::fromLocalFile(window->settings.value("BackgroundImage", "").toString());
+    backgroundPan = window->settings.value("BackgroundPan", 0.0).toReal();
+    backgroundDim = window->settings.value("BackgroundDim", 0.0).toReal();
+    backgroundSourceMode = DVSourceMode::fromString(window->settings.value("BackgroundSourceMode", "Mono").toByteArray());
 
     window->settings.endGroup();
 }
@@ -313,7 +312,7 @@ DVSourceMode::Type DVVirtualScreenManager::backgroundSourceMode() const {
     return driver != nullptr ? driver->backgroundSourceMode : DVSourceMode::Mono;
 }
 void DVVirtualScreenManager::setBackgroundSourceMode(DVSourceMode::Type mode) {
-    window->settings.setValue("VRSettings/BackgroundSourceMode", mode);
+    window->settings.setValue("VRSettings/BackgroundSourceMode", DVSourceMode::toString(mode));
 
     if (driver != nullptr && driver->backgroundSourceMode != mode) {
         driver->backgroundSourceMode = mode;

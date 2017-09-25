@@ -10,8 +10,8 @@
 
 DVFolderListing::DVFolderListing(QObject* parent, QSettings& s) : QAbstractListModel(parent),
     settings(s), currentHistory(-1), driveTimer(this), m_fileBrowserOpen(false) {
-    if (settings.contains("Bookmarks"))
-        m_bookmarks = settings.value("Bookmarks").toStringList();
+    /* If the setting doesn't exist this will return an empty string list. */
+    m_bookmarks = settings.value("Bookmarks").toStringList();
 
     setupFileDatabase();
 
