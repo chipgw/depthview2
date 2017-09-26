@@ -39,7 +39,7 @@ Configuration options:
 
 Supported plugins:
 * Gamepad plugin (`gamepadplugin`) - Adds support for input from game controllers using the Qt Gamepad module.
-* Steam Controller plugin (`steamcontroller`) - Adds support for input from the Steam Controller & other gamepads supported through the Steam API. (Looks for Steam SDK in `../steamsdk` relative to the project root.)
+* Steam Controller plugin (`steamcontrollerplugin`) - Adds support for input from the Steam Controller & other gamepads supported through the Steam API. (Looks for Steam SDK in `../steamsdk` relative to the project root.)
 
 License
 -------
