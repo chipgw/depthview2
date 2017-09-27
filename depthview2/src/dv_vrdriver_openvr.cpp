@@ -154,13 +154,16 @@ public:
     }
 
     ~DV_VRDriver_OpenVR() {
+        vr::VR_Shutdown();
+
+        /* None of these would be inited if the vr system is invaid. */
+        if (vrSystem == nullptr) return;
+
         delete renderFBO[0]; delete renderFBO[1];
         delete resolveFBO[0]; delete resolveFBO[1];
 
         /* Delete all loaded render models. */
         for (ModelComponent* m : loadedComponents) delete m;
-
-        vr::VR_Shutdown();
 
         qDebug("OpenVR shutdown.");
     }

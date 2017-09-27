@@ -104,7 +104,8 @@ void DVWindow::shutdownGL() {
     delete renderFBO;
 
     sphereVerts.destroy();
-    sphereTris.destroy();
+    /* For some reason this causes a SIGSEGV... */
+//    sphereTris.destroy();
 
     vrManager->deinit();
 }
@@ -267,7 +268,7 @@ void DVWindow::createFBO() {
 
     renderFBO->bind();
     renderFBO->addColorAttachment(qmlSize);
-    
+
     const GLenum buf[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
     f->glDrawBuffers(2, buf);
 
