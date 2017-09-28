@@ -103,8 +103,8 @@ void DVWindow::initializeGL() {
 void DVWindow::shutdownGL() {
     delete renderFBO;
 
-    sphereVerts.destroy();
     /* For some reason this causes a SIGSEGV... */
+//    sphereVerts.destroy();
 //    sphereTris.destroy();
 
     vrManager->deinit();
