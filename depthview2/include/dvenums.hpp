@@ -26,7 +26,7 @@ public: \
 
 DV_ENUM(DVDrawMode,
         Anaglyph,
-        SidebySide,
+        SideBySide,
         TopBottom,
         InterlacedV,
         InterlacedH,
@@ -35,8 +35,8 @@ DV_ENUM(DVDrawMode,
         VirtualReality)
 
 DV_ENUM(DVSourceMode,
-        SidebySide,
-        SidebySideAnamorphic,
+        SideBySide,
+        SideBySideAnamorphic,
         TopBottom,
         TopBottomAnamorphic,
         Mono)

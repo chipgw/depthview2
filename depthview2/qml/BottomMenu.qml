@@ -159,15 +159,15 @@ ToolBar {
 
                             ListModel {
                                 id: allSourceModes
-                                ListElement { text: qsTr("Side-by-Side"); mode: SourceMode.SidebySide }
-                                ListElement { text: qsTr("Side-by-Side Anamorphic"); mode: SourceMode.SidebySideAnamorphic }
+                                ListElement { text: qsTr("Side-by-Side"); mode: SourceMode.SideBySide }
+                                ListElement { text: qsTr("Side-by-Side Anamorphic"); mode: SourceMode.SideBySideAnamorphic }
                                 ListElement { text: qsTr("Top/Bottom"); mode: SourceMode.TopBottom }
                                 ListElement { text: qsTr("Top/Bottom Anamorphic"); mode: SourceMode.TopBottomAnamorphic }
                                 ListElement { text: qsTr("Mono"); mode: SourceMode.Mono }
                             }
                             ListModel {
                                 id: surroundSourceModes
-                                ListElement { text: qsTr("Side-by-Side"); mode: SourceMode.SidebySide }
+                                ListElement { text: qsTr("Side-by-Side"); mode: SourceMode.SideBySide }
                                 ListElement { text: qsTr("Top/Bottom"); mode: SourceMode.TopBottom }
                                 ListElement { text: qsTr("Mono"); mode: SourceMode.Mono }
                             }

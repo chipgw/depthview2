@@ -131,7 +131,7 @@ void DVWindowHook::paintGL() {
         shaderAnaglyph->setUniformValue("greyFacL", float(qmlCommunication->greyFacL()));
         shaderAnaglyph->setUniformValue("greyFacR", float(qmlCommunication->greyFacR()));
         break;
-    case DVDrawMode::SidebySide:
+    case DVDrawMode::SideBySide:
         doStandardSetup();
         shaderSideBySide->bind();
         shaderSideBySide->setUniformValue("mirrorL", qmlCommunication->mirrorLeft());
@@ -318,8 +318,8 @@ void DVWindowHook::getTextureRects(QRectF& left, QRectF& right, QSGTexture* text
         else
             right.translate(0.0f, right.y() + left.height());
         break;
-    case DVSourceMode::SidebySide:
-    case DVSourceMode::SidebySideAnamorphic:
+    case DVSourceMode::SideBySide:
+    case DVSourceMode::SideBySideAnamorphic:
         left.setWidth(left.width() * 0.5f);
         right.setWidth(right.width() * 0.5f);
 

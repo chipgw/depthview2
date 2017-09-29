@@ -385,7 +385,7 @@ bool DVFolderListing::isFileSurround(const QFileInfo &file) const {
 DVSourceMode::Type DVFolderListing::fileStereoMode(const QFileInfo& file) const {
     /* Directories are side-by-side because of their thumbnail. */
     if(file.isDir() || stereoImageSuffixes.contains(file.suffix(), Qt::CaseInsensitive))
-        return DVSourceMode::SidebySide;
+        return DVSourceMode::SideBySide;
 
     QSqlRecord record = getRecordForFile(file);
 

@@ -102,7 +102,7 @@ ToolBar {
                         id: modeList
                         model: ListModel {
                             ListElement { text: qsTr("Anaglyph"); mode: DrawMode.Anaglyph }
-                            ListElement { text: qsTr("Side-by-Side"); mode: DrawMode.SidebySide }
+                            ListElement { text: qsTr("Side-by-Side"); mode: DrawMode.SideBySide }
                             ListElement { text: qsTr("Top/Bottom"); mode: DrawMode.TopBottom }
                             ListElement { text: qsTr("Interlaced Horizontal"); mode: DrawMode.InterlacedH }
                             ListElement { text: qsTr("Interlaced Vertical"); mode: DrawMode.InterlacedV }

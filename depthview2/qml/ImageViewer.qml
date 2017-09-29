@@ -188,7 +188,7 @@ Item {
         anchors.centerIn: parent
 
         /* Calculate the size difference for side by side and top bottom source modes. */
-        width: (stereoMode === SourceMode.SidebySide || stereoMode === SourceMode.SidebySideAnamorphic) ? vid.width / 2 : vid.width
+        width: (stereoMode === SourceMode.SideBySide || stereoMode === SourceMode.SideBySideAnamorphic) ? vid.width / 2 : vid.width
         height: (stereoMode === SourceMode.TopBottom || stereoMode === SourceMode.TopBottomAnamorphic) ? vid.height / 2 : vid.height
 
         scale: targetScale
@@ -204,7 +204,7 @@ Item {
             id: vid
             source: media
 
-            width: (stereoMode === SourceMode.SidebySideAnamorphic) ? sourceRect.width * 2 : sourceRect.width
+            width: (stereoMode === SourceMode.SideBySideAnamorphic) ? sourceRect.width * 2 : sourceRect.width
             height: (stereoMode === SourceMode.TopBottomAnamorphic) ? sourceRect.height * 2 : sourceRect.height
 
             /* Always stretch. We set the VideoOutput to the size we want. */

@@ -126,7 +126,7 @@ void DVWindowHook::updateQmlSize() {
     qmlSize = window->size();
 
     /* If Side-by-Side and not anamorphic we only render QML at half of the window size (horizontally). */
-    if (qmlCommunication->drawMode() == DVDrawMode::SidebySide && !qmlCommunication->anamorphicDualView())
+    if (qmlCommunication->drawMode() == DVDrawMode::SideBySide && !qmlCommunication->anamorphicDualView())
         qmlSize.setWidth(qmlSize.width() / 2);
 
     /* If Top/Bottom and not anamorphic we only render QML at half of the window size (vertically). */

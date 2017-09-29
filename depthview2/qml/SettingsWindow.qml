@@ -432,12 +432,12 @@ Dialog {
                                 textRole: "text"
                                 model: ListModel {
                                     ListElement { text: qsTr("Mono"); mode: SourceMode.Mono }
-                                    ListElement { text: qsTr("Side-by-Side"); mode: SourceMode.SidebySide }
+                                    ListElement { text: qsTr("Side-by-Side"); mode: SourceMode.SideBySide }
                                     ListElement { text: qsTr("Top/Bottom"); mode: SourceMode.TopBottom }
                                 }
                                 function setMode(mode) {
-                                    if (mode === SourceMode.SidebySideAnamorphic)
-                                        mode = SourceMode.SidebySide
+                                    if (mode === SourceMode.SideBySideAnamorphic)
+                                        mode = SourceMode.SideBySide
                                     if (mode === SourceMode.TopBottomAnamorphic)
                                         mode = SourceMode.TopBottom
 
