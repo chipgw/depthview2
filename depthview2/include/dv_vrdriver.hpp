@@ -8,11 +8,11 @@ class QOpenGLExtraFunctions;
 
 class DV_VRDriver {
 protected:
-    DVWindow* window;
+    DVWindowHook* window;
     DVVirtualScreenManager* manager;
 
     /* Only used by subclasses. */
-    DV_VRDriver(DVWindow* w, DVVirtualScreenManager* m);
+    DV_VRDriver(DVWindowHook* w, DVVirtualScreenManager* m);
 
     struct Ray {
         QVector3D origin;
@@ -61,7 +61,7 @@ public:
     bool setError(const QString& error);
 
 #ifdef DV_OPENVR
-    static DV_VRDriver* createOpenVRDriver(DVWindow* window, DVVirtualScreenManager *manager);
+    static DV_VRDriver* createOpenVRDriver(DVWindowHook* window, DVVirtualScreenManager *manager);
 #endif
 };
 

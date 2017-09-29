@@ -6,7 +6,7 @@
 #include <QSqlRecord>
 
 class DVInputPlugin;
-class DVWindow;
+class DVWindowHook;
 class DVInputInterface;
 
 class QSettings;

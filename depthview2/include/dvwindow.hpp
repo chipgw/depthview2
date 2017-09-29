@@ -1,6 +1,5 @@
 #pragma once
 
-#include <QQuickWindow>
 #include <QOpenGLShaderProgram>
 #include <QSettings>
 #include <QDir>
@@ -15,6 +14,10 @@ class DVVirtualScreenManager;
 
 /* Qt forward declarations. */
 class QQuickItem;
+class QQmlApplicationEngine;
+class QQuickWindow;
+class QOpenGLFramebufferObject;
+class QSGTexture;
 
 /* QtAV forward declarations. */
 namespace QtAV {
@@ -25,12 +28,14 @@ class AVPlayer;
 constexpr unsigned int vertex = 0;
 constexpr unsigned int uv     = 1;
 
-class DVWindow : public QQuickWindow, public DVInputInterface {
+class DVWindowHook : public QObject, public DVInputInterface {
     Q_OBJECT
 
+    QQuickWindow* window;
+
 public:
-    DVWindow();
-    ~DVWindow();
+    DVWindowHook(QQmlApplicationEngine* engine);
+    ~DVWindowHook();
 
     /* Parse command line arguments from QApplication. */
     void doCommandLine(class QCommandLineParser& parser);
@@ -126,6 +131,8 @@ public:
      * End DVInputInterface functions *
      * ------------------------------ */
 
+    QOpenGLContext* openglContext();
+
 public slots:
     void updateQmlSize();
     void onFrameSwapped();
@@ -138,13 +145,9 @@ protected:
     void paintGL();
     void preSync();
 
-    bool event(QEvent* event);
+    bool eventFilter(QObject*, QEvent* event);
 
 private:
-    /* QML Stuff. */
-    QQmlEngine* qmlEngine;
-    QQuickItem* qmlRoot;
-
     DVPluginManager* pluginManager;
     DVVirtualScreenManager* vrManager;
     QtAV::AVPlayer* player;

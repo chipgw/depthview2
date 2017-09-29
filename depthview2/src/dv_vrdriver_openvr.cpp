@@ -82,7 +82,7 @@ class DV_VRDriver_OpenVR : public DV_VRDriver {
     Action axisActions[3][2][AxisAsButton_Max];
 
 public:
-    DV_VRDriver_OpenVR(DVWindow* w, DVVirtualScreenManager* m) : DV_VRDriver(w, m),
+    DV_VRDriver_OpenVR(DVWindowHook* w, DVVirtualScreenManager* m) : DV_VRDriver(w, m),
         distortionVBO(QOpenGLBuffer::VertexBuffer), distortionIBO(QOpenGLBuffer::IndexBuffer) {
         if (!vr::VR_IsHmdPresent()) {
             setError("No HMD detected.");
@@ -724,6 +724,6 @@ public:
     }
 };
 
-DV_VRDriver* DV_VRDriver::createOpenVRDriver(DVWindow* window, DVVirtualScreenManager* manager) {
+DV_VRDriver* DV_VRDriver::createOpenVRDriver(DVWindowHook* window, DVVirtualScreenManager* manager) {
     return new DV_VRDriver_OpenVR(window, manager);
 }

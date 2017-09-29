@@ -2,6 +2,7 @@ import QtQuick 2.5
 import QtQuick.Layouts 1.2
 import DepthView 2.0
 import QtQuick.Controls 2.1
+import QtQuick.Window 2.2
 
 ToolBar {
     id: topMenu
@@ -139,9 +140,9 @@ ToolBar {
             font: googleMaterialFont
 
             checkable: true
-            checked: DepthView.fullscreen
+            checked: root.visibility == Window.FullScreen
 
-            onCheckedChanged: DepthView.fullscreen = checked
+            onCheckedChanged: root.visibility = checked ? Window.FullScreen : Window.Maximized
         }
         ToolButton {
             /* "settings" */

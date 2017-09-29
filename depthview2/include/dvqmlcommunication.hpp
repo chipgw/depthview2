@@ -24,8 +24,6 @@ class DVQmlCommunication : public QObject {
     Q_PROPERTY(qreal greyFacL READ greyFacL WRITE setGreyFacL NOTIFY greyFacLChanged)
     Q_PROPERTY(qreal greyFacR READ greyFacR WRITE setGreyFacR NOTIFY greyFacRChanged)
 
-    Q_PROPERTY(bool fullscreen READ fullscreen WRITE setFullscreen NOTIFY fullscreenChanged)
-
     Q_PROPERTY(bool swapEyes READ swapEyes WRITE setSwapEyes NOTIFY swapEyesChanged)
 
     Q_PROPERTY(bool saveWindowState READ saveWindowState WRITE setSaveWindowState NOTIFY saveWindowStateChanged)
@@ -43,7 +41,7 @@ public:
     /* Settings can be set from DVWindow. */
     QSettings& settings;
 
-    explicit DVQmlCommunication(QWindow* parent, QSettings& s);
+    explicit DVQmlCommunication(QObject* parent, QSettings& s);
 
     /* The current draw mode. */
     DVDrawMode::Type drawMode() const { return m_drawMode; }
@@ -63,9 +61,6 @@ public:
     void setGreyFacL(qreal fac);
     qreal greyFacR() const { return m_greyFacR; }
     void setGreyFacR(qreal fac);
-
-    bool fullscreen() const;
-    void setFullscreen(bool fullscreen);
 
     bool swapEyes() const { return m_swapEyes; }
     void setSwapEyes(bool swap);
@@ -110,8 +105,6 @@ signals:
 
     void greyFacLChanged(qreal fac);
     void greyFacRChanged(qreal fac);
-
-    void fullscreenChanged(bool fullscreen);
 
     void swapEyesChanged();
 
@@ -158,9 +151,6 @@ signals:
      * End signals for DVInputInterface functions. *
      * ------------------------------------------- */
 
-public slots:
-    void ownerWindowStateChanged(Qt::WindowState windowState);
-
 private:
     bool m_mirrorLeft, m_mirrorRight;
 
@@ -168,8 +158,6 @@ private:
 
     DVDrawMode::Type m_drawMode;
     bool m_anamorphicDualView;
-
-    QWindow* owner;
 
     Qt::WindowState lastWindowState;
 

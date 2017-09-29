@@ -11,15 +11,12 @@
 #include <QQuickItem>
 #include <QtMath>
 
-DVQmlCommunication::DVQmlCommunication(QWindow* parent, QSettings& s) : QObject(parent),
-    settings(s), owner(parent), lastWindowState(Qt::WindowNoState), m_swapEyes(false), imageTarget(nullptr) {
-    /* We need to detect when the window state changes sowe can updatethe fullscreen property accordingly. */
-    connect(owner, &QWindow::windowStateChanged, this, &DVQmlCommunication::ownerWindowStateChanged);
-
+DVQmlCommunication::DVQmlCommunication(QObject* parent, QSettings& s) : QObject(parent),
+    settings(s), lastWindowState(Qt::WindowNoState), m_swapEyes(false), imageTarget(nullptr) {
     m_drawMode = DVDrawMode::fromString(settings.value("DrawMode", "Anaglyph").toByteArray());
 
     m_greyFacL = settings.value("GreyFacL", 0.0).toReal();
-    m_greyFacR =settings.value("GreyFacR", 0.0).toReal();
+    m_greyFacR = settings.value("GreyFacR", 0.0).toReal();
 
     m_swapEyes = settings.value("SwapEyes", false).toBool();
 
@@ -72,26 +69,6 @@ void DVQmlCommunication::setMirrorRight(bool mirror) {
         settings.setValue("MirrorRight", mirror);
         emit mirrorRightChanged(mirror);
     }
-}
-
-bool DVQmlCommunication::fullscreen() const {
-    return owner->windowState() == Qt::WindowFullScreen;
-}
-
-void DVQmlCommunication::setFullscreen(bool fullscreen) {
-    /* Only set if changed. */
-    if (fullscreen != (owner->windowState() == Qt::WindowFullScreen))
-        owner->setWindowState(fullscreen ? Qt::WindowFullScreen : lastWindowState);
-
-    /* Signal will be emitted because of the state change. */
-}
-
-void DVQmlCommunication::ownerWindowStateChanged(Qt::WindowState windowState) {
-    /* TODO - Sometimes when entering fullscreen it changes to WindowNoState first which breaks it... */
-    if (windowState != Qt::WindowFullScreen)
-        lastWindowState = windowState;
-
-    emit fullscreenChanged(windowState == Qt::WindowFullScreen);
 }
 
 void DVQmlCommunication::setGreyFacL(qreal fac) {

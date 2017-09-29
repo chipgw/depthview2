@@ -16,7 +16,7 @@
 #include <cmath>
 #include <array>
 
-DV_VRDriver::DV_VRDriver(DVWindow* w, DVVirtualScreenManager* m) : window(w), manager(m) {
+DV_VRDriver::DV_VRDriver(DVWindowHook* w, DVVirtualScreenManager* m) : window(w), manager(m) {
     window->settings.beginGroup("VRSettings");
 
     lockMouse = window->settings.value("LockMouse", false).toBool();
@@ -96,7 +96,7 @@ bool DV_VRDriver::setError(const QString& error) {
     return false;
 }
 
-DVVirtualScreenManager::DVVirtualScreenManager(DVWindow* parent) : QObject(parent) {
+DVVirtualScreenManager::DVVirtualScreenManager(DVWindowHook* parent) : QObject(parent) {
     driver = nullptr;
     window = parent;
 
@@ -171,7 +171,7 @@ void DVVirtualScreenManager::updateScreen() {
     float z = driver->screenHeight;
     float size = driver->screenSize;
 
-    float height = size / (float(window->width()) / float(window->height()));
+    float height = size / (float(window->qmlSize.width()) / float(window->qmlSize.height()));
 
     /* Get rid of any previous geometry. */
     driver->screen.clear();

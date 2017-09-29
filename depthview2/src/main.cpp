@@ -1,6 +1,8 @@
 #include <QApplication>
 #include <QDir>
 #include <QCommandLineParser>
+#include <QSurfaceFormat>
+#include <QQmlApplicationEngine>
 #include "version.hpp"
 #include "dvwindow.hpp"
 #include "dvqmlcommunication.hpp"
@@ -49,9 +51,10 @@ int main(int argc, char* argv[]) {
     }
 #endif
 
-    DVWindow window;
-    window.show();
-    window.doCommandLine(parser);
+    QQmlApplicationEngine applicationEngine;
+
+    DVWindowHook windowHook(&applicationEngine);
+    windowHook.doCommandLine(parser);
 
     return app.exec();
 }

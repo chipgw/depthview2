@@ -7,7 +7,7 @@
 
 class DV_VRDriver;
 class DVInputInterface;
-class DVWindow;
+class DVWindowHook;
 class QQuickItem;
 
 class DVVirtualScreenManager : public QObject {
@@ -34,7 +34,7 @@ class DVVirtualScreenManager : public QObject {
     Q_PROPERTY(QString errorString READ errorString NOTIFY errorChanged)
 
 public:
-    DVVirtualScreenManager(DVWindow* parent);
+    DVVirtualScreenManager(DVWindowHook* parent);
     ~DVVirtualScreenManager();
 
     bool init();
@@ -54,7 +54,7 @@ public:
 
 private:
     DV_VRDriver* driver;
-    DVWindow* window;
+    DVWindowHook* window;
 
 public slots:
     void updateScreen();

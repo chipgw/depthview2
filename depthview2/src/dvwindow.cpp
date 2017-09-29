@@ -9,9 +9,9 @@
 #include "dvvirtualscreenmanager.hpp"
 #include <QApplication>
 #include <QQuickWindow>
-#include <QQuickItem>
-#include <QQmlEngine>
 #include <QQmlContext>
+#include <QQmlApplicationEngine>
+#include <QQuickItem>
 #include <QCommandLineParser>
 #include <QMessageBox>
 #include <QMimeData>
@@ -27,7 +27,7 @@
 #define SETTINGS_ARGS QSettings::IniFormat, QSettings::UserScope, QApplication::organizationName(), QApplication::applicationName()
 #endif
 
-DVWindow::DVWindow() : QQuickWindow(), settings(SETTINGS_ARGS), renderFBO(nullptr), sphereTris(QOpenGLBuffer::IndexBuffer) {
+DVWindowHook::DVWindowHook(QQmlApplicationEngine* engine) : QObject(engine), settings(SETTINGS_ARGS), renderFBO(nullptr), sphereTris(QOpenGLBuffer::IndexBuffer) {
     /* Use the path of the settings file to get the path for the database. */
     QString path = settings.fileName();
     path.remove(path.lastIndexOf('.'), path.length()).append(".db");
@@ -45,20 +45,13 @@ DVWindow::DVWindow() : QQuickWindow(), settings(SETTINGS_ARGS), renderFBO(nullpt
     /* Let these classes see each other. */
     qmlCommunication->folderListing = folderListing;
     folderListing->qmlCommunication = qmlCommunication;
-    qmlEngine = new QQmlEngine(this);
 
-    if (qmlEngine->incubationController() == nullptr)
-        qmlEngine->setIncubationController(incubationController());
+    engine->rootContext()->setContextProperty("DepthView", qmlCommunication);
+    engine->rootContext()->setContextProperty("FolderListing", folderListing);
+    engine->rootContext()->setContextProperty("PluginManager", pluginManager);
+    engine->rootContext()->setContextProperty("VRManager", vrManager);
 
-    qmlEngine->rootContext()->setContextProperty("DepthView", qmlCommunication);
-    qmlEngine->rootContext()->setContextProperty("FolderListing", folderListing);
-    qmlEngine->rootContext()->setContextProperty("PluginManager", pluginManager);
-    qmlEngine->rootContext()->setContextProperty("VRManager", vrManager);
-
-    /* When the Qt.quit() function is called in QML, close this window. */
-    connect(qmlEngine, &QQmlEngine::quit, this, &DVWindow::close);
-
-    qmlEngine->addImageProvider("video", new DVThumbnailProvider);
+    engine->addImageProvider("video", new DVThumbnailProvider);
 
     qmlRegisterUncreatableType<DVDrawMode>(DV_URI_VERSION, "DrawMode", "Only for enum values.");
     qmlRegisterUncreatableType<DVSourceMode>(DV_URI_VERSION, "SourceMode", "Only for enum values.");
@@ -66,50 +59,39 @@ DVWindow::DVWindow() : QQuickWindow(), settings(SETTINGS_ARGS), renderFBO(nullpt
     qRegisterMetaType<DVFolderListing*>();
 
     /* Update window title whenever file changes. */
-    connect(folderListing, &DVFolderListing::currentDirChanged, this, &DVWindow::updateTitle);
-    connect(folderListing, &DVFolderListing::currentFileChanged, this, &DVWindow::updateTitle);
-    connect(folderListing, &DVFolderListing::fileBrowserOpenChanged, this, &DVWindow::updateTitle);
+    connect(folderListing, &DVFolderListing::currentDirChanged, this, &DVWindowHook::updateTitle);
+    connect(folderListing, &DVFolderListing::currentFileChanged, this, &DVWindowHook::updateTitle);
+    connect(folderListing, &DVFolderListing::fileBrowserOpenChanged, this, &DVWindowHook::updateTitle);
 
-    connect(this, &QQuickWindow::frameSwapped, this, &DVWindow::onFrameSwapped, Qt::DirectConnection);
-    connect(this, &QQuickWindow::sceneGraphInitialized, this, &DVWindow::initializeGL, Qt::DirectConnection);
-    connect(this, &QQuickWindow::sceneGraphInvalidated, this, &DVWindow::shutdownGL, Qt::DirectConnection);
-    connect(this, &QQuickWindow::afterRendering, this, &DVWindow::paintGL, Qt::DirectConnection);
-    connect(this, &QQuickWindow::beforeRendering, this, &DVWindow::preSync, Qt::DirectConnection);
+    pluginManager->loadPlugins(engine);
 
-    /* Update the screen when the window size changes. */
-    connect(this, &QWindow::widthChanged, vrManager, &DVVirtualScreenManager::updateScreen);
-    connect(this, &QWindow::heightChanged, vrManager, &DVVirtualScreenManager::updateScreen);
+    engine->load("qrc:/qml/Window.qml");
+
+    window = qobject_cast<QQuickWindow*>(engine->rootObjects().first());
+
+    if (window == nullptr)
+        qFatal("Unable to get window from QML!");
 
     /* We render a cursor inside QML so it is shown for both eyes. */
-    setCursor(Qt::BlankCursor);
+    window->setCursor(Qt::BlankCursor);
 
-    setMinimumSize(QSize(1000, 500));
-    setGeometry(0, 0, 1000, 600);
+    window->setMinimumSize(QSize(1000, 500));
+    window->setGeometry(0, 0, 1000, 600);
 
-    pluginManager->loadPlugins(qmlEngine);
+    connect(window, &QQuickWindow::frameSwapped, this, &DVWindowHook::onFrameSwapped, Qt::DirectConnection);
+    connect(window, &QQuickWindow::sceneGraphInitialized, this, &DVWindowHook::initializeGL, Qt::DirectConnection);
+    connect(window, &QQuickWindow::sceneGraphInvalidated, this, &DVWindowHook::shutdownGL, Qt::DirectConnection);
+    connect(window, &QQuickWindow::afterRendering, this, &DVWindowHook::paintGL, Qt::DirectConnection);
+    connect(window, &QQuickWindow::beforeRendering, this, &DVWindowHook::preSync, Qt::DirectConnection);
 
-    QQmlComponent rootComponent(qmlEngine);
-
-    rootComponent.loadUrl(QUrl(QStringLiteral("qrc:/qml/Window.qml")));
-
-    /* Wait for it to load... */
-    while (rootComponent.isLoading());
-
-    /* The program can't run if there was an error. */
-    if (rootComponent.isError())
-        qFatal(qPrintable(rootComponent.errorString()));
-
-    qmlRoot = qobject_cast<QQuickItem*>(rootComponent.create());
-
-    /* Critical error! abort! abort! */
-    if (qmlRoot == nullptr)
-        qFatal(qPrintable(rootComponent.errorString()));
+    /* Update the screen when the window size changes. */
+    connect(window, &QWindow::widthChanged, vrManager, &DVVirtualScreenManager::updateScreen);
+    connect(window, &QWindow::heightChanged, vrManager, &DVVirtualScreenManager::updateScreen);
 
     /* This is the root item, make it so. */
-    qmlRoot->setParentItem(contentItem());
-    setColor(QColor(0, 0, 0, 0));
+    window->setColor(QColor(0, 0, 0, 0));
 
-    player = qmlRoot->findChild<QtAV::AVPlayer*>();
+    player = window->findChild<QtAV::AVPlayer*>();
     if (player == nullptr)
         qFatal("Unable to find AVPlayer!");
 
@@ -118,26 +100,30 @@ DVWindow::DVWindow() : QQuickWindow(), settings(SETTINGS_ARGS), renderFBO(nullpt
     if (settings.childGroups().contains("Window")) {
         /* Restore window state from the stored geometry. */
         settings.beginGroup("Window");
-        setGeometry(settings.value("Geometry").toRect());
-        setWindowState(Qt::WindowState(settings.value("State").toInt()));
+        window->setGeometry(settings.value("Geometry").toRect());
+        window->setWindowState(Qt::WindowState(settings.value("State").toInt()));
         settings.endGroup();
     }
+
+    window->installEventFilter(this);
+
+    window->show();
 }
 
-DVWindow::~DVWindow() {
+DVWindowHook::~DVWindowHook() {
     pluginManager->unloadPlugins();
 
     if (qmlCommunication->saveWindowState()) {
         /* Save the window geometry so that it can be restored next run. */
         settings.beginGroup("Window");
-        settings.setValue("Geometry", geometry());
-        settings.setValue("State", windowState());
+        settings.setValue("Geometry", window->geometry());
+        settings.setValue("State", window->windowState());
         settings.endGroup();
     }
 }
 
-void DVWindow::updateQmlSize() {
-    qmlSize = size();
+void DVWindowHook::updateQmlSize() {
+    qmlSize = window->size();
 
     /* If Side-by-Side and not anamorphic we only render QML at half of the window size (horizontally). */
     if (qmlCommunication->drawMode() == DVDrawMode::SidebySide && !qmlCommunication->anamorphicDualView())
@@ -154,41 +140,41 @@ void DVWindow::updateQmlSize() {
     if (renderFBO == nullptr || renderFBO->size() != qmlSize)
         createFBO();
 
-    qmlRoot->setSize(qmlSize);
+    window->contentItem()->setSize(qmlSize);
 }
 
-void DVWindow::updateTitle() {
-   setTitle((folderListing->fileBrowserOpen() ? folderListing->currentDir().toLocalFile() : folderListing->currentFile()) + " - DepthView");
+void DVWindowHook::updateTitle() {
+   window->setTitle((folderListing->fileBrowserOpen() ? folderListing->currentDir().toLocalFile() : folderListing->currentFile()) + " - DepthView");
 }
 
-bool DVWindow::event(QEvent* e) {
+bool DVWindowHook::eventFilter(QObject*, QEvent* e) {
     switch (e->type()) {
     case QEvent::Leave:
         /* TODO - This still doesn't always work right, but it's better than using setMouseGrabEnabled()... */
         if (holdMouse) {
-            QPoint pos = mapFromGlobal(QCursor::pos());
+            QPoint pos = window->mapFromGlobal(QCursor::pos());
 
             /* Generate a new coordinate on screen. */
             pos.setX(qBound(1, pos.x(), qmlSize.width()-1));
             pos.setY(qBound(1, pos.y(), qmlSize.height()-1));
 
             /* Will generate a new event. */
-            QCursor::setPos(mapToGlobal(pos));
+            QCursor::setPos(window->mapToGlobal(pos));
 
             return true;
         }
         break;
     case QEvent::MouseMove:
         /* If holding the mouse, make sure it's inside the QML render area. */
-        if (holdMouse && !QRect(QPoint(), qmlSize).contains(mapFromGlobal(QCursor::pos()), true)) {
-            QPoint pos = mapFromGlobal(QCursor::pos());
+        if (holdMouse && !QRect(QPoint(), qmlSize).contains(window->mapFromGlobal(QCursor::pos()), true)) {
+            QPoint pos = window->mapFromGlobal(QCursor::pos());
 
             /* Generate a new coordinate on screen. */
             pos.setX(qBound(1, pos.x(), qmlSize.width()-1));
             pos.setY(qBound(1, pos.y(), qmlSize.height()-1));
 
             /* Will generate a new event. */
-            QCursor::setPos(mapToGlobal(pos));
+            QCursor::setPos(window->mapToGlobal(pos));
 
             return true;
         }
@@ -239,10 +225,10 @@ bool DVWindow::event(QEvent* e) {
         break;
     }
 
-    return QQuickWindow::event(e);
+    return false;
 }
 
-void DVWindow::doCommandLine(QCommandLineParser& parser) {
+void DVWindowHook::doCommandLine(QCommandLineParser& parser) {
     /* We use one string to hold all warning messages, so we only have to show one dialog. */
     QString warning;
 
@@ -252,7 +238,7 @@ void DVWindow::doCommandLine(QCommandLineParser& parser) {
         qDebug() << "Valid render modes:" << pluginManager->getModes();
 
     if (parser.isSet("f"))
-        setWindowState(Qt::WindowFullScreen);
+        window->setWindowState(Qt::WindowFullScreen);
 
     if (parser.isSet("d") && !folderListing->initDir(parser.value("d")))
         warning += tr("<p>Invalid directory \"%1\" passed to \"--startdir\" argument!</p>").arg(parser.value("d"));
@@ -280,128 +266,128 @@ void DVWindow::doCommandLine(QCommandLineParser& parser) {
         QMessageBox::warning(nullptr, tr("Invalid Command Line!"), warning);
 }
 
-DVInputMode::Type DVWindow::inputMode() const {
+DVInputMode::Type DVWindowHook::inputMode() const {
     return folderListing->fileBrowserOpen() ? DVInputMode::FileBrowser : folderListing->isCurrentFileVideo() ? DVInputMode::VideoPlayer : DVInputMode::ImageViewer;
 }
 
-void DVWindow::up() {
+void DVWindowHook::up() {
     emit qmlCommunication->up();
 }
-void DVWindow::down() {
+void DVWindowHook::down() {
     emit qmlCommunication->down();
 }
-void DVWindow::left() {
+void DVWindowHook::left() {
     emit qmlCommunication->left();
 }
-void DVWindow::right() {
+void DVWindowHook::right() {
     emit qmlCommunication->right();
 }
 
-void DVWindow::accept() {
+void DVWindowHook::accept() {
     emit qmlCommunication->accept();
 }
 
-void DVWindow::cancel() {
+void DVWindowHook::cancel() {
     emit qmlCommunication->cancel();
 }
 
-void DVWindow::openFileBrowser() {
+void DVWindowHook::openFileBrowser() {
     folderListing->setFileBrowserOpen(true);
 }
 
-void DVWindow::goBack() {
+void DVWindowHook::goBack() {
     if (folderListing->fileBrowserOpen() && folderListing->canGoBack())
         /* Call as a queued connection in case this is called from the OpenGL thread,
          * because resetting the model must be done in the QML thread. */
         QMetaObject::invokeMethod(folderListing, "goBack", Qt::QueuedConnection);
 }
 
-void DVWindow::goForward() {
+void DVWindowHook::goForward() {
     if (folderListing->fileBrowserOpen() && folderListing->canGoForward())
         /* Call as a queued connection in case this is called from the OpenGL thread,
          * because resetting the model must be done in the QML thread. */
         QMetaObject::invokeMethod(folderListing, "goForward", Qt::QueuedConnection);
 }
 
-void DVWindow::goUp() {
+void DVWindowHook::goUp() {
     if (folderListing->fileBrowserOpen() && folderListing->canGoUp())
         /* Call as a queued connection in case this is called from the OpenGL thread,
          * because resetting the model must be done in the QML thread. */
         QMetaObject::invokeMethod(folderListing, "goUp", Qt::QueuedConnection);
 }
 
-void DVWindow::fileInfo() {
+void DVWindowHook::fileInfo() {
     emit qmlCommunication->fileInfo();
 }
 
-void DVWindow::nextFile() {
+void DVWindowHook::nextFile() {
     folderListing->openNext();
 }
 
-void DVWindow::previousFile() {
+void DVWindowHook::previousFile() {
     folderListing->openPrevious();
 }
 
-void DVWindow::zoomActual() {
+void DVWindowHook::zoomActual() {
     emit qmlCommunication->zoomActual();
 }
 
-void DVWindow::zoomFit() {
+void DVWindowHook::zoomFit() {
     emit qmlCommunication->zoomFit();
 }
 
-void DVWindow::playVideo() {
+void DVWindowHook::playVideo() {
     player->play();
 }
 
-void DVWindow::pauseVideo() {
+void DVWindowHook::pauseVideo() {
     player->pause();
 }
 
-void DVWindow::playPauseVideo() {
+void DVWindowHook::playPauseVideo() {
     player->togglePause();
 }
 
-void DVWindow::seekBack() {
+void DVWindowHook::seekBack() {
     player->seekBackward();
 }
 
-void DVWindow::seekForward() {
+void DVWindowHook::seekForward() {
     player->seekForward();
 }
 
-void DVWindow::seekAmount(qint64 msec) {
+void DVWindowHook::seekAmount(qint64 msec) {
     player->seek(msec);
 }
 
-void DVWindow::volumeUp() {
+void DVWindowHook::volumeUp() {
     /* Call as a queued connection in case this is called from the OpenGL thread. */
     staticMetaObject.invokeMethod(this, "setVolumeImpl", Qt::QueuedConnection, Q_ARG(qreal, qMin(player->audio()->volume() + 0.1, 1.0)));
 }
 
-void DVWindow::volumeDown() {
+void DVWindowHook::volumeDown() {
     /* Call as a queued connection in case this is called from the OpenGL thread. */
     staticMetaObject.invokeMethod(this, "setVolumeImpl", Qt::QueuedConnection, Q_ARG(qreal, qMax(player->audio()->volume() - 0.1, 0.0)));
 }
 
-void DVWindow::mute() {
+void DVWindowHook::mute() {
     /* Call as a queued connection in case this is called from the OpenGL thread. */
     staticMetaObject.invokeMethod(this, "muteImpl", Qt::QueuedConnection);
 }
 
-void DVWindow::setVolume(qreal volume) {
+void DVWindowHook::setVolume(qreal volume) {
     /* Call as a queued connection in case this is called from the OpenGL thread. */
     staticMetaObject.invokeMethod(this, "setVolumeImpl", Qt::QueuedConnection, Q_ARG(qreal, volume));
 }
 
-void DVWindow::muteImpl() {
+void DVWindowHook::muteImpl() {
     player->audio()->setMute(!player->audio()->isMute());
 }
 
-void DVWindow::setVolumeImpl(qreal volume) {
+void DVWindowHook::setVolumeImpl(qreal volume) {
     player->audio()->setVolume(volume);
 }
 
-QObject* DVWindow::inputEventObject() {
-    return this;
+QObject* DVWindowHook::inputEventObject() {
+    return window;
 }

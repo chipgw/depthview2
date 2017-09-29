@@ -5,7 +5,7 @@ import QtQuick.Controls 2.1
 import QtQuick.Window 2.2
 import QtAV 1.6
 
-Item {
+Window {
     id: root
 
     FontLoader {
@@ -144,9 +144,7 @@ Item {
             interval: 2000
         }
 
-        /* Popups create their item as a child of the window's contentItem, which is the parent of the root item.
-         * Thus, in order to appear above them the cursor must be parented to the same item AND have a higher z. */
-        parent: root.parent
+        /* Must have a higher z than all popups, which are appended to the window's root item with a high z value. */
         z: 1200000
     }
 
@@ -156,7 +154,6 @@ Item {
       cursorShape: Qt.BlankCursor
 
       /* Same situation as with fakeCursor, it needs to be above all popups. */
-      parent: root.parent
       z: 1200000
     }
 
