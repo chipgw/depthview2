@@ -48,7 +48,7 @@ Window {
             id: bottomMenu
 
             /* Visible when the mouse is close or when the screen was recently touched.. */
-            forceOpen: (root.height - fakeCursor.y) < 128 || touchTimer.running
+            forceOpen: (root.contentItem.height - fakeCursor.y) < 128 || touchTimer.running
         }
     }
     Dialog {
@@ -109,10 +109,10 @@ Window {
     SettingsWindow {
         id: settingsPopup
 
-        width: root.width * 0.75
-        height: root.height * 0.75
-        x: root.width / 8
-        y: root.height / 8
+        width: parent.width * 0.75
+        height: parent.height * 0.75
+        x: parent.width / 8
+        y: parent.height / 8
     }
 
     Item {
@@ -149,9 +149,11 @@ Window {
     }
 
     MouseArea {
-      anchors.fill: parent
       enabled: false
       cursorShape: Qt.BlankCursor
+
+      width: root.width
+      height: root.height
 
       /* Same situation as with fakeCursor, it needs to be above all popups. */
       z: 1200000
