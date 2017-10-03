@@ -44,6 +44,7 @@ DVFolderListing::DVFolderListing(QObject* parent, QSettings& s) : QAbstractListM
     connect(this, &DVFolderListing::currentFileChanged, this, &DVFolderListing::currentFileStereoModeChanged);
     connect(this, &DVFolderListing::currentFileChanged, this, &DVFolderListing::currentFileStereoSwapChanged);
     connect(this, &DVFolderListing::currentFileChanged, this, &DVFolderListing::currentFileSurroundChanged);
+    connect(this, &DVFolderListing::currentFileChanged, this, &DVFolderListing::currentFileAudioTrackChanged);
 
     /* TODO - Figure out a way to detect when there is actually a change rather than just putting it on a timer. */
     connect(&driveTimer, &QTimer::timeout, this, &DVFolderListing::storageDevicePathsChanged);
@@ -286,6 +287,21 @@ bool DVFolderListing::isCurrentFileImage() const {
 bool DVFolderListing::isCurrentFileVideo() const {
     return isFileVideo(m_currentFile);
 }
+
+int DVFolderListing::currentFileAudioTrack() const {
+    QSqlRecord record = getRecordForFile(m_currentFile);
+
+    return (!record.isEmpty() && !record.value("audioTrack").isNull()) ? record.value("audioTrack").toInt() : -1;
+}
+
+void DVFolderListing::setCurrentFileAudioTrack(int track) {
+    if (track == currentFileAudioTrack()) return;
+
+    updateRecordForFile(m_currentFile, "audioTrack", track);
+
+    emit currentFileAudioTrackChanged();
+}
+
 bool DVFolderListing::isCurrentFileSurround() const {
     return isFileSurround(m_currentFile);
 }
@@ -320,8 +336,8 @@ void DVFolderListing::setCurrentFileStereoSwap(bool swap) {
     emit currentFileStereoSwapChanged();
 }
 
-void DVFolderListing::updateRecordForFile(const QFileInfo& file, const QString& propertyName, QVariant value, Roles role) {
-    dbOpMutex.lock();
+void DVFolderListing::updateRecordForFile(const QFileInfo& file, const QString& propertyName, QVariant value) {
+    QMutexLocker locker(&dbOpMutex);
 
     QSqlQuery query;
 
@@ -336,9 +352,10 @@ void DVFolderListing::updateRecordForFile(const QFileInfo& file, const QString& 
     query.bindValue(":val", value);
     query.bindValue(":path", file.canonicalFilePath());
     if (!query.exec()) qWarning("Unable to update record for file! %s", qPrintable(query.lastError().text()));
+}
 
-    /* Must be unlocked before signal is emitted. */
-    dbOpMutex.unlock();
+void DVFolderListing::updateRecordForFile(const QFileInfo& file, const QString& propertyName, QVariant value, Roles role) {
+    updateRecordForFile(file, propertyName, value);
 
     QModelIndex changedIndex = createIndex(m_currentDir.entryInfoList().indexOf(m_currentFile), 0);
     emit dataChanged(changedIndex, changedIndex, {role});
@@ -539,6 +556,11 @@ void DVFolderListing::setupFileDatabase() {
 
     if (!table.contains("surround")) {
         QSqlQuery query("ALTER TABLE files ADD surround bool");
+        if (query.lastError().isValid()) qWarning("Error setting up table! %s", qPrintable(query.lastError().text()));
+    }
+
+    if (!table.contains("audioTrack")) {
+        QSqlQuery query("ALTER TABLE files ADD audioTrack integer");
         if (query.lastError().isValid()) qWarning("Error setting up table! %s", qPrintable(query.lastError().text()));
     }
 

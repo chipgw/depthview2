@@ -42,6 +42,7 @@ class DVFolderListing : public QAbstractListModel {
     Q_PROPERTY(bool currentFileIsStereoImage READ isCurrentFileStereoImage NOTIFY currentFileChanged)
     Q_PROPERTY(bool currentFileIsImage READ isCurrentFileImage NOTIFY currentFileChanged)
     Q_PROPERTY(bool currentFileIsVideo READ isCurrentFileVideo NOTIFY currentFileChanged)
+    Q_PROPERTY(int currentFileAudioTrack READ currentFileAudioTrack WRITE setCurrentFileAudioTrack NOTIFY currentFileAudioTrackChanged)
     Q_PROPERTY(bool currentFileIsSurround READ isCurrentFileSurround WRITE setCurrentFileSurround NOTIFY currentFileSurroundChanged)
     Q_PROPERTY(DVSourceMode::Type currentFileStereoMode READ currentFileStereoMode WRITE setCurrentFileStereoMode NOTIFY currentFileStereoModeChanged)
     Q_PROPERTY(bool currentFileStereoSwap READ currentFileStereoSwap WRITE setCurrentFileStereoSwap NOTIFY currentFileStereoSwapChanged)
@@ -143,6 +144,9 @@ public:
     bool isCurrentFileImage() const;
     bool isCurrentFileVideo() const;
 
+    int currentFileAudioTrack() const;
+    void setCurrentFileAudioTrack(int track);
+
     bool isCurrentFileSurround() const;
     void setCurrentFileSurround(bool surround);
 
@@ -152,6 +156,7 @@ public:
     bool currentFileStereoSwap() const;
     void setCurrentFileStereoSwap(bool swap);
 
+    void updateRecordForFile(const QFileInfo& file, const QString& propertyName, QVariant value);
     void updateRecordForFile(const QFileInfo& file, const QString& propertyName, QVariant value, Roles role);
 
     qint64 currentFileSize() const;
@@ -202,4 +207,5 @@ signals:
     void currentFileStereoModeChanged();
     void currentFileStereoSwapChanged();
     void currentFileSurroundChanged();
+    void currentFileAudioTrackChanged();
 };

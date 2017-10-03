@@ -198,6 +198,8 @@ Item {
             source: FolderListing.currentFileIsVideo ? root.source : ""
 
             autoPlay: true
+
+            audioTrack: (FolderListing.currentFileAudioTrack >= 0) ? FolderListing.currentFileAudioTrack : 0
         }
 
         VideoOutput2 {

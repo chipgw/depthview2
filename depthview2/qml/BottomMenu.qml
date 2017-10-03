@@ -267,7 +267,7 @@ ToolBar {
 
                                     onCheckedChanged:
                                         if (checked) {
-                                            image.audioTrack = index
+                                            FolderListing.currentFileAudioTrack = index
                                             audioTracksMenu.close()
                                         }
                                 }
