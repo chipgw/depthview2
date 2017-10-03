@@ -1,5 +1,5 @@
 #include "dv_vrdriver.hpp"
-#include "dvwindow.hpp"
+#include "dvwindowhook.hpp"
 #include <QOpenGLExtraFunctions>
 #include <QSGTextureProvider>
 #include <QQuickItem>

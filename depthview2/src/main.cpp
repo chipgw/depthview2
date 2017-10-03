@@ -4,7 +4,7 @@
 #include <QSurfaceFormat>
 #include <QQmlApplicationEngine>
 #include "version.hpp"
-#include "dvwindow.hpp"
+#include "dvwindowhook.hpp"
 #include "dvqmlcommunication.hpp"
 
 int main(int argc, char* argv[]) {

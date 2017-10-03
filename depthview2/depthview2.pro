@@ -3,15 +3,15 @@ TEMPLATE = app
 QT += qml quick widgets sql av quickcontrols2
 
 SOURCES += src/main.cpp \
-    src/dvwindow.cpp \
-    src/dvwindow_gl.cpp \
     src/dvqmlcommunication.cpp \
     src/version.cpp \
     src/dvfolderlisting.cpp \
     src/dvthumbnailprovider.cpp \
     src/dvpluginmanager.cpp \
     src/dvfilevalidator.cpp \
-    src/dvvirtualscreenmanager.cpp
+    src/dvvirtualscreenmanager.cpp \
+    src/dvwindowhook.cpp \
+    src/dvwindowhook_gl.cpp
 
 RESOURCES += qml.qrc
 
@@ -24,7 +24,6 @@ include(deployment.pri)
 include(../gitversion.pri)
 
 HEADERS += \
-    include/dvwindow.hpp \
     include/dvenums.hpp \
     include/dvqmlcommunication.hpp \
     include/dvinputplugin.hpp \
@@ -36,7 +35,8 @@ HEADERS += \
     include/dvfilevalidator.hpp \
     include/dvconfig.hpp \
     include/dvvirtualscreenmanager.hpp \
-    include/dv_vrdriver.hpp
+    include/dv_vrdriver.hpp \
+    include/dvwindowhook.hpp
 
 INCLUDEPATH += include
 

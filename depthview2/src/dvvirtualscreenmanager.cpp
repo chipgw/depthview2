@@ -1,5 +1,5 @@
 #include "dvvirtualscreenmanager.hpp"
-#include "dvwindow.hpp"
+#include "dvwindowhook.hpp"
 #include "dv_vrdriver.hpp"
 #include "dvqmlcommunication.hpp"
 #include "dvfolderlisting.hpp"

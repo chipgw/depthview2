@@ -1,5 +1,5 @@
 #include "version.hpp"
-#include "dvwindow.hpp"
+#include "dvwindowhook.hpp"
 #include "dvqmlcommunication.hpp"
 #include "dvfolderlisting.hpp"
 #include "dvthumbnailprovider.hpp"
