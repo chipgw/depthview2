@@ -265,11 +265,10 @@ ToolBar {
                                     checked: index === image.audioTrack
                                     font: uiTextFont
 
-                                    onCheckedChanged:
-                                        if (checked) {
-                                            FolderListing.currentFileAudioTrack = index
-                                            audioTracksMenu.close()
-                                        }
+                                    onTriggered: {
+                                        FolderListing.currentFileAudioTrack = index
+                                        audioTracksMenu.close()
+                                    }
                                 }
                             }
                         }
