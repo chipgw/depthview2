@@ -95,9 +95,6 @@ DVWindowHook::DVWindowHook(QQmlApplicationEngine* engine) : QObject(engine), set
     if (player == nullptr)
         qFatal("Unable to find AVPlayer!");
 
-    /* Prefer hardware decoding if available. */
-    player->setVideoDecoderPriority(QStringList() << "CUDA" << "D3D11" << "DXVA" << "VAAPI" << "VideoToolbox" << "FFmpeg");
-
     /* The setGeometry() and setState() calls may try to set the qmlRoot geometry,
      * which means this needs to be done after QML is all set up. */
     if (settings.childGroups().contains("Window")) {

@@ -200,6 +200,8 @@ Item {
             autoPlay: true
 
             audioTrack: (FolderListing.currentFileAudioTrack >= 0) ? FolderListing.currentFileAudioTrack : 0
+
+            videoCodecPriority: DepthView.hardwareAcceleratedVideo ? ["CUDA", "D3D11", "DXVA", "VAAPI", "VideoToolbox", "FFmpeg"] : ["FFmpeg"]
         }
 
         VideoOutput2 {

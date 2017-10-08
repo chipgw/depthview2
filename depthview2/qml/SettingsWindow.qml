@@ -69,6 +69,7 @@ Dialog {
                     startupFileBrowserCheckBox.checked = DepthView.startupFileBrowser
                     uiThemeComboBox.currentIndex = uiThemeComboBox.find(DepthView.uiTheme)
                     startDir.text = FolderListing.startDir
+                    hardwareAcceleratedVideoCheckBox.checked = DepthView.hardwareAcceleratedVideo
 
                     /* If the selection is invalid, use "Default", as that's what QML uses when none is set. */
                     if (uiThemeComboBox.currentIndex < 0)
@@ -80,6 +81,7 @@ Dialog {
                     DepthView.startupFileBrowser = startupFileBrowserCheckBox.checked
                     DepthView.uiTheme = uiThemeComboBox.currentText
                     FolderListing.startDir = startDir.text
+                    DepthView.hardwareAcceleratedVideo = hardwareAcceleratedVideoCheckBox.checked
                 }
 
                 readonly property string title: qsTr("General Settings")
@@ -102,6 +104,11 @@ Dialog {
                     CheckBox {
                         id: startupFileBrowserCheckBox
                         text: qsTr("Show File Browser at Startup")
+                    }
+
+                    CheckBox {
+                        id: hardwareAcceleratedVideoCheckBox
+                        text: qsTr("Use Hardware Accelerated Video Decoding When Available")
                     }
 
                     Row {

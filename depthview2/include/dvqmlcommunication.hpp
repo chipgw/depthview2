@@ -28,6 +28,7 @@ class DVQmlCommunication : public QObject {
 
     Q_PROPERTY(bool saveWindowState READ saveWindowState WRITE setSaveWindowState NOTIFY saveWindowStateChanged)
     Q_PROPERTY(bool startupFileBrowser READ startupFileBrowser WRITE setStartupFileBrowser NOTIFY startupFileBrowserChanged)
+    Q_PROPERTY(bool hardwareAcceleratedVideo READ hardwareAcceleratedVideo WRITE setHardwareAcceleratedVideo NOTIFY hardwareAcceleratedVideoChanged)
 
     Q_PROPERTY(QString uiTheme READ uiTheme WRITE setUiTheme NOTIFY uiThemeChanged)
     Q_PROPERTY(QStringList uiThemes READ uiThemes CONSTANT)
@@ -76,6 +77,9 @@ public:
     bool startupFileBrowser() const;
     void setStartupFileBrowser(bool open);
 
+    bool hardwareAcceleratedVideo() const;
+    void setHardwareAcceleratedVideo(bool on);
+
     QString uiTheme() const;
     QStringList uiThemes() const;
     void setUiTheme(QString theme);
@@ -116,6 +120,7 @@ signals:
     /* Settings. */
     void saveWindowStateChanged();
     void startupFileBrowserChanged();
+    void hardwareAcceleratedVideoChanged();
     void uiThemeChanged();
 
     /* Used for setting the cursor position. */

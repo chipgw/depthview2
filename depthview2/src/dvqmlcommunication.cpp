@@ -142,6 +142,18 @@ void DVQmlCommunication::setStartupFileBrowser(bool open) {
     }
 }
 
+bool DVQmlCommunication::hardwareAcceleratedVideo() const {
+    /* Default value if it isn't set is false. */
+    return settings.value("HWAcceleration").toBool();
+}
+
+void DVQmlCommunication::setHardwareAcceleratedVideo(bool on) {
+    if (!settings.contains("HWAcceleration") || settings.value("HWAcceleration").toBool() != on) {
+        settings.setValue("HWAcceleration", on);
+        emit hardwareAcceleratedVideoChanged();
+    }
+}
+
 QString DVQmlCommunication::uiTheme() const {
     /* Either get it from settings, or get the one currently being used. */
     return settings.contains("ControlsTheme") ? settings.value("ControlsTheme").toString() : QQuickStyle::name();
