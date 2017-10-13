@@ -44,6 +44,20 @@ int main(int argc, char* argv[]) {
 
     parser.process(app.arguments());
 
+    /* Print the valid modes to the console. */
+    if (parser.isSet("l")) {
+        QString modes;
+
+        for (int i = 0; i < DVDrawMode::metaEnum().keyCount(); ++i)
+            modes.append(DVDrawMode::metaEnum().key(i)).append(", ");
+
+        /* remove the last ", " at the end. */
+        modes.chop(2);
+
+        qDebug("Valid render modes: %s", qPrintable(modes));
+
+        return 0;
+    }
 #ifdef DV_FILE_ASSOCIATION
     if (parser.isSet("register")){
         DVQmlCommunication::registerFileTypes();

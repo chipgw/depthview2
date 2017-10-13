@@ -232,11 +232,6 @@ void DVWindowHook::doCommandLine(QCommandLineParser& parser) {
     /* We use one string to hold all warning messages, so we only have to show one dialog. */
     QString warning;
 
-    /* Print the valid modes to the console.
-     * Still inits & shows the window because to get plugin modes requires the plugin system to be inited. */
-    if (parser.isSet("l"))
-        qDebug() << "Valid render modes:" << pluginManager->getModes();
-
     if (parser.isSet("f"))
         window->setWindowState(Qt::WindowFullScreen);
 
@@ -246,9 +241,9 @@ void DVWindowHook::doCommandLine(QCommandLineParser& parser) {
     if (parser.isSet("r")) {
         const QString& renderer = parser.value("r");
 
-        int mode = pluginManager->getModes().indexOf(renderer);
+        int mode = DVDrawMode::fromString(renderer.toLocal8Bit().data());
 
-        if(mode == -1)
+        if (mode == -1)
             warning += tr("<p>Invalid renderer \"%1\" passed to \"--renderer\" argument!</p>").arg(renderer);
 
         qmlCommunication->initDrawMode(DVDrawMode::Type(mode));

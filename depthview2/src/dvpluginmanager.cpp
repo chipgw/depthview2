@@ -243,16 +243,6 @@ void DVPluginManager::doPluginInput(DVInputInterface* inputInterface) {
         plugin->pollInput(inputInterface);
 }
 
-QStringList DVPluginManager::getModes() const {
-    return QStringList() << "Anaglyph"
-                         << "Side-by-Side"
-                         << "Top/Bottom"
-                         << "Interlaced Horizontal"
-                         << "Interlaced Vertical"
-                         << "Checkerboard"
-                         << "Mono";
-}
-
 QObjectList DVPluginManager::getPluginConfigMenus() const {
     QObjectList list;
 

@@ -32,8 +32,6 @@ class DVPluginManager : public QAbstractListModel {
     QSqlRecord getRecordForPlugin(const QString& pluginName, bool create = false) const;
     void storePluginEnabled(const QString &pluginName, bool enable);
 
-    Q_PROPERTY(QStringList modes READ getModes NOTIFY modesChanged)
-
     Q_PROPERTY(QList<QObject*> pluginConfigMenus READ getPluginConfigMenus NOTIFY enabledPluginsChanged)
 
 public:
@@ -56,7 +54,6 @@ public:
     /* Get input from all loadedinput plugins. */
     void doPluginInput(DVInputInterface* inputInterface);
 
-    QStringList getModes() const;
     QObjectList getPluginConfigMenus() const;
 
     /* QObject should be const, but QML does not know how to do const. */
@@ -83,6 +80,5 @@ public:
     int rowCount(const QModelIndex& parent) const;
 
 signals:
-    void modesChanged();
     void enabledPluginsChanged();
 };
