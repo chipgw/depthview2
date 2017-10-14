@@ -26,8 +26,7 @@ DVQmlCommunication::DVQmlCommunication(QObject* parent, QSettings& s) : QObject(
     m_mirrorRight = settings.value("MirrorRight", false).toBool();
 
     /* This constructor gets called before QML is set up, so this works. */
-    if (settings.contains("ControlsTheme"))
-        QQuickStyle::setStyle(settings.value("ControlsTheme").toString());
+    QQuickStyle::setStyle(settings.value("ControlsTheme", "Material").toString());
 }
 
 void DVQmlCommunication::setDrawMode(DVDrawMode::Type mode) {
@@ -164,7 +163,10 @@ QStringList DVQmlCommunication::uiThemes() const {
 }
 
 void DVQmlCommunication::setUiTheme(QString theme) {
-    if ((!settings.contains("ControlsTheme") || settings.value("ControlsTheme").toString() != theme) && uiThemes().contains(theme)) {
+    /* If the setting didn't exist but the theme is already the current one, just save it in settings without doing anything else. */
+    if (!settings.contains("ControlsTheme") && theme == QQuickStyle::name())
+        settings.setValue("ControlsTheme", theme);
+    else if ((!settings.contains("ControlsTheme") || settings.value("ControlsTheme").toString() != theme) && uiThemes().contains(theme)) {
         settings.setValue("ControlsTheme", theme);
 
         emit uiThemeChanged();

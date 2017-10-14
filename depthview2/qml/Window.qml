@@ -4,9 +4,12 @@ import DepthView 2.0
 import QtQuick.Controls 2.1
 import QtQuick.Window 2.2
 import QtAV 1.6
+import QtQuick.Controls.Material 2.2
 
 Window {
     id: root
+
+    Material.theme: Material.Dark
 
     FontLoader {
         id: googleMaterialFontLoader
