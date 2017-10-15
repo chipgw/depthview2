@@ -111,7 +111,7 @@ Dialog {
                         text: qsTr("Use Hardware Accelerated Video Decoding When Available")
                     }
 
-                    Row {
+                    RowLayout {
                         Label {
                             anchors.verticalCenter: parent.verticalCenter
                             text: qsTr("UI Theme: ")
@@ -121,6 +121,8 @@ Dialog {
                             id: uiThemeComboBox
 
                             model: DepthView.uiThemes
+
+                            Layout.fillWidth: true
                         }
                     }
 

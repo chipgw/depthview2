@@ -11,6 +11,10 @@
 #include <QQuickItem>
 #include <QtMath>
 
+namespace {
+const QMap<QString, QString> themes = {{"Material Design (Default)","Material"},{"QML Default Style", "Default"},{"Universal Design","Universal"}};
+}
+
 DVQmlCommunication::DVQmlCommunication(QObject* parent, QSettings& s) : QObject(parent),
     settings(s), lastWindowState(Qt::WindowNoState), m_swapEyes(false), imageTarget(nullptr) {
     m_drawMode = DVDrawMode::fromString(settings.value("DrawMode", "Anaglyph").toByteArray());
@@ -26,7 +30,7 @@ DVQmlCommunication::DVQmlCommunication(QObject* parent, QSettings& s) : QObject(
     m_mirrorRight = settings.value("MirrorRight", false).toBool();
 
     /* This constructor gets called before QML is set up, so this works. */
-    QQuickStyle::setStyle(settings.value("ControlsTheme", "Material").toString());
+    QQuickStyle::setStyle(themes.value(settings.value("ControlsTheme").toString(), "Material"));
 }
 
 void DVQmlCommunication::setDrawMode(DVDrawMode::Type mode) {
@@ -155,18 +159,21 @@ void DVQmlCommunication::setHardwareAcceleratedVideo(bool on) {
 
 QString DVQmlCommunication::uiTheme() const {
     /* Either get it from settings, or get the one currently being used. */
-    return settings.contains("ControlsTheme") ? settings.value("ControlsTheme").toString() : QQuickStyle::name();
+    return settings.value("ControlsTheme", themes.key(QQuickStyle::name())).toString();
 }
 
 QStringList DVQmlCommunication::uiThemes() const {
-    return {"Default", "Material", "Universal"};
+    return themes.keys();
 }
 
 void DVQmlCommunication::setUiTheme(QString theme) {
+    /* Theme is not valid. */
+    if (!themes.contains(theme)) return;
+
     /* If the setting didn't exist but the theme is already the current one, just save it in settings without doing anything else. */
-    if (!settings.contains("ControlsTheme") && theme == QQuickStyle::name())
+    if (!settings.contains("ControlsTheme") && themes.value(theme) == QQuickStyle::name())
         settings.setValue("ControlsTheme", theme);
-    else if ((!settings.contains("ControlsTheme") || settings.value("ControlsTheme").toString() != theme) && uiThemes().contains(theme)) {
+    else if ((!settings.contains("ControlsTheme") || settings.value("ControlsTheme").toString() != theme)) {
         settings.setValue("ControlsTheme", theme);
 
         emit uiThemeChanged();
