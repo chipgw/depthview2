@@ -581,8 +581,7 @@ public:
         }
 
         /* if the current image isn't a loaded or isn't surround, try to use the set background image. */
-        if (currentTexture == nullptr && backgroundImageItem &&
-                backgroundImageItem->textureProvider() && backgroundImageItem->textureProvider()->texture()) {
+        if (currentTexture == nullptr && backgroundImageItem && backgroundImageItem->textureProvider()) {
             currentTexture = backgroundImageItem->textureProvider()->texture();
             currentTexturePan = backgroundPan;
 

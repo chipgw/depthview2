@@ -8,7 +8,7 @@
 class DVFolderListing;
 class QWindow;
 class QSettings;
-class QSGTextureProvider;
+class QSGTexture;
 class QQuickItem;
 
 class DVQmlCommunication : public QObject {
@@ -33,7 +33,7 @@ class DVQmlCommunication : public QObject {
     Q_PROPERTY(QString uiTheme READ uiTheme WRITE setUiTheme NOTIFY uiThemeChanged)
     Q_PROPERTY(QStringList uiThemes READ uiThemes CONSTANT)
 
-    Q_PROPERTY(QQuickItem* openImageTarget READ openImageTarget WRITE setOpenImageTarget NOTIFY openImageTargetChanged)
+    Q_PROPERTY(QQuickItem* openImageTarget MEMBER imageTarget NOTIFY openImageTargetChanged)
 
     Q_PROPERTY(QPointF surroundPan READ surroundPan WRITE setSurroundPan NOTIFY surroundPanChanged)
     Q_PROPERTY(qreal surroundFOV READ surroundFOV WRITE setSurroundFOV NOTIFY surroundFOVChanged)
@@ -84,9 +84,7 @@ public:
     QStringList uiThemes() const;
     void setUiTheme(QString theme);
 
-    QQuickItem* openImageTarget();
-    QSGTextureProvider* openImageTexture();
-    void setOpenImageTarget(QQuickItem* target);
+    QSGTexture* openImageTexture();
 
     QPointF surroundPan() const { return m_surroundPan; }
     void setSurroundPan(QPointF val);

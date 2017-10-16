@@ -10,6 +10,7 @@
 #include <QProcess>
 #include <QQuickItem>
 #include <QtMath>
+#include <QSGTextureProvider>
 
 namespace {
 const QMap<QString, QString> themes = {{"Material Design (Default)","Material"},{"QML Default Style", "Default"},{"Universal Design","Universal"}};
@@ -188,19 +189,8 @@ void DVQmlCommunication::setUiTheme(QString theme) {
     }
 }
 
-QQuickItem* DVQmlCommunication::openImageTarget() {
-    return imageTarget;
-}
-
-QSGTextureProvider* DVQmlCommunication::openImageTexture() {
-    return (imageTarget && imageTarget->isTextureProvider()) ? imageTarget->textureProvider() : nullptr;
-}
-
-void DVQmlCommunication::setOpenImageTarget(QQuickItem *target) {
-    if (target != imageTarget) {
-        imageTarget = target;
-        emit openImageTargetChanged();
-    }
+QSGTexture* DVQmlCommunication::openImageTexture() {
+    return (imageTarget && imageTarget->isTextureProvider()) ? imageTarget->textureProvider()->texture() : nullptr;
 }
 
 void DVQmlCommunication::setSurroundPan(QPointF val) {

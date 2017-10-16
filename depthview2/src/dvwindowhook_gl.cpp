@@ -13,7 +13,6 @@
 #include <QOpenGLFramebufferObject>
 #include <QOpenGLContext>
 #include <QOpenGLExtraFunctions>
-#include <QSGTextureProvider>
 #include <AVPlayer.h>
 #include <QtMath>
 
@@ -295,16 +294,15 @@ GLuint DVWindowHook::getInterfaceTexture(DVStereoEye::Type eye) const {
 }
 
 QSGTexture* DVWindowHook::getCurrentTexture(QRectF& left, QRectF& right) {
-    if (qmlCommunication->openImageTexture() && qmlCommunication->openImageTexture()->texture()) {
-        getTextureRects(left, right, qmlCommunication->openImageTexture()->texture(),
-                        folderListing->currentFileStereoSwap(), folderListing->currentFileStereoMode());
+    getTextureRects(left, right, qmlCommunication->openImageTexture(),
+                    folderListing->currentFileStereoSwap(), folderListing->currentFileStereoMode());
 
-        return qmlCommunication->openImageTexture()->texture();
-    }
-    return 0;
+    return qmlCommunication->openImageTexture();
 }
 
 void DVWindowHook::getTextureRects(QRectF& left, QRectF& right, QSGTexture* texture, bool swap, DVSourceMode::Type mode) {
+    if (texture == nullptr) return;
+
     right = left = texture->normalizedTextureSubRect();
 
     switch (mode) {
@@ -384,7 +382,7 @@ void DVWindowHook::renderStandardQuad() {
 void DVWindowHook::doStandardSetup() {
     QOpenGLExtraFunctions* f = openglContext()->extraFunctions();
 
-    if (qmlCommunication->openImageTexture() && qmlCommunication->openImageTexture()->texture() && folderListing->isCurrentFileSurround()) {
+    if (qmlCommunication->openImageTexture() && folderListing->isCurrentFileSurround()) {
         f->glViewport(0, 0, qmlSize.width(), qmlSize.height());
 
         f->glEnable(GL_BLEND);
