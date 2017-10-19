@@ -300,6 +300,9 @@ QUrl DVVirtualScreenManager::backgroundImage() const {
     return driver != nullptr ? driver->backgroundImage : QUrl();
 }
 void DVVirtualScreenManager::setBackgroundImage(QUrl image) {
+    /* Ignore if the file doesn't exist, unless the path is empty in which case continue so as to clear the setting. */
+    if (!QFile::exists(image.toLocalFile()) && !image.isEmpty()) return;
+
     window->settings.setValue("VRSettings/BackgroundImage", image.toLocalFile());
 
     if (driver != nullptr && driver->backgroundImage != image) {

@@ -311,7 +311,6 @@ Dialog {
                     VRManager.screenSize = screenSize.value
                     VRManager.screenHeight = screenHeight.value
                     VRManager.renderSizeFac = renderSizeFac.value
-                    /* TODO - Check if it exists. */
                     VRManager.backgroundImage = FolderListing.encodeURL(backgroundImagePath.text)
                     VRManager.backgroundSourceMode = backgroundImageMode.mode
                     VRManager.backgroundSwap = backgroundImageSwap.checked
