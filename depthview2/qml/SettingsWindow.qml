@@ -393,89 +393,89 @@ Dialog {
                     GroupBox {
                         Layout.fillWidth: true
                         title: qsTr("Background")
-                        GridLayout {
-                            /* TODO - Still not quite happy with this layout... */
+                        ColumnLayout {
                             width: parent.width
-                            columns: 7
 
-                            TextField {
-                                id: backgroundImagePath
-                                Layout.columnSpan: 6
-                                Layout.fillWidth: true
+                            RowLayout {
+                                TextField {
+                                    id: backgroundImagePath
+                                    Layout.fillWidth: true
 
-                                placeholderText: qsTr("Background Image Path...")
-                                validator: FileValidator {
-                                    filterSurround: true
-                                    folderListing: FolderListing
+                                    placeholderText: qsTr("Background Image Path...")
+                                    validator: FileValidator {
+                                        filterSurround: true
+                                        folderListing: FolderListing
+                                    }
+                                    color: acceptableInput ? "green" : "red"
                                 }
-                                color: acceptableInput ? "green" : "red"
-                            }
-                            Button {
-                                text: "Use Current"
-                                Layout.columnSpan: 1
+                                Button {
+                                    text: "Use Current"
+                                    Layout.columnSpan: 1
 
-                                enabled: FolderListing.currentFileIsSurround
+                                    enabled: FolderListing.currentFileIsSurround
 
-                                onClicked: {
-                                    backgroundImagePath.text = FolderListing.decodeURL(FolderListing.currentDir) + "/" + FolderListing.currentFile
-                                    backgroundImageMode.setMode(FolderListing.currentFileStereoMode)
-                                    backgroundImageSwap.checked = FolderListing.currentFileStereoSwap
-                                    backgroundImagePan.value = DepthView.surroundPan.x
+                                    onClicked: {
+                                        backgroundImagePath.text = FolderListing.decodeURL(FolderListing.currentDir) + "/" + FolderListing.currentFile
+                                        backgroundImageMode.setMode(FolderListing.currentFileStereoMode)
+                                        backgroundImageSwap.checked = FolderListing.currentFileStereoSwap
+                                        backgroundImagePan.value = DepthView.surroundPan.x
+                                    }
                                 }
                             }
 
-                            CheckBox {
-                                id: backgroundImageSwap
-                                text: "Swap"
-                                Layout.fillWidth: true
-
-                                enabled: backgroundImageMode.mode !== SourceMode.Mono
-                            }
-
-                            Label {
-                                text: qsTr("Source Mode:")
-                            }
-                            ComboBox {
-                                id: backgroundImageMode
-                                textRole: "text"
-                                model: ListModel {
-                                    ListElement { text: qsTr("Mono"); mode: SourceMode.Mono }
-                                    ListElement { text: qsTr("Side-by-Side"); mode: SourceMode.SideBySide }
-                                    ListElement { text: qsTr("Top/Bottom"); mode: SourceMode.TopBottom }
+                            RowLayout {
+                                Label {
+                                    text: qsTr("Source Mode:")
                                 }
-                                function setMode(mode) {
-                                    if (mode === SourceMode.SideBySideAnamorphic)
-                                        mode = SourceMode.SideBySide
-                                    if (mode === SourceMode.TopBottomAnamorphic)
-                                        mode = SourceMode.TopBottom
+                                ComboBox {
+                                    Layout.fillWidth: true
+                                    id: backgroundImageMode
+                                    textRole: "text"
+                                    model: ListModel {
+                                        ListElement { text: qsTr("Mono"); mode: SourceMode.Mono }
+                                        ListElement { text: qsTr("Side-by-Side"); mode: SourceMode.SideBySide }
+                                        ListElement { text: qsTr("Top/Bottom"); mode: SourceMode.TopBottom }
+                                    }
+                                    function setMode(mode) {
+                                        if (mode === SourceMode.SideBySideAnamorphic)
+                                            mode = SourceMode.SideBySide
+                                        if (mode === SourceMode.TopBottomAnamorphic)
+                                            mode = SourceMode.TopBottom
 
-                                    for (var i = 0; i < model.count; ++i)
-                                        if (model.get(i).mode === mode)
-                                            currentIndex = i
+                                        for (var i = 0; i < model.count; ++i)
+                                            if (model.get(i).mode === mode)
+                                                currentIndex = i
+                                    }
+                                    readonly property var mode: model.get(currentIndex).mode
                                 }
-                                readonly property var mode: model.get(currentIndex).mode
-                            }
+                                CheckBox {
+                                    id: backgroundImageSwap
+                                    text: "Swap"
 
-                            Label {
-                                text: qsTr("Pan")
-                            }
+                                    enabled: backgroundImageMode.mode !== SourceMode.Mono
+                                }
 
-                            Slider {
-                                id: backgroundImagePan
-                                Layout.fillWidth: true
-                                from: 0
-                                to: 360
-                            }
+                                Label {
+                                    text: qsTr("Pan")
+                                }
 
-                            Label {
-                                text: qsTr("Dim")
-                            }
+                                Slider {
+                                    id: backgroundImagePan
+                                    Layout.fillWidth: true
+                                    from: 0
+                                    to: 360
+                                }
 
-                            Slider {
-                                id: backgroundImageDim
-                                Layout.fillWidth: true
-                                from: 0
-                                to: 1
+                                Label {
+                                    text: qsTr("Dim")
+                                }
+
+                                Slider {
+                                    id: backgroundImageDim
+                                    Layout.fillWidth: true
+                                    from: 0
+                                    to: 1
+                                }
                             }
                         }
                     }
