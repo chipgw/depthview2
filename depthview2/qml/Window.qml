@@ -37,22 +37,18 @@ Window {
         onZoomChanged: bottomMenu.updateZoom()
     }
 
-    Item {
-        anchors.fill: parent
+    TopMenu {
+        id: topMenu
 
-        TopMenu {
-            id: topMenu
+        /* Visible when the mouse is close or when the screen was recently touched. */
+        forceOpen: fakeCursor.y < 128 || touchTimer.running
+    }
 
-            /* Visible when the mouse is close or when the screen was recently touched. */
-            forceOpen: fakeCursor.y < 128 || touchTimer.running
-        }
+    BottomMenu {
+        id: bottomMenu
 
-        BottomMenu {
-            id: bottomMenu
-
-            /* Visible when the mouse is close or when the screen was recently touched.. */
-            forceOpen: (root.contentItem.height - fakeCursor.y) < 128 || touchTimer.running
-        }
+        /* Visible when the mouse is close or when the screen was recently touched.. */
+        forceOpen: (root.contentItem.height - fakeCursor.y) < 128 || touchTimer.running
     }
     Dialog {
         id: aboutBox
@@ -152,14 +148,12 @@ Window {
     }
 
     MouseArea {
-      enabled: false
-      cursorShape: Qt.BlankCursor
+        anchors.fill: parent
+        enabled: false
+        cursorShape: Qt.BlankCursor
 
-      width: root.width
-      height: root.height
-
-      /* Same situation as with fakeCursor, it needs to be above all popups. */
-      z: 1200000
+        /* Same situation as with fakeCursor, it needs to be above all popups. */
+        z: 1200000
     }
 
     Connections {
