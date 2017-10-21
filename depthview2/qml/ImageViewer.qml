@@ -213,9 +213,6 @@ Item {
 
             /* Always stretch. We set the VideoOutput to the size we want. */
             fillMode: VideoOutput.Stretch
-
-            /* Hide the video, just use it as a source for the ShaderEffect. */
-            opacity: 0
         }
 
         StereoShader {

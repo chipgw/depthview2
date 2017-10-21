@@ -22,9 +22,6 @@ Item {
 
         width: (imageMode === SourceMode.SideBySideAnamorphic) ? implicitWidth * 2 : implicitWidth
         height: (imageMode === SourceMode.TopBottomAnamorphic) ? implicitHeight * 2 : implicitHeight
-
-        /* Hide the image, it's just used as a source for the ShaderEffect. */
-        opacity: 0
     }
     StereoShader {
         id: shader

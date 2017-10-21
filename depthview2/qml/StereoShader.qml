@@ -8,6 +8,8 @@ ShaderEffect {
     property variant target
     property int stereoMode
 
+    onTargetChanged: if (target !== undefined) target.visible = false
+
     /* Properties for the shader to read. */
     property bool swap: false
     readonly property bool isSBS: stereoMode === SourceMode.SideBySide || stereoMode === SourceMode.SideBySideAnamorphic
