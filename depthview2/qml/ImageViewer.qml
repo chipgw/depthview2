@@ -167,16 +167,12 @@ Item {
                 anchors.centerIn: parent
                 id: image
 
-                imageMode: stereoMode
-
                 source: FolderListing.currentFileIsVideo ? "" : root.source
 
                 /* If zoom is negative we scale to fit, otherwise just use the value of zoom. */
                 scale: targetScale
 
                 visible: !FolderListing.currentFileIsSurround
-
-                swap: FolderListing.currentFileStereoSwap
             }
         }
     }
@@ -217,9 +213,6 @@ Item {
 
         StereoShader {
             target: vid
-            stereoMode: root.stereoMode
-
-            swap: FolderListing.currentFileStereoSwap
         }
     }
     BusyIndicator {

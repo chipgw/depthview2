@@ -64,10 +64,6 @@ ProgressBar {
                     }
                     StereoShader {
                         target: thumbnail
-                        stereoMode: image.stereoMode
-
-                        /* Videos tend to be the other way around from images... */
-                        swap: true
                     }
                 }
 

@@ -6,12 +6,14 @@ ShaderEffect {
 
     /* Properties for the owner to set. */
     property variant target
-    property int stereoMode
+    /* Default to the current file's stereo mode. */
+    property int stereoMode: FolderListing.currentFileStereoMode
 
     onTargetChanged: if (target !== undefined) target.visible = false
 
     /* Properties for the shader to read. */
-    property bool swap: false
+    /* Default to the current file's swap value. */
+    property bool swap: FolderListing.currentFileStereoSwap
     readonly property bool isSBS: stereoMode === SourceMode.SideBySide || stereoMode === SourceMode.SideBySideAnamorphic
     readonly property bool isTB: stereoMode === SourceMode.TopBottom || stereoMode === SourceMode.TopBottomAnamorphic
 
