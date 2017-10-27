@@ -1,5 +1,5 @@
 #include "dv_vrdriver.hpp"
-#include "dvwindowhook.hpp"
+#include "dvrenderer.hpp"
 #include <QOpenGLExtraFunctions>
 #include <QSGTextureProvider>
 #include <QQuickItem>
@@ -82,7 +82,7 @@ class DV_VRDriver_OpenVR : public DV_VRDriver {
     Action axisActions[3][2][AxisAsButton_Max];
 
 public:
-    DV_VRDriver_OpenVR(DVWindowHook* w, DVVirtualScreenManager* m) : DV_VRDriver(w, m),
+    DV_VRDriver_OpenVR(DVRenderer* w, DVVirtualScreenManager* m) : DV_VRDriver(w, m),
         distortionVBO(QOpenGLBuffer::VertexBuffer), distortionIBO(QOpenGLBuffer::IndexBuffer) {
         if (!vr::VR_IsHmdPresent()) {
             setError("No HMD detected.");
@@ -454,7 +454,7 @@ public:
                 vrSceneShader.setUniformValue("outputFac", float(1.0 - backgroundDim));
 
             /* Use the sphere provided by the normal surround rendering. */
-            window->renderStandardSphere();
+            renderer->renderStandardSphere();
 
             /* Screen is opaque for backgrounds, but it is transparent for open images. */
             if (!isBackground)
@@ -464,8 +464,8 @@ public:
         vrSceneShader.setUniformValue("rect", 0.0f, 0.0f, 1.0f, 1.0f);
         vrSceneShader.setUniformValue("outputFac", 1.0f);
 
-        /* Get the UI texture for the current eye from the window. In both eye enums left=0 and right=1. */
-        f->glBindTexture(GL_TEXTURE_2D, window->getInterfaceTexture((DVStereoEye::Type)eye));
+        /* Get the UI texture for the current eye from the renderer. In both eye enums left=0 and right=1. */
+        f->glBindTexture(GL_TEXTURE_2D, renderer->getInterfaceTexture((DVStereoEye::Type)eye));
 
         /* Draw the screen to eye FBO. */
         vrSceneShader.setAttributeArray(0, screen.data());
@@ -572,7 +572,7 @@ public:
         bool isBackground = false;
 
         if (manager->isCurrentFileSurround()) {
-            currentTexture = window->getCurrentTexture(currentTextureLeft, currentTextureRight);
+            currentTexture = renderer->getCurrentTexture(currentTextureLeft, currentTextureRight);
             currentTexturePan = manager->surroundPan();
 
             if (snapSurroundPan)
@@ -585,7 +585,7 @@ public:
             currentTexture = backgroundImageItem->textureProvider()->texture();
             currentTexturePan = backgroundPan;
 
-            window->getTextureRects(currentTextureLeft, currentTextureRight, currentTexture, backgroundSwap, backgroundSourceMode);
+            renderer->getTextureRects(currentTextureLeft, currentTextureRight, currentTexture, backgroundSwap, backgroundSourceMode);
 
             isBackground = true;
         }
@@ -723,6 +723,6 @@ public:
     }
 };
 
-DV_VRDriver* DV_VRDriver::createOpenVRDriver(DVWindowHook* window, DVVirtualScreenManager* manager) {
-    return new DV_VRDriver_OpenVR(window, manager);
+DV_VRDriver* DV_VRDriver::createOpenVRDriver(DVRenderer* renderer, DVVirtualScreenManager* manager) {
+    return new DV_VRDriver_OpenVR(renderer, manager);
 }

@@ -1,18 +1,15 @@
 #include "dvconfig.hpp"
-#include "dvwindowhook.hpp"
+#include "dvrenderer.hpp"
 #include "dvqmlcommunication.hpp"
 #include "dvfolderlisting.hpp"
 #include "dvpluginmanager.hpp"
 #include "dvvirtualscreenmanager.hpp"
-#include <QQuickRenderControl>
 #include <QQuickWindow>
-#include <QQuickItem>
-#include <QQmlEngine>
-#include <QQmlContext>
-#include <QQmlComponent>
 #include <QOpenGLFramebufferObject>
 #include <QOpenGLContext>
 #include <QOpenGLExtraFunctions>
+#include <QSGTextureProvider>
+#include <QQuickItem>
 #include <AVPlayer.h>
 #include <QtMath>
 
@@ -88,7 +85,27 @@ void makeSphere(uint32_t slices, uint32_t stacks, QOpenGLBuffer& sphereVerts, QO
     sphereTriCount = triangles.size();
 }
 
-void DVWindowHook::initializeGL() {
+DVRenderer::DVRenderer(QSettings& s, DVQmlCommunication& q, DVFolderListing& f)
+    : settings(s), qmlCommunication(q), folderListing(f), renderFBO(nullptr), sphereTris(QOpenGLBuffer::IndexBuffer) {
+
+    vrManager = new DVVirtualScreenManager(this, q, f);
+}
+
+void DVRenderer::setWindow(QQuickWindow *w) {
+    setParent(window = w);
+
+    connect(window, &QQuickWindow::frameSwapped, this, &DVRenderer::onFrameSwapped, Qt::DirectConnection);
+    connect(window, &QQuickWindow::sceneGraphInitialized, this, &DVRenderer::initializeGL, Qt::DirectConnection);
+    connect(window, &QQuickWindow::sceneGraphInvalidated, this, &DVRenderer::shutdownGL, Qt::DirectConnection);
+    connect(window, &QQuickWindow::afterRendering, this, &DVRenderer::paintGL, Qt::DirectConnection);
+    connect(window, &QQuickWindow::beforeRendering, this, &DVRenderer::preSync, Qt::DirectConnection);
+
+    /* Update the screen when the window size changes. */
+    connect(window, &QWindow::widthChanged, vrManager, &DVVirtualScreenManager::updateScreen);
+    connect(window, &QWindow::heightChanged, vrManager, &DVVirtualScreenManager::updateScreen);
+}
+
+void DVRenderer::initializeGL() {
     QOpenGLExtraFunctions* f = openglContext()->extraFunctions();
     qDebug("GL Vendor: \"%s\", Renderer: \"%s\".", f->glGetString(GL_VENDOR), f->glGetString(GL_RENDERER));
 
@@ -99,7 +116,7 @@ void DVWindowHook::initializeGL() {
     vrManager->init();
 }
 
-void DVWindowHook::shutdownGL() {
+void DVRenderer::shutdownGL() {
     delete renderFBO;
 
     /* For some reason this causes a SIGSEGV... */
@@ -109,38 +126,35 @@ void DVWindowHook::shutdownGL() {
     vrManager->deinit();
 }
 
-void DVWindowHook::preSync() {
-    /* Get input from the plugins. */
-    pluginManager->doPluginInput(this);
-
+void DVRenderer::preSync() {
     updateQmlSize();
 
     window->resetOpenGLState();
 }
 
-void DVWindowHook::paintGL() {
+void DVRenderer::paintGL() {
     /* Now we don't want QML messing us up. */
     window->resetOpenGLState();
 
     /* Bind the shader and set uniforms for the current draw mode. */
-    switch (qmlCommunication->drawMode()) {
+    switch (qmlCommunication.drawMode()) {
     case DVDrawMode::Anaglyph:
         doStandardSetup();
         shaderAnaglyph->bind();
-        shaderAnaglyph->setUniformValue("greyFacL", float(qmlCommunication->greyFacL()));
-        shaderAnaglyph->setUniformValue("greyFacR", float(qmlCommunication->greyFacR()));
+        shaderAnaglyph->setUniformValue("greyFacL", float(qmlCommunication.greyFacL()));
+        shaderAnaglyph->setUniformValue("greyFacR", float(qmlCommunication.greyFacR()));
         break;
     case DVDrawMode::SideBySide:
         doStandardSetup();
         shaderSideBySide->bind();
-        shaderSideBySide->setUniformValue("mirrorL", qmlCommunication->mirrorLeft());
-        shaderSideBySide->setUniformValue("mirrorR", qmlCommunication->mirrorRight());
+        shaderSideBySide->setUniformValue("mirrorL", qmlCommunication.mirrorLeft());
+        shaderSideBySide->setUniformValue("mirrorR", qmlCommunication.mirrorRight());
         break;
     case DVDrawMode::TopBottom:
         doStandardSetup();
         shaderTopBottom->bind();
-        shaderTopBottom->setUniformValue("mirrorL", qmlCommunication->mirrorLeft());
-        shaderTopBottom->setUniformValue("mirrorR", qmlCommunication->mirrorRight());
+        shaderTopBottom->setUniformValue("mirrorL", qmlCommunication.mirrorLeft());
+        shaderTopBottom->setUniformValue("mirrorR", qmlCommunication.mirrorRight());
         break;
     case DVDrawMode::InterlacedH:
         doStandardSetup();
@@ -172,7 +186,7 @@ void DVWindowHook::paintGL() {
         shaderMono->setUniformValue("left", true);
         break;
     case DVDrawMode::VirtualReality:
-        if (vrManager->render()) {
+        if (vrManager->render(input)) {
             QOpenGLFramebufferObject::bindDefault();
             window->resetOpenGLState();
 
@@ -192,25 +206,46 @@ void DVWindowHook::paintGL() {
         DV_FALLTHROUGH;
     default:
         /* Whoops, invalid renderer. Reset to Anaglyph... */
-        qmlCommunication->setDrawMode(DVDrawMode::Anaglyph);
+        qmlCommunication.setDrawMode(DVDrawMode::Anaglyph);
         return;
     }
 
     renderStandardQuad();
 }
 
-QOpenGLContext* DVWindowHook::openglContext() {
+QOpenGLContext* DVRenderer::openglContext() {
     return window->openglContext();
 }
 
-void DVWindowHook::onFrameSwapped() {
+void DVRenderer::updateQmlSize() {
+    qmlSize = window->size();
+
+    /* If Side-by-Side and not anamorphic we only render QML at half of the window size (horizontally). */
+    if (qmlCommunication.drawMode() == DVDrawMode::SideBySide && !qmlCommunication.anamorphicDualView())
+        qmlSize.setWidth(qmlSize.width() / 2);
+
+    /* If Top/Bottom and not anamorphic we only render QML at half of the window size (vertically). */
+    else if (qmlCommunication.drawMode() == DVDrawMode::TopBottom && !qmlCommunication.anamorphicDualView())
+        qmlSize.setHeight(qmlSize.height() / 2);
+
+    else if (qmlCommunication.drawMode() == DVDrawMode::VirtualReality)
+        qmlSize = vrManager->getRenderSize(qmlSize);
+
+    /* Don't recreate fbo unless it's null or its size is wrong. */
+    if (renderFBO == nullptr || renderFBO->size() != qmlSize)
+        createFBO();
+
+    window->contentItem()->setSize(qmlSize);
+}
+
+void DVRenderer::onFrameSwapped() {
     /* None of the built-in modes hold the mouse. */
     holdMouse = false;
 
     window->update();
 }
 
-void DVWindowHook::loadShaders() {
+void DVRenderer::loadShaders() {
     shaderAnaglyph      = new QOpenGLShaderProgram(openglContext());
     shaderSideBySide    = new QOpenGLShaderProgram(openglContext());
     shaderTopBottom     = new QOpenGLShaderProgram(openglContext());
@@ -227,7 +262,7 @@ void DVWindowHook::loadShaders() {
     loadShader(*shaderSphere,       ":/glsl/sphere.vsh",   ":/glsl/sphere.fsh");
 }
 
-void DVWindowHook::loadShader(QOpenGLShaderProgram& shader, const char* vshader, const char* fshader) {
+void DVRenderer::loadShader(QOpenGLShaderProgram& shader, const char* vshader, const char* fshader) {
     /* Load the shaders from the qrc. */
     shader.addShaderFromSourceFile(QOpenGLShader::Vertex, vshader);
 
@@ -257,7 +292,7 @@ void DVWindowHook::loadShader(QOpenGLShaderProgram& shader, const char* vshader,
     shader.setUniformValue("textureR", DVStereoEye::RightEye);
 }
 
-void DVWindowHook::createFBO() {
+void DVRenderer::createFBO() {
     openglContext()->makeCurrent(window);
 
     /* Delete the old FBO if it exsists. */
@@ -285,22 +320,22 @@ void DVWindowHook::createFBO() {
     window->setRenderTarget(renderFBO);
 }
 
-const QOpenGLFramebufferObject& DVWindowHook::getInterfaceFramebuffer() {
+const QOpenGLFramebufferObject& DVRenderer::getInterfaceFramebuffer() {
     return *renderFBO;
 }
 
-GLuint DVWindowHook::getInterfaceTexture(DVStereoEye::Type eye) const {
-    return renderFBO->textures()[qmlCommunication->swapEyes() ? 1-eye : eye];
+GLuint DVRenderer::getInterfaceTexture(DVStereoEye::Type eye) const {
+    return renderFBO->textures()[qmlCommunication.swapEyes() ? 1-eye : eye];
 }
 
-QSGTexture* DVWindowHook::getCurrentTexture(QRectF& left, QRectF& right) {
-    getTextureRects(left, right, qmlCommunication->openImageTexture(),
-                    folderListing->currentFileStereoSwap(), folderListing->currentFileStereoMode());
+QSGTexture* DVRenderer::getCurrentTexture(QRectF& left, QRectF& right) {
+    getTextureRects(left, right, qmlCommunication.openImageTexture(),
+                    folderListing.currentFileStereoSwap(), folderListing.currentFileStereoMode());
 
-    return qmlCommunication->openImageTexture();
+    return qmlCommunication.openImageTexture();
 }
 
-void DVWindowHook::getTextureRects(QRectF& left, QRectF& right, QSGTexture* texture, bool swap, DVSourceMode::Type mode) {
+void DVRenderer::getTextureRects(QRectF& left, QRectF& right, QSGTexture* texture, bool swap, DVSourceMode::Type mode) {
     if (texture == nullptr) return;
 
     right = left = texture->normalizedTextureSubRect();
@@ -332,7 +367,7 @@ void DVWindowHook::getTextureRects(QRectF& left, QRectF& right, QSGTexture* text
     }
 }
 
-void DVWindowHook::renderStandardSphere() {
+void DVRenderer::renderStandardSphere() {
     QOpenGLExtraFunctions* f = openglContext()->extraFunctions();
 
     /* Enable the vertex and UV arrays. */
@@ -352,7 +387,7 @@ void DVWindowHook::renderStandardSphere() {
     sphereTris.release();
 }
 
-void DVWindowHook::renderStandardQuad() {
+void DVRenderer::renderStandardQuad() {
     static const float quad[] {
         -1.0f,-1.0f,
          1.0f,-1.0f,
@@ -379,10 +414,10 @@ void DVWindowHook::renderStandardQuad() {
      f->glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
-void DVWindowHook::doStandardSetup() {
+void DVRenderer::doStandardSetup() {
     QOpenGLExtraFunctions* f = openglContext()->extraFunctions();
 
-    if (qmlCommunication->openImageTexture() && folderListing->isCurrentFileSurround()) {
+    if (qmlCommunication.openImageTexture() && folderListing.isCurrentFileSurround()) {
         f->glViewport(0, 0, qmlSize.width(), qmlSize.height());
 
         f->glEnable(GL_BLEND);
@@ -400,11 +435,11 @@ void DVWindowHook::doStandardSetup() {
 
         QMatrix4x4 mat;
         /* Create a camera matrix using the surround FOV from QML and the aspect ratio of the FBO. */
-        mat.perspective(qmlCommunication->surroundFOV(), float(qmlSize.width()) / float(qmlSize.height()), 0.01f, 1.0f);
+        mat.perspective(qmlCommunication.surroundFOV(), float(qmlSize.width()) / float(qmlSize.height()), 0.01f, 1.0f);
 
         /* Rotate the matrix based on pan values. */
-        mat.rotate(qmlCommunication->surroundPan().y(), 1.0f, 0.0f, 0.0f);
-        mat.rotate(qmlCommunication->surroundPan().x(), 0.0f, 1.0f, 0.0f);
+        mat.rotate(qmlCommunication.surroundPan().y(), 1.0f, 0.0f, 0.0f);
+        mat.rotate(qmlCommunication.surroundPan().x(), 0.0f, 1.0f, 0.0f);
 
         /* Upload to shader. */
         shaderSphere->setUniformValue("cameraMatrix", mat);

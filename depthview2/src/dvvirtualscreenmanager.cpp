@@ -1,5 +1,5 @@
 #include "dvvirtualscreenmanager.hpp"
-#include "dvwindowhook.hpp"
+#include "dvrenderer.hpp"
 #include "dv_vrdriver.hpp"
 #include "dvqmlcommunication.hpp"
 #include "dvfolderlisting.hpp"
@@ -16,25 +16,27 @@
 #include <cmath>
 #include <array>
 
-DV_VRDriver::DV_VRDriver(DVWindowHook* w, DVVirtualScreenManager* m) : window(w), manager(m) {
-    window->settings.beginGroup("VRSettings");
+DV_VRDriver::DV_VRDriver(DVRenderer* r, DVVirtualScreenManager* m) : renderer(r), manager(m) {
+    QSettings& settings = renderer->settings;
 
-    lockMouse = window->settings.value("LockMouse", false).toBool();
-    mirrorUI = window->settings.value("MirrorUI", true).toBool();
-    snapSurroundPan = window->settings.value("SnapSurroundPan", true).toBool();
+    settings.beginGroup("VRSettings");
 
-    screenCurve = window->settings.value("ScreenCurve", 0.5).toReal();
-    screenSize = window->settings.value("ScreenSize", 4.0).toReal();
-    screenDistance = window->settings.value("ScreenDistance", 8.0).toReal();
-    screenHeight = window->settings.value("ScreenHeight", 2.0).toReal();
-    renderSizeFac = window->settings.value("RenderSizeFac", 1.0).toReal();
+    lockMouse = settings.value("LockMouse", false).toBool();
+    mirrorUI = settings.value("MirrorUI", true).toBool();
+    snapSurroundPan = settings.value("SnapSurroundPan", true).toBool();
 
-    backgroundImage = QUrl::fromLocalFile(window->settings.value("BackgroundImage", "").toString());
-    backgroundPan = window->settings.value("BackgroundPan", 0.0).toReal();
-    backgroundDim = window->settings.value("BackgroundDim", 0.0).toReal();
-    backgroundSourceMode = DVSourceMode::fromString(window->settings.value("BackgroundSourceMode", "Mono").toByteArray());
+    screenCurve = settings.value("ScreenCurve", 0.5).toReal();
+    screenSize = settings.value("ScreenSize", 4.0).toReal();
+    screenDistance = settings.value("ScreenDistance", 8.0).toReal();
+    screenHeight = settings.value("ScreenHeight", 2.0).toReal();
+    renderSizeFac = settings.value("RenderSizeFac", 1.0).toReal();
 
-    window->settings.endGroup();
+    backgroundImage = QUrl::fromLocalFile(settings.value("BackgroundImage", "").toString());
+    backgroundPan = settings.value("BackgroundPan", 0.0).toReal();
+    backgroundDim = settings.value("BackgroundDim", 0.0).toReal();
+    backgroundSourceMode = DVSourceMode::fromString(settings.value("BackgroundSourceMode", "Mono").toByteArray());
+
+    settings.endGroup();
 }
 
 const DV_VRDriver::RayHit DV_VRDriver::screenTrace(const Ray& ray) const {
@@ -96,9 +98,10 @@ bool DV_VRDriver::setError(const QString& error) {
     return false;
 }
 
-DVVirtualScreenManager::DVVirtualScreenManager(DVWindowHook* parent) : QObject(parent) {
+DVVirtualScreenManager::DVVirtualScreenManager(DVRenderer* parent, DVQmlCommunication& q, DVFolderListing& f)
+    : QObject(parent), qmlCommunication(q), folderListing(f), settings(parent->settings) {
     driver = nullptr;
-    window = parent;
+    renderer = parent;
 
     /* Update screen geometry when any of the screen settings change. */
     connect(this, &DVVirtualScreenManager::screenCurveChanged, this, &DVVirtualScreenManager::updateScreen);
@@ -113,7 +116,7 @@ DVVirtualScreenManager::~DVVirtualScreenManager() {
 
 bool DVVirtualScreenManager::init() {
 #ifdef DV_OPENVR
-    driver = DV_VRDriver::createOpenVRDriver(window, this);
+    driver = DV_VRDriver::createOpenVRDriver(renderer, this);
 #endif
 
     /* Update the settings values now that they've been loaded. */
@@ -147,8 +150,8 @@ QString DVVirtualScreenManager::getErrorString() {
     return driver->errorString;
 }
 
-bool DVVirtualScreenManager::render() {
-    return driver != nullptr && !isError() && driver->render(window->openglContext()->extraFunctions(), window);
+bool DVVirtualScreenManager::render(DVInputInterface* input) {
+    return driver != nullptr && !isError() && driver->render(renderer->openglContext()->extraFunctions(), input);
 }
 
 void DVVirtualScreenManager::frameSwapped() {
@@ -171,7 +174,7 @@ void DVVirtualScreenManager::updateScreen() {
     float z = driver->screenHeight;
     float size = driver->screenSize;
 
-    float height = size / (float(window->qmlSize.width()) / float(window->qmlSize.height()));
+    float height = size / (float(renderer->qmlSize.width()) / float(renderer->qmlSize.height()));
 
     /* Get rid of any previous geometry. */
     driver->screen.clear();
@@ -204,7 +207,7 @@ bool DVVirtualScreenManager::lockMouse() const {
 }
 
 void DVVirtualScreenManager::setLockMouse(bool lock) {
-    window->settings.setValue("VRSettings/LockMouse", lock);
+    settings.setValue("VRSettings/LockMouse", lock);
 
     if (driver != nullptr && driver->lockMouse != lock) {
         driver->lockMouse = lock;
@@ -216,7 +219,7 @@ bool DVVirtualScreenManager::mirrorUI() const {
     return driver != nullptr && driver->mirrorUI;
 }
 void DVVirtualScreenManager::setMirrorUI(bool mirror) {
-    window->settings.setValue("VRSettings/MirrorUI", mirror);
+    settings.setValue("VRSettings/MirrorUI", mirror);
 
     if (driver != nullptr && driver->mirrorUI != mirror) {
         driver->mirrorUI = mirror;
@@ -228,7 +231,7 @@ bool DVVirtualScreenManager::snapSurroundPan() const {
     return driver != nullptr && driver->snapSurroundPan;
 }
 void DVVirtualScreenManager::setSnapSurroundPan(bool snap) {
-    window->settings.setValue("VRSettings/SnapSurroundPan", snap);
+    settings.setValue("VRSettings/SnapSurroundPan", snap);
 
     if (driver != nullptr && driver->snapSurroundPan != snap) {
         driver->snapSurroundPan = snap;
@@ -240,7 +243,7 @@ qreal DVVirtualScreenManager::screenCurve() const {
     return driver != nullptr ? driver->screenCurve : 0.0;
 }
 void DVVirtualScreenManager::setScreenCurve(qreal curve) {
-    window->settings.setValue("VRSettings/ScreenCurve", curve);
+    settings.setValue("VRSettings/ScreenCurve", curve);
 
     if (driver != nullptr && driver->screenCurve != curve) {
         driver->screenCurve = curve;
@@ -252,7 +255,7 @@ qreal DVVirtualScreenManager::screenSize() const {
     return driver != nullptr ? driver->screenSize : 0.0;
 }
 void DVVirtualScreenManager::setScreenSize(qreal size) {
-    window->settings.setValue("VRSettings/ScreenSize", size);
+    settings.setValue("VRSettings/ScreenSize", size);
 
     if (driver != nullptr && driver->screenSize != size) {
         driver->screenSize = size;
@@ -264,7 +267,7 @@ qreal DVVirtualScreenManager::screenDistance() const {
     return driver != nullptr ? driver->screenDistance : 0.0;
 }
 void DVVirtualScreenManager::setScreenDistance(qreal distance) {
-    window->settings.setValue("VRSettings/ScreenDistance", distance);
+    settings.setValue("VRSettings/ScreenDistance", distance);
 
     if (driver != nullptr && driver->screenDistance != distance) {
         driver->screenDistance = distance;
@@ -276,7 +279,7 @@ qreal DVVirtualScreenManager::screenHeight() const {
 return driver != nullptr ? driver->screenHeight : 0.0;
 }
 void DVVirtualScreenManager::setScreenHeight(qreal height) {
-    window->settings.setValue("VRSettings/ScreenHeight", height);
+    settings.setValue("VRSettings/ScreenHeight", height);
 
     if (driver != nullptr && driver->screenHeight != height) {
         driver->screenHeight = height;
@@ -288,7 +291,7 @@ qreal DVVirtualScreenManager::renderSizeFac() const {
     return driver != nullptr ? driver->renderSizeFac : 0.0;
 }
 void DVVirtualScreenManager::setRenderSizeFac(qreal fac) {
-    window->settings.setValue("VRSettings/RenderSizeFac", fac);
+    settings.setValue("VRSettings/RenderSizeFac", fac);
 
     if (driver != nullptr && driver->renderSizeFac != fac) {
         driver->renderSizeFac = fac;
@@ -303,7 +306,7 @@ void DVVirtualScreenManager::setBackgroundImage(QUrl image) {
     /* Ignore if the file doesn't exist, unless the path is empty in which case continue so as to clear the setting. */
     if (!QFile::exists(image.toLocalFile()) && !image.isEmpty()) return;
 
-    window->settings.setValue("VRSettings/BackgroundImage", image.toLocalFile());
+    settings.setValue("VRSettings/BackgroundImage", image.toLocalFile());
 
     if (driver != nullptr && driver->backgroundImage != image) {
         driver->backgroundImage = image;
@@ -315,7 +318,7 @@ DVSourceMode::Type DVVirtualScreenManager::backgroundSourceMode() const {
     return driver != nullptr ? driver->backgroundSourceMode : DVSourceMode::Mono;
 }
 void DVVirtualScreenManager::setBackgroundSourceMode(DVSourceMode::Type mode) {
-    window->settings.setValue("VRSettings/BackgroundSourceMode", DVSourceMode::toString(mode));
+    settings.setValue("VRSettings/BackgroundSourceMode", DVSourceMode::toString(mode));
 
     if (driver != nullptr && driver->backgroundSourceMode != mode) {
         driver->backgroundSourceMode = mode;
@@ -327,7 +330,7 @@ bool DVVirtualScreenManager::backgroundSwap() const {
     return driver != nullptr && driver->backgroundSwap;
 }
 void DVVirtualScreenManager::setBackgroundSwap(bool swap) {
-    window->settings.setValue("VRSettings/BackgroundSwap", swap);
+    settings.setValue("VRSettings/BackgroundSwap", swap);
 
     if (driver != nullptr && driver->backgroundSwap != swap) {
         driver->backgroundSwap = swap;
@@ -339,7 +342,7 @@ qreal DVVirtualScreenManager::backgroundPan() const {
     return driver != nullptr ? driver->backgroundPan : 0.0;
 }
 void DVVirtualScreenManager::setBackgroundPan(qreal pan) {
-    window->settings.setValue("VRSettings/BackgroundPan", pan);
+    settings.setValue("VRSettings/BackgroundPan", pan);
 
     if (driver != nullptr && driver->backgroundPan != pan) {
         driver->backgroundPan = pan;
@@ -351,7 +354,7 @@ qreal DVVirtualScreenManager::backgroundDim() const {
     return driver != nullptr ? driver->backgroundDim : 0.0;
 }
 void DVVirtualScreenManager::setBackgroundDim(qreal dim) {
-    window->settings.setValue("VRSettings/BackgroundDim", dim);
+    settings.setValue("VRSettings/BackgroundDim", dim);
 
     if (driver != nullptr && driver->backgroundDim != dim) {
         driver->backgroundDim = dim;
@@ -382,15 +385,15 @@ QString DVVirtualScreenManager::errorString() const {
 }
 
 bool DVVirtualScreenManager::isCurrentFileSurround() const {
-    return window->folderListing->isCurrentFileSurround();
+    return folderListing.isCurrentFileSurround();
 }
 qreal DVVirtualScreenManager::surroundPan() const {
-    return window->qmlCommunication->surroundPan().x();
+    return qmlCommunication.surroundPan().x();
 }
 void DVVirtualScreenManager::setSurroundPan(qreal pan) {
-    window->qmlCommunication->setSurroundPan(QPointF(pan, 0.0));
+    qmlCommunication.setSurroundPan(QPointF(pan, 0.0));
 }
 
 QPointF DVVirtualScreenManager::pointFromScreenUV(const QVector2D& uv) const {
-    return QPointF(uv.x() * window->qmlSize.width(), (1.0f - uv.y()) * window->qmlSize.height());
+    return QPointF(uv.x() * renderer->qmlSize.width(), (1.0f - uv.y()) * renderer->qmlSize.height());
 }

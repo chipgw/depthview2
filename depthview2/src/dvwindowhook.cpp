@@ -2,6 +2,7 @@
 #include "dvwindowhook.hpp"
 #include "dvqmlcommunication.hpp"
 #include "dvfolderlisting.hpp"
+#include "dvrenderer.hpp"
 #include "dvthumbnailprovider.hpp"
 #include "dvpluginmanager.hpp"
 #include "dvfilevalidator.hpp"
@@ -15,7 +16,6 @@
 #include <QCommandLineParser>
 #include <QMessageBox>
 #include <QMimeData>
-#include <QOpenGLFramebufferObject>
 #include <QSqlDatabase>
 #include <AVPlayer.h>
 
@@ -27,7 +27,7 @@
 #define SETTINGS_ARGS QSettings::IniFormat, QSettings::UserScope, QApplication::organizationName(), QApplication::applicationName()
 #endif
 
-DVWindowHook::DVWindowHook(QQmlApplicationEngine* engine) : QObject(engine), settings(SETTINGS_ARGS), renderFBO(nullptr), sphereTris(QOpenGLBuffer::IndexBuffer) {
+DVWindowHook::DVWindowHook(QQmlApplicationEngine* engine) : QObject(engine), settings(SETTINGS_ARGS) {
     /* Use the path of the settings file to get the path for the database. */
     QString path = settings.fileName();
     path.remove(path.lastIndexOf('.'), path.length()).append(".db");
@@ -40,7 +40,7 @@ DVWindowHook::DVWindowHook(QQmlApplicationEngine* engine) : QObject(engine), set
     qmlCommunication = new DVQmlCommunication(this, settings);
     folderListing = new DVFolderListing(this, settings);
     pluginManager = new DVPluginManager(this, settings);
-    vrManager = new DVVirtualScreenManager(this);
+    renderer = new DVRenderer(settings, *qmlCommunication, *folderListing);
 
     /* Let these classes see each other. */
     qmlCommunication->folderListing = folderListing;
@@ -49,7 +49,7 @@ DVWindowHook::DVWindowHook(QQmlApplicationEngine* engine) : QObject(engine), set
     engine->rootContext()->setContextProperty("DepthView", qmlCommunication);
     engine->rootContext()->setContextProperty("FolderListing", folderListing);
     engine->rootContext()->setContextProperty("PluginManager", pluginManager);
-    engine->rootContext()->setContextProperty("VRManager", vrManager);
+    engine->rootContext()->setContextProperty("VRManager", renderer->vrManager);
 
     engine->addImageProvider("video", new DVThumbnailProvider);
 
@@ -72,21 +72,15 @@ DVWindowHook::DVWindowHook(QQmlApplicationEngine* engine) : QObject(engine), set
     if (window == nullptr)
         qFatal("Unable to get window from QML!");
 
+    renderer->setWindow(window);
+
     /* We render a cursor inside QML so it is shown for both eyes. */
     window->setCursor(Qt::BlankCursor);
 
     window->setMinimumSize(QSize(1000, 500));
     window->setGeometry(0, 0, 1000, 600);
 
-    connect(window, &QQuickWindow::frameSwapped, this, &DVWindowHook::onFrameSwapped, Qt::DirectConnection);
-    connect(window, &QQuickWindow::sceneGraphInitialized, this, &DVWindowHook::initializeGL, Qt::DirectConnection);
-    connect(window, &QQuickWindow::sceneGraphInvalidated, this, &DVWindowHook::shutdownGL, Qt::DirectConnection);
-    connect(window, &QQuickWindow::afterRendering, this, &DVWindowHook::paintGL, Qt::DirectConnection);
-    connect(window, &QQuickWindow::beforeRendering, this, &DVWindowHook::preSync, Qt::DirectConnection);
-
-    /* Update the screen when the window size changes. */
-    connect(window, &QWindow::widthChanged, vrManager, &DVVirtualScreenManager::updateScreen);
-    connect(window, &QWindow::heightChanged, vrManager, &DVVirtualScreenManager::updateScreen);
+    connect(window, &QQuickWindow::beforeSynchronizing, this, &DVWindowHook::preSync, Qt::DirectConnection);
 
     /* This is the root item, make it so. */
     window->setColor(QColor(0, 0, 0, 0));
@@ -122,25 +116,8 @@ DVWindowHook::~DVWindowHook() {
     }
 }
 
-void DVWindowHook::updateQmlSize() {
-    qmlSize = window->size();
-
-    /* If Side-by-Side and not anamorphic we only render QML at half of the window size (horizontally). */
-    if (qmlCommunication->drawMode() == DVDrawMode::SideBySide && !qmlCommunication->anamorphicDualView())
-        qmlSize.setWidth(qmlSize.width() / 2);
-
-    /* If Top/Bottom and not anamorphic we only render QML at half of the window size (vertically). */
-    else if (qmlCommunication->drawMode() == DVDrawMode::TopBottom && !qmlCommunication->anamorphicDualView())
-        qmlSize.setHeight(qmlSize.height() / 2);
-
-    else if (qmlCommunication->drawMode() == DVDrawMode::VirtualReality)
-        qmlSize = vrManager->getRenderSize(qmlSize);
-
-    /* Don't recreate fbo unless it's null or its size is wrong. */
-    if (renderFBO == nullptr || renderFBO->size() != qmlSize)
-        createFBO();
-
-    window->contentItem()->setSize(qmlSize);
+void DVWindowHook::preSync() {
+    pluginManager->doPluginInput(this);
 }
 
 void DVWindowHook::updateTitle() {
@@ -155,8 +132,8 @@ bool DVWindowHook::eventFilter(QObject*, QEvent* e) {
             QPoint pos = window->mapFromGlobal(QCursor::pos());
 
             /* Generate a new coordinate on screen. */
-            pos.setX(qBound(1, pos.x(), qmlSize.width()-1));
-            pos.setY(qBound(1, pos.y(), qmlSize.height()-1));
+            pos.setX(qBound(1, pos.x(), renderer->qmlSize.width()-1));
+            pos.setY(qBound(1, pos.y(), renderer->qmlSize.height()-1));
 
             /* Will generate a new event. */
             QCursor::setPos(window->mapToGlobal(pos));
@@ -166,12 +143,12 @@ bool DVWindowHook::eventFilter(QObject*, QEvent* e) {
         break;
     case QEvent::MouseMove:
         /* If holding the mouse, make sure it's inside the QML render area. */
-        if (holdMouse && !QRect(QPoint(), qmlSize).contains(window->mapFromGlobal(QCursor::pos()), true)) {
+        if (holdMouse && !QRect(QPoint(), renderer->qmlSize).contains(window->mapFromGlobal(QCursor::pos()), true)) {
             QPoint pos = window->mapFromGlobal(QCursor::pos());
 
             /* Generate a new coordinate on screen. */
-            pos.setX(qBound(1, pos.x(), qmlSize.width()-1));
-            pos.setY(qBound(1, pos.y(), qmlSize.height()-1));
+            pos.setX(qBound(1, pos.x(), renderer->qmlSize.width()-1));
+            pos.setY(qBound(1, pos.y(), renderer->qmlSize.height()-1));
 
             /* Will generate a new event. */
             QCursor::setPos(window->mapToGlobal(pos));

@@ -11,7 +11,7 @@ SOURCES += src/main.cpp \
     src/dvfilevalidator.cpp \
     src/dvvirtualscreenmanager.cpp \
     src/dvwindowhook.cpp \
-    src/dvwindowhook_gl.cpp
+    src/dvrenderer.cpp
 
 RESOURCES += qml.qrc
 
@@ -36,7 +36,8 @@ HEADERS += \
     include/dvconfig.hpp \
     include/dvvirtualscreenmanager.hpp \
     include/dv_vrdriver.hpp \
-    include/dvwindowhook.hpp
+    include/dvwindowhook.hpp \
+    include/dvrenderer.hpp
 
 INCLUDEPATH += include
 

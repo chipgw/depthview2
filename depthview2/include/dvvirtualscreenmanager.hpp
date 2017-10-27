@@ -7,8 +7,12 @@
 
 class DV_VRDriver;
 class DVInputInterface;
-class DVWindowHook;
+class DVQmlCommunication;
+class DVFolderListing;
+class DVRenderer;
+
 class QQuickItem;
+class QSettings;
 
 class DVVirtualScreenManager : public QObject {
     Q_OBJECT
@@ -34,7 +38,7 @@ class DVVirtualScreenManager : public QObject {
     Q_PROPERTY(QString errorString READ errorString NOTIFY errorChanged)
 
 public:
-    DVVirtualScreenManager(DVWindowHook* parent);
+    DVVirtualScreenManager(DVRenderer* parent, DVQmlCommunication& q, DVFolderListing& f);
     ~DVVirtualScreenManager();
 
     bool init();
@@ -42,7 +46,7 @@ public:
 
     QString getErrorString();
 
-    bool render();
+    bool render(DVInputInterface* input);
 
     QSize getRenderSize(const QSize& windowSize);
 
@@ -52,9 +56,13 @@ public:
 
     QPointF pointFromScreenUV(const QVector2D& uv) const;
 
+    DVQmlCommunication& qmlCommunication;
+    DVFolderListing& folderListing;
+
 private:
+    QSettings& settings;
     DV_VRDriver* driver;
-    DVWindowHook* window;
+    DVRenderer* renderer;
 
 public slots:
     void updateScreen();
