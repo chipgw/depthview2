@@ -4,6 +4,7 @@
 #include "dvfolderlisting.hpp"
 #include "dvpluginmanager.hpp"
 #include "dvvirtualscreenmanager.hpp"
+#include "dvwindowhook.hpp"
 #include <QQuickWindow>
 #include <QOpenGLFramebufferObject>
 #include <QOpenGLContext>
@@ -85,9 +86,8 @@ void makeSphere(uint32_t slices, uint32_t stacks, QOpenGLBuffer& sphereVerts, QO
     sphereTriCount = triangles.size();
 }
 
-DVRenderer::DVRenderer(QSettings& s, DVQmlCommunication& q, DVFolderListing& f)
-    : settings(s), qmlCommunication(q), folderListing(f), renderFBO(nullptr), sphereTris(QOpenGLBuffer::IndexBuffer) {
-
+DVRenderer::DVRenderer(DVWindowHook* wHook, QSettings& s, DVQmlCommunication& q, DVFolderListing& f)
+    : QObject(wHook), windowHook(wHook), settings(s), qmlCommunication(q), folderListing(f), renderFBO(nullptr), sphereTris(QOpenGLBuffer::IndexBuffer) {
     vrManager = new DVVirtualScreenManager(this, q, f);
 }
 
@@ -133,6 +133,9 @@ void DVRenderer::preSync() {
 }
 
 void DVRenderer::paintGL() {
+    /* Don't let DVWindowHook destructor run while we're still doing stuff. If it's already running don't render. */
+    if (!windowHook->deleteLock.tryLock()) return;
+
     /* Now we don't want QML messing us up. */
     window->resetOpenGLState();
 
@@ -186,7 +189,7 @@ void DVRenderer::paintGL() {
         shaderMono->setUniformValue("left", true);
         break;
     case DVDrawMode::VirtualReality:
-        if (vrManager->render(input)) {
+        if (vrManager->render(windowHook)) {
             QOpenGLFramebufferObject::bindDefault();
             window->resetOpenGLState();
 
@@ -201,16 +204,21 @@ void DVRenderer::paintGL() {
             openglContext()->extraFunctions()->glViewport(0, 0, window->width(), window->height());
             openglContext()->extraFunctions()->glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             openglContext()->extraFunctions()->glClear(GL_COLOR_BUFFER_BIT);
+
+            windowHook->deleteLock.unlock();
             return;
         }
         DV_FALLTHROUGH;
     default:
         /* Whoops, invalid renderer. Reset to Anaglyph... */
         qmlCommunication.setDrawMode(DVDrawMode::Anaglyph);
+        windowHook->deleteLock.unlock();
         return;
     }
 
     renderStandardQuad();
+
+    windowHook->deleteLock.unlock();
 }
 
 QOpenGLContext* DVRenderer::openglContext() {

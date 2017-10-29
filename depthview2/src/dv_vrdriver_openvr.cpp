@@ -1,5 +1,6 @@
 #include "dv_vrdriver.hpp"
 #include "dvrenderer.hpp"
+#include "dvinputinterface.hpp"
 #include <QOpenGLExtraFunctions>
 #include <QSGTextureProvider>
 #include <QQuickItem>

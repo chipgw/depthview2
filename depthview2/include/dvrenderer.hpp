@@ -2,16 +2,15 @@
 
 #include <QOpenGLShaderProgram>
 #include <QSettings>
-#include <QDir>
 #include <QOpenGLBuffer>
-#include "dvinputinterface.hpp"
+#include "dvenums.hpp"
 
 /* DepthView forward declarations. */
 class DVQmlCommunication;
 class DVFolderListing;
 class DVPluginManager;
 class DVVirtualScreenManager;
-class DVInputInterface;
+class DVWindowHook;
 
 /* Qt forward declarations. */
 class QQuickWindow;
@@ -33,7 +32,7 @@ class DVRenderer : public QObject {
     QQuickWindow* window;
 
 public:
-    DVRenderer(QSettings& s, DVQmlCommunication& q, DVFolderListing& f);
+    DVRenderer(DVWindowHook* wHook, QSettings& s, DVQmlCommunication& q, DVFolderListing& f);
 
     void setWindow(QQuickWindow* w);
 
@@ -65,7 +64,7 @@ public:
     DVQmlCommunication& qmlCommunication;
     DVFolderListing& folderListing;
     DVVirtualScreenManager* vrManager;
-    DVInputInterface* input;
+    DVWindowHook* windowHook;
 
     /* The size of the FBO QML is being rendered to. */
     QSize qmlSize;

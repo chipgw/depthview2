@@ -40,7 +40,7 @@ DVWindowHook::DVWindowHook(QQmlApplicationEngine* engine) : QObject(engine), set
     qmlCommunication = new DVQmlCommunication(this, settings);
     folderListing = new DVFolderListing(this, settings);
     pluginManager = new DVPluginManager(this, settings);
-    renderer = new DVRenderer(settings, *qmlCommunication, *folderListing);
+    renderer = new DVRenderer(this, settings, *qmlCommunication, *folderListing);
 
     /* Let these classes see each other. */
     qmlCommunication->folderListing = folderListing;
@@ -105,6 +105,9 @@ DVWindowHook::DVWindowHook(QQmlApplicationEngine* engine) : QObject(engine), set
 }
 
 DVWindowHook::~DVWindowHook() {
+    /* If the GL thread is currently rendering, wait for it to finish. */
+    deleteLock.lock();
+
     pluginManager->unloadPlugins();
 
     if (qmlCommunication->saveWindowState()) {

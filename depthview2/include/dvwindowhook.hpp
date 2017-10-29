@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QMutex>
 #include <QSettings>
 #include <QDir>
 #include "dvinputinterface.hpp"
@@ -92,6 +93,8 @@ public:
     /* ------------------------------ *
      * End DVInputInterface functions *
      * ------------------------------ */
+
+    QMutex deleteLock;
 
 public slots:
     void preSync();
