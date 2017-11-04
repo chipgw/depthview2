@@ -116,14 +116,13 @@ Window {
 
     Item {
         /* Start out off-screen so if the position doesn't get set it won't show up in the corner. */
-        x: -fakeCursorImage.width
-        y: -fakeCursorImage.height
+        x: -childrenRect.width
+        y: -childrenRect.height
 
         id: fakeCursor
         property bool isDot: false
 
         Image {
-            id: fakeCursorImage
             source: parent.isDot ? "qrc:/images/vrcursor.png" : "qrc:/images/cursor.png"
             x: parent.isDot ? -width / 2 : 0
             y: parent.isDot ? -height / 2 : 0
