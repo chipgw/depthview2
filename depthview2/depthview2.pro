@@ -52,6 +52,7 @@ openvr: {
     DEPENDPATH += $$PWD/../../openvr/headers
 
     SOURCES += src/dv_vrdriver_openvr.cpp
+    HEADERS += include/dv_vrdriver_openvr.hpp
 
     DEFINES += DV_OPENVR
 }

@@ -198,7 +198,7 @@ bool DVWindowHook::eventFilter(QObject*, QEvent* e) {
                 }
             }
         }
-        /* Don't relay the event to QOpenGLWindow. */
+        /* Don't relay the event to QQuickWindow. */
         return true;
     }
     default:
