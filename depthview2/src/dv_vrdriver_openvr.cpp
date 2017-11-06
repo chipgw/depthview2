@@ -52,6 +52,7 @@ DV_VRDriver_OpenVR::DV_VRDriver_OpenVR(DVRenderer* w, DVVirtualScreenManager* m)
     /* Video player secondary device mappings. */
     buttonActions[DVInputMode::VideoPlayer][false][vr::k_EButton_Grip] =            { &DVInputInterface::fileInfo };
     buttonActions[DVInputMode::VideoPlayer][false][vr::k_EButton_ApplicationMenu] = { &DVInputInterface::openFileBrowser };
+    buttonActions[DVInputMode::VideoPlayer][false][vr::k_EButton_A]               = { &DVInputInterface::takeSnapshot };
     axisActions[DVInputMode::VideoPlayer][false][PositiveX] =                       { &DVInputInterface::nextFile };
     axisActions[DVInputMode::VideoPlayer][false][NegativeX] =                       { &DVInputInterface::previousFile };
 

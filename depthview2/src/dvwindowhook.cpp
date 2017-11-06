@@ -18,6 +18,7 @@
 #include <QMimeData>
 #include <QSqlDatabase>
 #include <AVPlayer.h>
+#include <VideoCapture.h>
 
 #ifdef DV_PORTABLE
 /* Portable builds store settings in a "DepthView.conf" next to the application executable. */
@@ -89,6 +90,8 @@ DVWindowHook::DVWindowHook(QQmlApplicationEngine* engine) : QObject(engine), set
     if (player == nullptr)
         qFatal("Unable to find AVPlayer!");
 
+    connect(player->videoCapture(), &QtAV::VideoCapture::saved, this, &DVWindowHook::imageCaptured, Qt::DirectConnection);
+
     /* The setGeometry() and setState() calls may try to set the qmlRoot geometry,
      * which means this needs to be done after QML is all set up. */
     if (settings.childGroups().contains("Window")) {
@@ -125,6 +128,14 @@ void DVWindowHook::preSync() {
 
 void DVWindowHook::updateTitle() {
    window->setTitle((folderListing->fileBrowserOpen() ? folderListing->currentDir().toLocalFile() : folderListing->currentFile()) + " - DepthView");
+}
+
+void DVWindowHook::imageCaptured(const QString& filename) {
+    QFileInfo info(filename);
+    /* Copy the database info for the current file to the new file (excluding audio track because this is an image). */
+    folderListing->updateRecordForFile(info, "stereoMode", folderListing->currentFileStereoMode());
+    folderListing->updateRecordForFile(info, "stereoSwap", folderListing->currentFileStereoSwap());
+    folderListing->updateRecordForFile(info, "surround", folderListing->isCurrentFileSurround());
 }
 
 bool DVWindowHook::eventFilter(QObject*, QEvent* e) {
@@ -353,6 +364,11 @@ void DVWindowHook::mute() {
 void DVWindowHook::setVolume(qreal volume) {
     /* Call as a queued connection in case this is called from the OpenGL thread. */
     staticMetaObject.invokeMethod(this, "setVolumeImpl", Qt::QueuedConnection, Q_ARG(qreal, volume));
+}
+
+void DVWindowHook::takeSnapshot() {
+    if (folderListing->isCurrentFileVideo())
+        player->videoCapture()->capture();
 }
 
 void DVWindowHook::muteImpl() {

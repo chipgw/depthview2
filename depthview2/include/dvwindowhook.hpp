@@ -83,6 +83,8 @@ public:
     void mute();
     void setVolume(qreal volume);
 
+    void takeSnapshot();
+
     /* Object to send simulated mouse/keyboard events to. */
     QObject* inputEventObject();
 
@@ -100,6 +102,8 @@ public slots:
     void preSync();
 
     void updateTitle();
+
+    void imageCaptured(const QString& filename);
 
 protected:
     bool eventFilter(QObject*, QEvent* event);

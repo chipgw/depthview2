@@ -50,6 +50,8 @@ public:
     virtual void mute() = 0;
     virtual void setVolume(qreal volume) = 0;
 
+    virtual void takeSnapshot() = 0;
+
     /* Object to send simulated mouse/keyboard events to. */
     virtual QObject* inputEventObject() = 0;
 };
