@@ -64,6 +64,8 @@ DVWindowHook::DVWindowHook(QQmlApplicationEngine* engine) : QObject(engine), set
     connect(folderListing, &DVFolderListing::currentFileChanged, this, &DVWindowHook::updateTitle);
     connect(folderListing, &DVFolderListing::fileBrowserOpenChanged, this, &DVWindowHook::updateTitle);
 
+    connect(qmlCommunication, &DVQmlCommunication::takeSnapshot, this, &DVWindowHook::takeSnapshot);
+
     pluginManager->loadPlugins(engine);
 
     engine->load("qrc:/qml/Window.qml");

@@ -66,6 +66,14 @@ ToolBar {
                 }
 
                 MenuItem {
+                    text: qsTr("Take Snapshot")
+                    font: uiTextFont
+
+                    enabled: FolderListing.currentFileIsVideo
+                    onTriggered: DepthView.takeSnapshot()
+                }
+
+                MenuItem {
                     text: qsTr("File Info")
                     font: uiTextFont
 

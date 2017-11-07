@@ -127,6 +127,8 @@ signals:
     /* Used to show/hide ui based on touchscreen input. */
     void touchEvent();
 
+    Q_INVOKABLE void takeSnapshot();
+
     /* --------------------------------------------- *
      * Begin signals for DVInputInterface functions. *
      * (Only the ones that need to be used in QML.)  *
