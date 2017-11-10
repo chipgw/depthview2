@@ -92,7 +92,11 @@ DVWindowHook::DVWindowHook(QQmlApplicationEngine* engine) : QObject(engine), set
     if (player == nullptr)
         qFatal("Unable to find AVPlayer!");
 
+    if (settings.contains("SnapshotDir"))
+        player->videoCapture()->setCaptureDir(settings.value("SnapshotDir").toString());
+
     connect(player->videoCapture(), &QtAV::VideoCapture::saved, this, &DVWindowHook::imageCaptured, Qt::DirectConnection);
+    connect(folderListing, &DVFolderListing::snapshotDirChanged, player->videoCapture(), &QtAV::VideoCapture::setCaptureDir);
 
     /* The setGeometry() and setState() calls may try to set the qmlRoot geometry,
      * which means this needs to be done after QML is all set up. */

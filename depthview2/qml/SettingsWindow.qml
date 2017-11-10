@@ -69,6 +69,7 @@ Dialog {
                     startupFileBrowserCheckBox.checked = DepthView.startupFileBrowser
                     uiThemeComboBox.currentIndex = uiThemeComboBox.find(DepthView.uiTheme)
                     startDir.text = FolderListing.startDir
+                    snapshotSavePath.text = FolderListing.snapshotDir
                     hardwareAcceleratedVideoCheckBox.checked = DepthView.hardwareAcceleratedVideo
 
                     /* If the selection is invalid, use "Default", as that's what QML uses when none is set. */
@@ -81,6 +82,7 @@ Dialog {
                     DepthView.startupFileBrowser = startupFileBrowserCheckBox.checked
                     DepthView.uiTheme = uiThemeComboBox.currentText
                     FolderListing.startDir = startDir.text
+                    FolderListing.snapshotDir = snapshotSavePath.text
                     DepthView.hardwareAcceleratedVideo = hardwareAcceleratedVideoCheckBox.checked
                 }
 
@@ -138,25 +140,49 @@ Dialog {
 
                     GroupBox {
                         Layout.fillWidth: true
-                        title: qsTr("Startup Directory")
+                        title: qsTr("Directories")
 
-                        RowLayout {
+                        ColumnLayout {
                             width: parent.width
-                            TextField {
-                                id: startDir
+                            RowLayout {
                                 Layout.fillWidth: true
+                                TextField {
+                                    id: startDir
+                                    Layout.fillWidth: true
 
-                                placeholderText: qsTr("Startup Directory Path...")
-                                validator: FileValidator {
-                                    filterDir: true
+                                    placeholderText: qsTr("Startup Directory...")
+                                    validator: FileValidator {
+                                        filterDir: true
+                                    }
+                                    color: acceptableInput ? "green" : "red"
                                 }
-                                color: acceptableInput ? "green" : "red"
+
+                                Button {
+                                    text: qsTr("Use Current")
+
+                                    onClicked: startDir.text = FolderListing.decodeURL(FolderListing.currentDir)
+                                }
                             }
 
-                            Button {
-                                text: qsTr("Use Current")
+                            RowLayout {
+                                Layout.fillWidth: true
+                                TextField {
+                                    id: snapshotSavePath
+                                    Layout.fillWidth: true
 
-                                onClicked: startDir.text = FolderListing.decodeURL(FolderListing.currentDir)
+                                    placeholderText: qsTr("Video Snapshot Save Path...")
+                                    validator: FileValidator {
+                                        filterDir: true
+                                        folderListing: FolderListing
+                                    }
+                                    color: acceptableInput ? "green" : "red"
+                                }
+
+                                Button {
+                                    text: qsTr("Use Current")
+
+                                    onClicked: snapshotSavePath.text = FolderListing.decodeURL(FolderListing.currentDir)
+                                }
                             }
                         }
                     }

@@ -65,6 +65,7 @@ class DVFolderListing : public QAbstractListModel {
     Q_PROPERTY(bool fileBrowserOpen READ fileBrowserOpen WRITE setFileBrowserOpen NOTIFY fileBrowserOpenChanged)
 
     Q_PROPERTY(QString startDir READ startDir WRITE setStartDir NOTIFY startDirChanged)
+    Q_PROPERTY(QString snapshotDir READ snapshotDir WRITE setSnapshotDir NOTIFY snapshotDirChanged)
 
 public:
     explicit DVFolderListing(QObject* parent, QSettings& s);
@@ -184,6 +185,9 @@ public:
     QString startDir();
     void setStartDir(QString path);
 
+    QString snapshotDir();
+    void setSnapshotDir(QString path);
+
     bool fileBrowserOpen() const;
     void setFileBrowserOpen(bool open);
 
@@ -201,6 +205,7 @@ signals:
     void historyChanged();
     void bookmarksChanged();
     void startDirChanged();
+    void snapshotDirChanged(QString dir);
 
     void fileBrowserOpenChanged();
 

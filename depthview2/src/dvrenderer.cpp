@@ -87,7 +87,7 @@ void makeSphere(uint32_t slices, uint32_t stacks, QOpenGLBuffer& sphereVerts, QO
 }
 
 DVRenderer::DVRenderer(DVWindowHook* wHook, QSettings& s, DVQmlCommunication& q, DVFolderListing& f)
-    : QObject(wHook), windowHook(wHook), settings(s), qmlCommunication(q), folderListing(f), renderFBO(nullptr), sphereTris(QOpenGLBuffer::IndexBuffer) {
+    : QObject(wHook), settings(s), qmlCommunication(q), folderListing(f), windowHook(wHook), renderFBO(nullptr), sphereTris(QOpenGLBuffer::IndexBuffer) {
     vrManager = new DVVirtualScreenManager(this, q, f);
 }
 

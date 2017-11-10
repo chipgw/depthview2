@@ -521,6 +521,22 @@ void DVFolderListing::setStartDir(QString path) {
     }
 }
 
+QString DVFolderListing::snapshotDir() {
+    return settings.value("SnapshotDir").toString();
+}
+
+void DVFolderListing::setSnapshotDir(QString path) {
+    if (!settings.contains("SnapshotDir") || settings.value("SnapshotDir").toString() != path) {
+        /* Remove the setting entirely if set to an empty string. */
+        if (path.isEmpty())
+            settings.remove("SnapshotDir");
+        else
+            settings.setValue("SnapshotDir", path);
+
+        emit snapshotDirChanged(path);
+    }
+}
+
 bool DVFolderListing::fileBrowserOpen() const {
     return m_fileBrowserOpen;
 }
