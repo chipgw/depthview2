@@ -20,6 +20,9 @@ Popup {
         FolderListing.fileBrowserOpen = false;
     }
 
+    /* If the popup was closed but the value of fileBrowserOpen is still true call cancel to update values. */
+    onClosed: if (FolderListing.fileBrowserOpen) cancel()
+
     onOpened: startingFolder = FolderListing.currentDir
 
     Component {

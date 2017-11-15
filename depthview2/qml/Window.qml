@@ -180,14 +180,11 @@ Window {
 
     Shortcut {
         sequence: StandardKey.Open
-        context: Qt.ApplicationShortcut
-
         onActivated: FolderListing.fileBrowserOpen = true
     }
 
     Shortcut {
         sequence: "Right"
-        context: Qt.ApplicationShortcut
 
         enabled: !FolderListing.fileBrowserOpen && !settingsPopup.visible
 
@@ -195,7 +192,6 @@ Window {
     }
     Shortcut {
         sequence: "Left"
-        context: Qt.ApplicationShortcut
 
         enabled: !FolderListing.fileBrowserOpen && !settingsPopup.visible
 
@@ -203,7 +199,6 @@ Window {
     }
     Shortcut {
         sequence: "P"
-        context: Qt.ApplicationShortcut
 
         enabled: FolderListing.currentFileIsVideo && !FolderListing.fileBrowserOpen && !settingsPopup.visible
 
@@ -211,20 +206,14 @@ Window {
     }
     Shortcut {
         sequence: StandardKey.HelpContents
-        context: Qt.ApplicationShortcut
-
         onActivated: aboutBox.open()
     }
     Shortcut {
         sequence: StandardKey.FullScreen
-        context: Qt.ApplicationShortcut
-
         onActivated: DepthView.fullscreen = !DepthView.fullscreen
     }
     Shortcut {
         sequence: StandardKey.Preferences
-        context: Qt.ApplicationShortcut
-
         onActivated: settingsPopup.open()
     }
 
@@ -239,13 +228,6 @@ Window {
         mediaInfoBox.close()
         topMenu.closeMenus()
         bottomMenu.closeMenus()
-    }
-
-    /* The popup close policy escape shortcut isn't working, so take care of it here. */
-    Shortcut {
-        sequence: StandardKey.Cancel
-        context: Qt.ApplicationShortcut
-        onActivated: closePopups()
     }
 
     Image {
