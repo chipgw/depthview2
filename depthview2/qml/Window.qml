@@ -182,7 +182,10 @@ Window {
         sequence: StandardKey.Open
         onActivated: FolderListing.fileBrowserOpen = true
     }
-
+    Shortcut {
+        sequence: "S"
+        onActivated: DepthView.takeSnapshot()
+    }
     Shortcut {
         sequence: "Right"
 
