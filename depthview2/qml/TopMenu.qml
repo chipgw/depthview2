@@ -56,7 +56,6 @@ ToolBar {
             Menu {
                 id: fileMenu
                 y: parent.height
-                modal: true
 
                 MenuItem {
                     text: qsTr("Open...")
@@ -96,7 +95,6 @@ ToolBar {
             Menu {
                 id: modeMenu
                 y: parent.height
-                modal: true
 
                 ButtonGroup {
                     buttons: modeListColumn.children

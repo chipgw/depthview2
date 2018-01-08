@@ -5,7 +5,6 @@ import DepthView 2.0
 
 Dialog {
     id: root
-    modal: true
 
     function reset() {
         for (var i = 0; i < swipe.contentModel.count; ++i)
@@ -203,7 +202,6 @@ Dialog {
                 Dialog {
                     id: resetFileDB
                     title: "Are you sure?"
-                    modal: true
 
                     Label {
                         text: "All stored file information will be lost..."
@@ -216,7 +214,6 @@ Dialog {
                 Dialog {
                     id: resetPluginDB
                     title: "Are you sure?"
-                    modal: true
 
                     Label {
                         text: "All currently enabled plugins will be reset..."

@@ -52,7 +52,6 @@ Window {
     }
     Dialog {
         id: aboutBox
-        modal: true
 
         /* Anchors don't work on popups because they are appended to the window content item. */
         x: (parent.width - width) / 2
@@ -77,7 +76,6 @@ Window {
     }
     Dialog {
         id: mediaInfoBox
-        modal: true
 
         /* No anchors for some reason... */
         x: (parent.width - width) / 2

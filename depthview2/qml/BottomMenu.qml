@@ -107,7 +107,6 @@ ToolBar {
                     Menu {
                         id: sourceMode
                         y: -height
-                        modal: true
 
                         MenuItem {
                             id: stereoSwapMenuItem
@@ -251,7 +250,6 @@ ToolBar {
                     Menu {
                         id: audioTracksMenu
                         y: -height
-                        modal: true
 
                         ColumnLayout {
                             Repeater {
@@ -288,7 +286,6 @@ ToolBar {
                     Popup {
                         id: volumePopup
                         y: -height
-                        modal: true
 
                         Slider {
                             orientation: Qt.Vertical
