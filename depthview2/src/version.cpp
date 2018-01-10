@@ -1,4 +1,4 @@
-#include "include/version.hpp"
+#include "version.hpp"
 
 namespace version {
 
