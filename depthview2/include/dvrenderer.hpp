@@ -71,9 +71,13 @@ public:
 
     QOpenGLContext* openglContext();
 
+    bool lockMouse();
+
 public slots:
     void updateQmlSize();
     void onFrameSwapped();
+
+    void updateMouseLock();
 
 protected:
     void initializeGL();
@@ -96,8 +100,6 @@ private:
     QOpenGLBuffer sphereVerts;
     QOpenGLBuffer sphereTris;
     GLuint sphereTriCount;
-
-    bool holdMouse;
 
     void loadShaders();
     void loadShader(QOpenGLShaderProgram& shader, const char* vshader, const char* fshader);

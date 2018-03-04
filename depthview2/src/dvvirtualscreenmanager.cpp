@@ -159,7 +159,7 @@ void DVVirtualScreenManager::frameSwapped() {
 }
 
 QSize DVVirtualScreenManager::getRenderSize(const QSize& windowSize) {
-    return windowSize * ((driver != nullptr && driver->renderSizeFac > 0.5) ? driver->renderSizeFac : 1.0);
+    return windowSize * ((driver != nullptr && driver->renderSizeFac >= 0.5) ? driver->renderSizeFac : 1.0);
 }
 
 float interpolate(float v1, float v2, float a) {

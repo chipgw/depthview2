@@ -117,6 +117,4 @@ private:
     DVPluginManager* pluginManager;
     DVVirtualScreenManager* vrManager;
     QtAV::AVPlayer* player;
-
-    bool holdMouse;
 };

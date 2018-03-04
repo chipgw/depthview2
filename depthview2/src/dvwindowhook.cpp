@@ -146,24 +146,9 @@ void DVWindowHook::imageCaptured(const QString& filename) {
 
 bool DVWindowHook::eventFilter(QObject*, QEvent* e) {
     switch (e->type()) {
-    case QEvent::Leave:
-        /* TODO - This still doesn't always work right, but it's better than using setMouseGrabEnabled()... */
-        if (holdMouse) {
-            QPoint pos = window->mapFromGlobal(QCursor::pos());
-
-            /* Generate a new coordinate on screen. */
-            pos.setX(qBound(1, pos.x(), renderer->qmlSize.width()-1));
-            pos.setY(qBound(1, pos.y(), renderer->qmlSize.height()-1));
-
-            /* Will generate a new event. */
-            QCursor::setPos(window->mapToGlobal(pos));
-
-            return true;
-        }
-        break;
     case QEvent::MouseMove:
         /* If holding the mouse, make sure it's inside the QML render area. */
-        if (holdMouse && !QRect(QPoint(), renderer->qmlSize).contains(window->mapFromGlobal(QCursor::pos()), true)) {
+        if (renderer->lockMouse() && !QRect(QPoint(), renderer->qmlSize).contains(window->mapFromGlobal(QCursor::pos()), true)) {
             QPoint pos = window->mapFromGlobal(QCursor::pos());
 
             /* Generate a new coordinate on screen. */

@@ -89,6 +89,9 @@ void makeSphere(uint32_t slices, uint32_t stacks, QOpenGLBuffer& sphereVerts, QO
 DVRenderer::DVRenderer(DVWindowHook* wHook, QSettings& s, DVQmlCommunication& q, DVFolderListing& f)
     : QObject(wHook), settings(s), qmlCommunication(q), folderListing(f), windowHook(wHook), renderFBO(nullptr), sphereTris(QOpenGLBuffer::IndexBuffer) {
     vrManager = new DVVirtualScreenManager(this, q, f);
+
+    connect(vrManager, &DVVirtualScreenManager::lockMouseChanged, this, &DVRenderer::updateMouseLock);
+    connect(&qmlCommunication, &DVQmlCommunication::drawModeChanged, this, &DVRenderer::updateMouseLock);
 }
 
 void DVRenderer::setWindow(QQuickWindow *w) {
@@ -225,6 +228,15 @@ QOpenGLContext* DVRenderer::openglContext() {
     return window->openglContext();
 }
 
+bool DVRenderer::lockMouse() {
+    /* Only VR locks the mouse. */
+    return (qmlCommunication.drawMode() == DVDrawMode::VirtualReality) && vrManager->lockMouse();
+}
+
+void DVRenderer::updateMouseLock() {
+    window->setMouseGrabEnabled(lockMouse());
+}
+
 void DVRenderer::updateQmlSize() {
     qmlSize = window->size();
 
@@ -247,9 +259,6 @@ void DVRenderer::updateQmlSize() {
 }
 
 void DVRenderer::onFrameSwapped() {
-    /* None of the built-in modes hold the mouse. */
-    holdMouse = false;
-
     window->update();
 }
 
