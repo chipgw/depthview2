@@ -1,32 +1,26 @@
 #pragma once
 
-#include <QQuickAsyncImageProvider>
-#include <QQuickImageResponse>
+#include <QQuickImageProvider>
+#include <QMutex>
 #include <QtAV/VideoFrameExtractor.h>
 
-class DVThumbnailProvider : public QQuickAsyncImageProvider {
+class DVThumbnailProvider : public QObject, public QQuickImageProvider {
+    Q_OBJECT
+
+    QImage image;
+
+    QtAV::VideoFrameExtractor frameExtractor;
+    bool hadError;
+
+    QSize requestedFrameSize;
+    QSize originalFrameSize;
+
+    QMutex waitReady;
+
 public:
     DVThumbnailProvider();
 
-    QQuickImageResponse* requestImageResponse(const QString& id, const QSize& requestedSize);
-};
-
-class DVThumbnailResponse : public QQuickImageResponse {
-    Q_OBJECT
-
-    bool hadError;
-
-public:
-    DVThumbnailResponse();
-
-    QSize requestedSize;
-    QSize originalSize;
-    QtAV::VideoFrameExtractor frameExtractor;
-    QImage image;
-
-    QQuickTextureFactory* textureFactory() const;
-
-    QString errorString() const;
+    virtual QQuickTextureFactory* requestTexture(const QString& id, QSize* size, const QSize& requestedSize) override;
 
 public slots:
     void frameReceived(const QtAV::VideoFrame& frame);

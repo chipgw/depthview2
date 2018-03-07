@@ -1,21 +1,9 @@
 #include "dvthumbnailprovider.hpp"
+#include <QThread>
 
-DVThumbnailProvider::DVThumbnailProvider() : QQuickAsyncImageProvider() { }
-
-QQuickImageResponse* DVThumbnailProvider::requestImageResponse(const QString& id, const QSize& requestedSize) {
-    qDebug("Thumbnail load started for \"%s\".", qPrintable(id));
-
-    DVThumbnailResponse* response = new DVThumbnailResponse;
-
-    response->requestedSize = requestedSize;
-    response->frameExtractor.setSource(id);
-    response->frameExtractor.extract();
-
-    return response;
-}
-
-DVThumbnailResponse::DVThumbnailResponse() {
+DVThumbnailProvider::DVThumbnailProvider() : QQuickImageProvider(QQmlImageProviderBase::Texture) {
     frameExtractor.setAutoExtract(false);
+    frameExtractor.setAsync(false);
 
     /* We don't need it to be precise, and making it large reduces the chance that extraction will fail. */
     frameExtractor.setPrecision(500);
@@ -23,30 +11,42 @@ DVThumbnailResponse::DVThumbnailResponse() {
     /* TODO - Set dynamically based on video length... */
     frameExtractor.setPosition(60000);
 
-    connect(&frameExtractor, &QtAV::VideoFrameExtractor::frameExtracted, this, &DVThumbnailResponse::frameReceived);
-    connect(&frameExtractor, &QtAV::VideoFrameExtractor::error, this, &DVThumbnailResponse::frameError);
+    connect(&frameExtractor, &QtAV::VideoFrameExtractor::frameExtracted, this, &DVThumbnailProvider::frameReceived, Qt::DirectConnection);
+    connect(&frameExtractor, &QtAV::VideoFrameExtractor::error, this, &DVThumbnailProvider::frameError, Qt::DirectConnection);
+}
 
+QQuickTextureFactory* DVThumbnailProvider::requestTexture(const QString& id, QSize* size, const QSize& requestedSize) {
+    /* This only works one at a time. */
+    QMutexLocker locker(&waitReady);
+
+    /* Wait for a bit to be safe, sometimes if you change the source too fast it causes problems. */
+    QThread::msleep(100);
+
+    qDebug("Thumbnail load started for \"%s\".", qPrintable(id));
+
+    /* Reset the variables. */
     hadError = false;
-}
+    image = QImage();
+    originalFrameSize = QSize();
 
-void DVThumbnailResponse::frameReceived(const QtAV::VideoFrame& frame) {
-    originalSize = frame.size();
-    /* Scale the frame size to fit inside the requested size while maintaining aspect ratio. */
-    image = frame.toImage(QImage::Format_RGB32, originalSize.scaled(requestedSize, Qt::KeepAspectRatio));
+    requestedFrameSize = requestedSize;
+    frameExtractor.setSource(id);
+    frameExtractor.extract();
 
-    qDebug("Thumbnail for %s loaded.", qPrintable(frameExtractor.source()));
+    if (size)
+        *size = originalFrameSize;
 
-    emit finished();
-}
-
-void DVThumbnailResponse::frameError() {
-    hadError = true;
-}
-
-QQuickTextureFactory* DVThumbnailResponse::textureFactory() const {
     return QQuickTextureFactory::textureFactoryForImage(image);
 }
 
-QString DVThumbnailResponse::errorString() const {
-    return hadError ? "Error extracting frame!" : QString();
+void DVThumbnailProvider::frameReceived(const QtAV::VideoFrame& frame) {
+    originalFrameSize = frame.size();
+    /* Scale the frame size to fit inside the requested size while maintaining aspect ratio. */
+    image = frame.toImage(QImage::Format_RGB32, originalFrameSize.scaled(requestedFrameSize, Qt::KeepAspectRatio));
+
+    qDebug("Thumbnail for %s loaded.", qPrintable(frameExtractor.source()));
+}
+
+void DVThumbnailProvider::frameError() {
+    hadError = true;
 }
