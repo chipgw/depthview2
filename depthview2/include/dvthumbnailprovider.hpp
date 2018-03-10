@@ -22,6 +22,8 @@ public:
 
     virtual QQuickTextureFactory* requestTexture(const QString& id, QSize* size, const QSize& requestedSize) override;
 
+    bool tryLoadThumbnail(int retries, const QString& id);
+
 public slots:
     void frameReceived(const QtAV::VideoFrame& frame);
     void frameError();

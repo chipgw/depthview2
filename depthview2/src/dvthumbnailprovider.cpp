@@ -16,27 +16,40 @@ DVThumbnailProvider::DVThumbnailProvider() : QQuickImageProvider(QQmlImageProvid
 }
 
 QQuickTextureFactory* DVThumbnailProvider::requestTexture(const QString& id, QSize* size, const QSize& requestedSize) {
-    /* This only works one at a time. */
+    /* This only works for one thumbnail at a time. */
     QMutexLocker locker(&waitReady);
-
-    /* Wait for a bit to be safe, sometimes if you change the source too fast it causes problems. */
-    QThread::msleep(100);
 
     qDebug("Thumbnail load started for \"%s\".", qPrintable(id));
 
     /* Reset the variables. */
-    hadError = false;
     image = QImage();
     originalFrameSize = QSize();
 
     requestedFrameSize = requestedSize;
     frameExtractor.setSource(id);
-    frameExtractor.extract();
+
+    tryLoadThumbnail(4, id);
 
     if (size)
         *size = originalFrameSize;
 
     return QQuickTextureFactory::textureFactoryForImage(image);
+}
+
+bool DVThumbnailProvider::tryLoadThumbnail(int retries, const QString& id) {
+    hadError = false;
+
+    frameExtractor.extract();
+
+    if (!hadError) return true;
+
+    if (retries > 0) {
+        qDebug("Error loading thumbnail for \"%s\"! Trying %i more times...", qPrintable(id), retries);
+        return tryLoadThumbnail(--retries, id);
+    }
+    qDebug("Error loading thumbnail for \"%s\"! Giving up.", qPrintable(id));
+
+    return false;
 }
 
 void DVThumbnailProvider::frameReceived(const QtAV::VideoFrame& frame) {
