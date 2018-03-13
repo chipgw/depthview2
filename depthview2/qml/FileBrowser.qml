@@ -61,7 +61,7 @@ Popup {
 
                         text: qsTr("Type: ") + fileTypeString + "<br>" +
                               /* Only show size when not a directory. */
-                              (fileIsDir ? "" : qsTr("Size: ") + FolderListing.bytesToString(fileSize) + "<br>") +
+                              (fileIsDir ? fileSize + qsTr(" Files") : qsTr("Size: ") + FolderListing.bytesToString(fileSize)) + "<br>" +
                               qsTr("Created: ") + fileCreated + "<br>" +
                               FolderListing.decodeURL(fileURL)
 

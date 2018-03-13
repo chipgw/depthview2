@@ -376,7 +376,16 @@ QString DVFolderListing::currentFileInfo() const {
     return info;
 }
 QString DVFolderListing::fileTypeString(const QFileInfo& file) const {
-    return file.isDir() ? tr("Folder") : isFileStereoImage(file) ? tr("Stereo Image") : isFileVideo(file) ? tr("Video") : tr("Image");
+    if (file.isDir())
+        return tr("Folder");
+
+    QString videoImage = " " + (isFileVideo(file) ? tr("Video") : tr("Image"));
+    if (isFileSurround(file))
+        return tr("Surround") + videoImage;
+    if (fileStereoMode(file) != DVSourceMode::Mono)
+        return tr("3D") + videoImage;
+
+    return videoImage;
 }
 
 bool DVFolderListing::isFileStereoImage(const QFileInfo& info) const {
@@ -468,7 +477,8 @@ QVariant DVFolderListing::data(const QModelIndex& index, int role) const {
             data = isFileVideo(info);
             break;
         case FileSizeRole:
-            data = info.size();
+            /* TODO - Should the file count be filtered to just supported files or no? */
+            data = info.isDir() ? QDir(info.absoluteFilePath()).count() : info.size();
             break;
         case FileCreatedRole:
             data = info.created().toString();
