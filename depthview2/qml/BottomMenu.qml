@@ -55,10 +55,7 @@ ToolBar {
         RowLayout {
             id: playbackControls
 
-            anchors {
-                left: parent.left
-                right: parent.right
-            }
+            Layout.fillWidth: true
 
             /* Only show if currently on a video. */
             visible: FolderListing.currentFileIsVideo
@@ -87,10 +84,7 @@ ToolBar {
         }
 
         Item {
-            anchors {
-                left: parent.left
-                right: parent.right
-            }
+            Layout.fillWidth: true
             height: childrenRect.height
 
             RowLayout {

@@ -12,7 +12,6 @@ RowLayout {
 
     Label {
         id: label
-        anchors.verticalCenter: parent.verticalCenter
     }
     Slider {
         id: slider

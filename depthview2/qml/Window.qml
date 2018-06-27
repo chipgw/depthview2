@@ -62,8 +62,8 @@ Window {
 
             text: qsTr("<h1>DepthView %1
                   </h1>(%2)<p>DepthView is a basic application for viewing stereo 3D image and video files.</p>
-                  <p>DepthView website: <a href=\"https://github.com/chipgw/depthview2\">github.com/chipgw/depthview2</a></p>
-                  <p>Please report any bugs at: <a href=\"https://github.com/chipgw/depthview2/issues\">github.com/chipgw/depthview2/issues</a></p>")
+                  <p>DepthView website: <a href=\"https://gitlab.com/chipgw/depthview2\">gitlab.com/chipgw/depthview2</a></p>
+                  <p>Please report any bugs at: <a href=\"https://gitlab.com/chipgw/depthview2/issues\">gitlab.com/chipgw/depthview2/issues</a></p>")
                   .arg(DepthView.versionString()).arg(DepthView.gitVersion())
 
             /* Allow clicking links in the window. */

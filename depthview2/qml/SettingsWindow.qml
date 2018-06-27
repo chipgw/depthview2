@@ -114,7 +114,6 @@ Dialog {
 
                     RowLayout {
                         Label {
-                            anchors.verticalCenter: parent.verticalCenter
                             text: qsTr("UI Theme: ")
                         }
 
