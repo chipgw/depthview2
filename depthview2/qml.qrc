@@ -12,7 +12,7 @@
         <file>images/folder.pns</file>
         <file>qml/ImageViewer.qml</file>
         <file>glsl/interlaced.fsh</file>
-        <file>icons/MaterialIcons-Regular.ttf</file>
+        <file>icons/material/MaterialIcons-Regular.ttf</file>
         <file>qml/StereoShader.qml</file>
         <file>qml/SettingsWindow.qml</file>
         <file>qml/TopMenu.qml</file>
@@ -27,5 +27,7 @@
         <file>glsl/openvrscene.vsh</file>
         <file>images/vrcursor.png</file>
         <file>images/vrline.png</file>
+        <file>icons/logo.png</file>
+        <file>icons/logo.ico</file>
     </qresource>
 </RCC>

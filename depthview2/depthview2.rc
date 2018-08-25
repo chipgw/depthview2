@@ -1,6 +1,6 @@
 #include <windows.h>
 
-// IDI_ICON1     ICON    DISCARDABLE     ""
+IDI_ICON1     ICON    DISCARDABLE     "icons/logo.ico"
 
 #define VER_FILEVERSION             2,0,0,0
 #define VER_FILEVERSION_STR         "2.0 (Beta)"
@@ -24,7 +24,7 @@ VS_VERSION_INFO VERSIONINFO
       BEGIN
         VALUE "FileDescription", "3D Image and Video Player."
         VALUE "FileVersion", VER_FILEVERSION_STR
-        VALUE "LegalCopyright", "© 2015-2016 chipgw, released under the MIT license"
+        VALUE "LegalCopyright", "© 2015-2018 chipgw, released under the MIT license"
         VALUE "OriginalFilename", "depthview2.exe"
         VALUE "ProductName", "DepthView"
         VALUE "ProductVersion", VER_FILEVERSION_STR

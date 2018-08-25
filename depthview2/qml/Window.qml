@@ -13,7 +13,7 @@ Window {
 
     FontLoader {
         id: googleMaterialFontLoader
-        source: "qrc:/icons/MaterialIcons-Regular.ttf"
+        source: "qrc:/icons/material/MaterialIcons-Regular.ttf"
     }
 
     /* Default icon font settings. */
@@ -60,7 +60,7 @@ Window {
         Label {
             id: aboutLabel
 
-            text: qsTr("<h1>DepthView %1
+            text: qsTr("<h1><img source=\"qrc:/icons/logo.png\">DepthView %1
                   </h1>(%2)<p>DepthView is a basic application for viewing stereo 3D image and video files.</p>
                   <p>DepthView website: <a href=\"https://gitlab.com/chipgw/depthview2\">gitlab.com/chipgw/depthview2</a></p>
                   <p>Please report any bugs at: <a href=\"https://gitlab.com/chipgw/depthview2/issues\">gitlab.com/chipgw/depthview2/issues</a></p>")

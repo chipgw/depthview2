@@ -8,6 +8,7 @@
 #include "dvqmlcommunication.hpp"
 
 int main(int argc, char* argv[]) {
+    QCoreApplication::setAttribute(Qt::AA_UseDesktopOpenGL);
     QApplication app(argc, argv);
 
     app.setOrganizationName("chipgw");
