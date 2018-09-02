@@ -29,9 +29,9 @@ struct Vertex {
     QVector3D pos;
     QVector2D tex;
 };
-#define vert_offset(x) (const GLvoid*)offsetof(Vertex, x)
+#define vert_offset(x) reinterpret_cast<const GLvoid*>(offset_of(&Vertex::x))
 
-void makeSphere(uint32_t slices, uint32_t stacks, QOpenGLBuffer& sphereVerts, QOpenGLBuffer& sphereTris, GLuint& sphereTriCount) {
+void makeSphere(uint32_t slices, uint32_t stacks, QOpenGLBuffer& sphereVerts, QOpenGLBuffer& sphereTris, GLint& sphereTriCount) {
     QVector<Vertex> verts;
     QVector<GLuint> triangles;
 
@@ -49,13 +49,13 @@ void makeSphere(uint32_t slices, uint32_t stacks, QOpenGLBuffer& sphereVerts, QO
         qreal r = qSin(v * vstep);
 
         for (uint32_t h = 0; h <= slices; ++h) {
-            GLuint current = verts.size();
+            GLuint current = GLuint(verts.size());
 
             Vertex vert;
             /* Make a circle with the radius of the current stack. */
-            vert.pos = QVector3D(qCos(h * hstep) * r,
-                                 z,
-                                 qSin(h * hstep) * r);
+            vert.pos = QVector3D(float(qCos(h * hstep) * r),
+                                 float(z),
+                                 float(qSin(h * hstep) * r));
 
             vert.tex = QVector2D(float(h) / float(slices),
                                  float(v) / float(stacks));
@@ -78,11 +78,11 @@ void makeSphere(uint32_t slices, uint32_t stacks, QOpenGLBuffer& sphereVerts, QO
 
     sphereVerts.create();
     sphereVerts.bind();
-    sphereVerts.allocate(verts.data(), verts.size() * sizeof(Vertex));
+    sphereVerts.allocate(verts.data(), verts.size() * int(sizeof(Vertex)));
 
     sphereTris.create();
     sphereTris.bind();
-    sphereTris.allocate(triangles.data(), triangles.size() * sizeof(GLuint));
+    sphereTris.allocate(triangles.data(), triangles.size() * int(sizeof(GLuint)));
     sphereTriCount = triangles.size();
 }
 
@@ -360,23 +360,23 @@ void DVRenderer::getTextureRects(QRectF& left, QRectF& right, QSGTexture* textur
     switch (mode) {
     case DVSourceMode::TopBottom:
     case DVSourceMode::TopBottomAnamorphic:
-        left.setHeight(left.height() * 0.5f);
-        right.setHeight(right.height() * 0.5f);
+        left.setHeight(left.height() * 0.5);
+        right.setHeight(right.height() * 0.5);
 
         if (swap)
-            left.translate(0.0f, left.y() + left.height());
+            left.translate(0.0, left.y() + left.height());
         else
-            right.translate(0.0f, right.y() + left.height());
+            right.translate(0.0, right.y() + left.height());
         break;
     case DVSourceMode::SideBySide:
     case DVSourceMode::SideBySideAnamorphic:
-        left.setWidth(left.width() * 0.5f);
-        right.setWidth(right.width() * 0.5f);
+        left.setWidth(left.width() * 0.5);
+        right.setWidth(right.width() * 0.5);
 
         if (swap)
-            left.translate(left.x() + left.width(), 0.0f);
+            left.translate(left.x() + left.width(), 0.0);
         else
-            right.translate(right.x() + right.width(), 0.0f);
+            right.translate(right.x() + right.width(), 0.0);
         break;
     case DVSourceMode::Mono:
         /* Do nothing for mono images. */
@@ -452,11 +452,11 @@ void DVRenderer::doStandardSetup() {
 
         QMatrix4x4 mat;
         /* Create a camera matrix using the surround FOV from QML and the aspect ratio of the FBO. */
-        mat.perspective(qmlCommunication.surroundFOV(), float(qmlSize.width()) / float(qmlSize.height()), 0.01f, 1.0f);
+        mat.perspective(float(qmlCommunication.surroundFOV()), float(qmlSize.width()) / float(qmlSize.height()), 0.01f, 1.0f);
 
         /* Rotate the matrix based on pan values. */
-        mat.rotate(qmlCommunication.surroundPan().y(), 1.0f, 0.0f, 0.0f);
-        mat.rotate(qmlCommunication.surroundPan().x(), 0.0f, 1.0f, 0.0f);
+        mat.rotate(float(qmlCommunication.surroundPan().y()), 1.0f, 0.0f, 0.0f);
+        mat.rotate(float(qmlCommunication.surroundPan().x()), 0.0f, 1.0f, 0.0f);
 
         /* Upload to shader. */
         shaderSphere->setUniformValue("cameraMatrix", mat);

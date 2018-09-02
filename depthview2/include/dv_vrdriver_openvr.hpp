@@ -26,12 +26,12 @@ struct ModelComponent {
         : VBO(QOpenGLBuffer::VertexBuffer), IBO(QOpenGLBuffer::IndexBuffer), texture(QOpenGLTexture::Target2D) {
         /* Upload the verts to the GPU. */
         VBO.create(); VBO.bind();
-        VBO.allocate(model.rVertexData, sizeof(vr::RenderModel_Vertex_t) * model.unVertexCount);
+        VBO.allocate(model.rVertexData, int(sizeof(vr::RenderModel_Vertex_t) * model.unVertexCount));
         /* Upload the indexes to the GPU. */
         IBO.create(); IBO.bind();
-        IBO.allocate(model.rIndexData, sizeof(uint16_t) * model.unTriangleCount * 3);
+        IBO.allocate(model.rIndexData, int(sizeof(uint16_t) * model.unTriangleCount * 3));
 
-        vertexCount = model.unTriangleCount * 3;
+        vertexCount = GLsizei(model.unTriangleCount * 3);
 
         /* Prepare to upload the texture. */
         texture.create(); texture.bind();
@@ -103,7 +103,7 @@ public:
 
     QMatrix4x4 getComponentMatrix(uint32_t device, const char* componentName, bool render = true);
 
-    void calculateEyeDistortion(vr::EVREye eye, QVector<QVector2D>& verts, QVector<GLushort>& indexes, int offset);
+    void calculateEyeDistortion(vr::EVREye eye, QVector<QVector2D>& verts, QVector<GLushort>& indexes, GLushort offset);
 
     void renderEyeScene(vr::EVREye eye, const QMatrix4x4& head, QSGTexture* imgTexture, QRectF imgRect, qreal imgPan, bool isBackground, QOpenGLExtraFunctions* f);
 
@@ -118,7 +118,7 @@ public:
 
     QOpenGLBuffer distortionVBO;
     QOpenGLBuffer distortionIBO;
-    intptr_t distortionNumIndexes;
+    GLsizei distortionNumIndexes;
 
     vr::IVRSystem* vrSystem = nullptr;
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "dvconfig.hpp"
 #include <QMetaEnum>
 
 /* Macro to easily define QML friendly enums.

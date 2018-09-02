@@ -15,7 +15,7 @@ class DVFileValidator : public QValidator {
     Q_PROPERTY(bool filterDir MEMBER filterDir NOTIFY filterDirChanged)
 
 public:
-    DVFileValidator(QObject* parent = 0);
+    DVFileValidator(QObject* parent = nullptr);
 
     State validate(QString& input, int& pos) const override;
 

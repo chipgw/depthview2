@@ -162,12 +162,12 @@ Popup {
                         Button {
                             id: button
                             anchors.fill: parent
-                            text: data[1]
+                            text: drive_data[1]
 
-                            /* Drive info is provided as "<path>;<display name>". */
-                            property variant data: modelData.split(';')
+                            /* Drive info is provided as "<path>;<display name>;<size in bytes>". */
+                            property variant drive_data: modelData.split(';')
 
-                            onClicked: FolderListing.currentDir = FolderListing.encodeURL(data[0])
+                            onClicked: FolderListing.currentDir = FolderListing.encodeURL(drive_data[0])
 
                             /* Whenever the text width changes, make sure that the panel is large enough to fit. */
                             onImplicitWidthChanged: drivePanel.width = Math.max(drivePanel.width, implicitWidth)
@@ -179,7 +179,7 @@ Popup {
                             /* Don't use button.hovered because it breaks when the file browser closes. */
                             visible: button.contains(button.mapFromItem(null, fakeCursor.x, fakeCursor.y)) && root.visible
 
-                            text: button.data[0] + "<br>" + FolderListing.bytesToString(button.data[2])
+                            text: button.drive_data[0] + "<br>" + FolderListing.bytesToString(button.drive_data[2])
 
                             parent: fakeCursor
                         }

@@ -94,7 +94,7 @@ QString DVFolderListing::bytesToString(qint64 bytes) const {
 
     for (unit=-1; (++unit<3) && (bytes > 10239); bytes /= 1024);
 
-    return QString::number(bytes * 0.1f, 'f', 1) + ' ' + units[unit];
+    return QString::number(bytes * 0.1, 'f', 1) + ' ' + units[unit];
 }
 
 QString DVFolderListing::currentFile() const {
@@ -498,7 +498,7 @@ QVariant DVFolderListing::data(const QModelIndex& index, int role) const {
 }
 
 int DVFolderListing::rowCount(const QModelIndex&) const {
-    return m_currentDir.count();
+    return int(m_currentDir.count());
 }
 
 bool DVFolderListing::initDir(const QString& dir) {

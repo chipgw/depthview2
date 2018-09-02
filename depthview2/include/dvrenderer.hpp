@@ -99,7 +99,7 @@ private:
 
     QOpenGLBuffer sphereVerts;
     QOpenGLBuffer sphereTris;
-    GLuint sphereTriCount;
+    GLint sphereTriCount;
 
     void loadShaders();
     void loadShader(QOpenGLShaderProgram& shader, const char* vshader, const char* fshader);

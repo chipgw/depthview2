@@ -170,9 +170,9 @@ void DVVirtualScreenManager::updateScreen() {
     if (driver == nullptr) return;
 
     /* Get the properties from QML. */
-    float distance = driver->screenDistance;
-    float z = driver->screenHeight;
-    float size = driver->screenSize;
+    float distance = float(driver->screenDistance);
+    float z = float(driver->screenHeight);
+    float size = float(driver->screenSize);
 
     float height = size / (float(renderer->qmlSize.width()) / float(renderer->qmlSize.height()));
 
@@ -180,7 +180,7 @@ void DVVirtualScreenManager::updateScreen() {
     driver->screen.clear();
     driver->screenUV.clear();
 
-    float curviness = driver->screenCurve;
+    float curviness = float(driver->screenCurve);
 
     constexpr int halfSteps = 50;
 
@@ -395,5 +395,5 @@ void DVVirtualScreenManager::setSurroundPan(qreal pan) {
 }
 
 QPointF DVVirtualScreenManager::pointFromScreenUV(const QVector2D& uv) const {
-    return QPointF(uv.x() * renderer->qmlSize.width(), (1.0f - uv.y()) * renderer->qmlSize.height());
+    return QPointF(qreal(uv.x()) * renderer->qmlSize.width(), (1.0 - qreal(uv.y())) * renderer->qmlSize.height());
 }

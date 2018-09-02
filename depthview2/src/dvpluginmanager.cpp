@@ -176,7 +176,7 @@ bool DVPluginManager::enablePlugin(QString pluginFileName) {
         emit enabledPluginsChanged();
     }
 
-    QModelIndex changedIndex = createIndex(std::distance(plugins.begin(), plugin), 0);
+    QModelIndex changedIndex = createIndex(int(std::distance(plugins.begin(), plugin)), 0);
     /* Emit this signal to update the pluginEnabled value if it worked and the pluginError value if it didn't. */
     emit dataChanged(changedIndex, changedIndex);
 
@@ -200,7 +200,7 @@ bool DVPluginManager::disablePlugin(QString pluginFileName) {
     /* For render plugins updates the draw mode list, for all plugins removes the config object from the settings window. */
     emit enabledPluginsChanged();
 
-    QModelIndex changedIndex = createIndex(std::distance(plugins.begin(), plugin), 0);
+    QModelIndex changedIndex = createIndex(int(std::distance(plugins.begin(), plugin)), 0);
     /* Emit this signal to update the pluginEnabled value if it worked and the pluginError value if it didn't. */
     emit dataChanged(changedIndex, changedIndex);
 
@@ -247,7 +247,7 @@ QObjectList DVPluginManager::getPluginConfigMenus() const {
     QObjectList list;
 
     for (DVInputPlugin* item : inputPlugins)
-        list.append((QObject*)item->getConfigMenuObject());
+        list.append(static_cast<QObject*>(item->getConfigMenuObject()));
 
     /* If any plugins have no menu, remove them. */
     list.removeAll(nullptr);

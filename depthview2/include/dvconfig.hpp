@@ -20,3 +20,9 @@
 #if defined(Q_OS_WIN32) && !defined(DV_PORTABLE)
 #define DV_FILE_ASSOCIATION
 #endif
+
+template <typename T1, typename T2>
+inline size_t constexpr offset_of(T1 T2::*member) {
+    constexpr T2 object {};
+    return size_t(&(object.*member)) - size_t(&object);
+}

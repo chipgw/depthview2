@@ -105,10 +105,10 @@ bool DV_VRDriver_OpenVR::initVRSystem(QOpenGLExtraFunctions* f) {
     vrSystem->GetRecommendedRenderTargetSize(&renderWidth, &renderHeight);
 
     /* Set up an FBO for each eye. */
-    renderFBO[0] = new QOpenGLFramebufferObject(renderWidth, renderHeight, QOpenGLFramebufferObject::Depth);
-    renderFBO[1] = new QOpenGLFramebufferObject(renderWidth, renderHeight, QOpenGLFramebufferObject::Depth);
-    resolveFBO[0] = new QOpenGLFramebufferObject(renderWidth, renderHeight);
-    resolveFBO[1] = new QOpenGLFramebufferObject(renderWidth, renderHeight);
+    renderFBO[0] = new QOpenGLFramebufferObject(int(renderWidth), int(renderHeight), QOpenGLFramebufferObject::Depth);
+    renderFBO[1] = new QOpenGLFramebufferObject(int(renderWidth), int(renderHeight), QOpenGLFramebufferObject::Depth);
+    resolveFBO[0] = new QOpenGLFramebufferObject(int(renderWidth), int(renderHeight));
+    resolveFBO[1] = new QOpenGLFramebufferObject(int(renderWidth), int(renderHeight));
 
     QVector<QVector2D> verts;
     QVector<GLushort> indexes;
@@ -116,16 +116,16 @@ bool DV_VRDriver_OpenVR::initVRSystem(QOpenGLExtraFunctions* f) {
     /* Calculate the left eye's distortion verts. */
     calculateEyeDistortion(vr::Eye_Left, verts, indexes, 0);
     /* Indexes for the right eye must be offset by how many verts there were for the left eye. */
-    calculateEyeDistortion(vr::Eye_Right, verts, indexes, verts.size() / 4);
+    calculateEyeDistortion(vr::Eye_Right, verts, indexes, GLushort(verts.size()) / 4);
 
     /* Upload the distortion verts to the GPU. */
     distortionVBO.create();
     distortionVBO.bind();
-    distortionVBO.allocate(verts.data(), verts.size() * sizeof(QVector2D));
+    distortionVBO.allocate(verts.data(), verts.size() * int(sizeof(QVector2D)));
     /* Upload the distortion indexes to the GPU. */
     distortionIBO.create();
     distortionIBO.bind();
-    distortionIBO.allocate(indexes.data(), indexes.size() * sizeof(GLushort));
+    distortionIBO.allocate(indexes.data(), indexes.size() * int(sizeof(GLushort)));
 
     /* Store the number of indexes for rendering. */
     distortionNumIndexes = indexes.size();
@@ -180,7 +180,7 @@ void DV_VRDriver_OpenVR::sendMousePress(const QPointF& point, Qt::MouseButton bu
     mouseButtonsDown |= button;
 
     QCoreApplication::postEvent(input->inputEventObject(), new QMouseEvent(QEvent::MouseButtonPress, point, point, QPointF(),
-                                                                           button, Qt::LeftButton, 0, Qt::MouseEventSynthesizedByApplication));
+                                                                           button, Qt::LeftButton, nullptr, Qt::MouseEventSynthesizedByApplication));
 }
 
 void DV_VRDriver_OpenVR::sendMouseRelease(const QPointF& point, Qt::MouseButton button, DVInputInterface* input) {
@@ -189,12 +189,12 @@ void DV_VRDriver_OpenVR::sendMouseRelease(const QPointF& point, Qt::MouseButton 
 
     mouseButtonsDown ^= button;
     QCoreApplication::postEvent(input->inputEventObject(), new QMouseEvent(QEvent::MouseButtonRelease, point, point, QPointF(),
-                                                                           button, mouseButtonsDown, 0, Qt::MouseEventSynthesizedByApplication));
+                                                                           button, mouseButtonsDown, nullptr, Qt::MouseEventSynthesizedByApplication));
 }
 
 void DV_VRDriver_OpenVR::sendMouseMove(const QPointF& point, DVInputInterface* input) {
     QCoreApplication::postEvent(input->inputEventObject(), new QMouseEvent(QEvent::MouseMove, point, point, QPointF(),
-                                                                           Qt::NoButton, mouseButtonsDown, 0, Qt::MouseEventSynthesizedByApplication));
+                                                                           Qt::NoButton, mouseButtonsDown, nullptr, Qt::MouseEventSynthesizedByApplication));
 }
 
 void DV_VRDriver_OpenVR::handleVREvents(QOpenGLExtraFunctions* f, DVInputInterface* input) {
@@ -304,15 +304,15 @@ QMatrix4x4 DV_VRDriver_OpenVR::getComponentMatrix(uint32_t device, const char* c
     return QMatrix4x4(QMatrix4x3(render ? *componentState.mTrackingToComponentRenderModel.m : *componentState.mTrackingToComponentLocal.m));
 }
 
-void DV_VRDriver_OpenVR::calculateEyeDistortion(vr::EVREye eye, QVector<QVector2D>& verts, QVector<GLushort>& indexes, int offset) {
+void DV_VRDriver_OpenVR::calculateEyeDistortion(vr::EVREye eye, QVector<QVector2D>& verts, QVector<GLushort>& indexes, GLushort offset) {
     /* How many verts in each direction. */
     constexpr GLushort lensGridSegmentCount = 43;
 
     constexpr float w = 1.0f/(lensGridSegmentCount-1);
     constexpr float h = 1.0f/(lensGridSegmentCount-1);
 
-    for (int y = 0; y < lensGridSegmentCount; ++y) {
-        for (int x = 0; x < lensGridSegmentCount; ++x) {
+    for (GLushort y = 0; y < lensGridSegmentCount; ++y) {
+        for (GLushort x = 0; x < lensGridSegmentCount; ++x) {
             /* Calculate the undistorted UV coordinates for the vertex. */
             float u = x * w;
             float v = y * h;
@@ -365,7 +365,7 @@ void DV_VRDriver_OpenVR::renderEyeScene(vr::EVREye eye, const QMatrix4x4& head, 
     if (imgTexture != nullptr) {
         QMatrix4x4 sphereMat;
         sphereMat.scale(190.0f);
-        sphereMat.rotate(imgPan, 0.0f, 1.0f, 0.0f);
+        sphereMat.rotate(float(imgPan), 0.0f, 1.0f, 0.0f);
         vrSceneShader.setUniformValue("cameraMatrix", eyeMat * sphereMat);
         vrSceneShader.setUniformValue("rect", imgRect.x(), imgRect.y(), imgRect.width(), imgRect.height());
 
@@ -386,7 +386,7 @@ void DV_VRDriver_OpenVR::renderEyeScene(vr::EVREye eye, const QMatrix4x4& head, 
     vrSceneShader.setUniformValue("outputFac", 1.0f);
 
     /* Get the UI texture for the current eye from the renderer. In both eye enums left=0 and right=1. */
-    f->glBindTexture(GL_TEXTURE_2D, renderer->getInterfaceTexture((DVStereoEye::Type)eye));
+    f->glBindTexture(GL_TEXTURE_2D, renderer->getInterfaceTexture(static_cast<DVStereoEye::Type>(eye)));
 
     /* Draw the screen to eye FBO. */
     vrSceneShader.setAttributeArray(0, screen.data());
@@ -443,12 +443,12 @@ void DV_VRDriver_OpenVR::renderEyeScene(vr::EVREye eye, const QMatrix4x4& head, 
             component.value()->IBO.bind();
 
             /* This model also has normals, but there isn't any lighting so they're unnecessary. */
-            vrSceneShader.setAttributeBuffer(0, GL_FLOAT, offsetof(vr::RenderModel_Vertex_t, vPosition), 3, sizeof(vr::RenderModel_Vertex_t));
-            vrSceneShader.setAttributeBuffer(1, GL_FLOAT, offsetof(vr::RenderModel_Vertex_t, rfTextureCoord), 2, sizeof(vr::RenderModel_Vertex_t));
+            vrSceneShader.setAttributeBuffer(0, GL_FLOAT, offset_of(&vr::RenderModel_Vertex_t::vPosition), 3, sizeof(vr::RenderModel_Vertex_t));
+            vrSceneShader.setAttributeBuffer(1, GL_FLOAT, offset_of(&vr::RenderModel_Vertex_t::rfTextureCoord), 2, sizeof(vr::RenderModel_Vertex_t));
 
             component.value()->texture.bind();
 
-            f->glDrawElements(GL_TRIANGLES, component.value()->vertexCount, GL_UNSIGNED_SHORT, 0);
+            f->glDrawElements(GL_TRIANGLES, component.value()->vertexCount, GL_UNSIGNED_SHORT, nullptr);
 
             component.value()->VBO.release();
             component.value()->IBO.release();
@@ -465,7 +465,7 @@ bool DV_VRDriver_OpenVR::renderEyeDistortion(vr::EVREye eye, QOpenGLExtraFunctio
     f->glBindTexture(GL_TEXTURE_2D, renderFBO[eye]->texture());
     f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     /* First half = left lens, second half = right lens. */
-    f->glDrawElements(GL_TRIANGLES, distortionNumIndexes/2, GL_UNSIGNED_SHORT, (const void*)(distortionNumIndexes * eye));
+    f->glDrawElements(GL_TRIANGLES, distortionNumIndexes/2, GL_UNSIGNED_SHORT, reinterpret_cast<const void*>(distortionNumIndexes * eye));
 
     resolveFBO[eye]->release();
 
@@ -517,7 +517,7 @@ bool DV_VRDriver_OpenVR::render(QOpenGLExtraFunctions* f, DVInputInterface* inpu
         head = QMatrix4x4(QMatrix4x3(*trackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking.m)).inverted();
 
     vrSceneShader.bind();
-    f->glViewport(0, 0, renderWidth, renderHeight);
+    f->glViewport(0, 0, GLsizei(renderWidth), GLsizei(renderHeight));
 
     f->glEnableVertexAttribArray(0);
     f->glEnableVertexAttribArray(1);
@@ -553,8 +553,8 @@ QByteArray DV_VRDriver_OpenVR::getTrackedDeviceString(vr::TrackedDeviceIndex_t d
 
     if (bufferLen == 0) return "";
 
-    QByteArray buffer(bufferLen, 0);
-    vrSystem->GetStringTrackedDeviceProperty(deviceIndex, prop, buffer.data(), buffer.length(), nullptr);
+    QByteArray buffer(int(bufferLen), 0);
+    vrSystem->GetStringTrackedDeviceProperty(deviceIndex, prop, buffer.data(), uint32_t(buffer.length()), nullptr);
 
     return buffer;
 }
@@ -578,12 +578,12 @@ void DV_VRDriver_OpenVR::setupDeviceModel(vr::TrackedDeviceIndex_t deviceIndex, 
 
     for (uint32_t i = 0; i < vr::VRRenderModels()->GetComponentCount(modelName.data()); ++i) {
         /* Get the name of the component. */
-        QByteArray componentName(vr::VRRenderModels()->GetComponentName(modelName.data(), i, nullptr, 0), 0);
-        vr::VRRenderModels()->GetComponentName(modelName.data(), i, componentName.data(), componentName.length());
+        QByteArray componentName(int(vr::VRRenderModels()->GetComponentName(modelName.data(), i, nullptr, 0)), 0);
+        vr::VRRenderModels()->GetComponentName(modelName.data(), i, componentName.data(), uint32_t(componentName.length()));
 
         /* The component model name is not the same as the component name, it is used to get the model data and to save it in the loadedModels map. */
-        QByteArray componentModelName(vr::VRRenderModels()->GetComponentRenderModelName(modelName.data(), componentName.data(), nullptr, 0), 0);
-        vr::VRRenderModels()->GetComponentRenderModelName(modelName.data(), componentName.data(), componentModelName.data(), componentModelName.length());
+        QByteArray componentModelName(int(vr::VRRenderModels()->GetComponentRenderModelName(modelName.data(), componentName.data(), nullptr, 0)), 0);
+        vr::VRRenderModels()->GetComponentRenderModelName(modelName.data(), componentName.data(), componentModelName.data(), uint32_t(componentModelName.length()));
 
         /* There isn't any model for this component. */
         if (componentModelName.isEmpty()) continue;
