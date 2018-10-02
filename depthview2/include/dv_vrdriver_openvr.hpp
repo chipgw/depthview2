@@ -61,8 +61,7 @@ class DV_VRDriver_OpenVR : public DV_VRDriver {
     /* Tracked device -> model name. */
     QByteArray modelForDevice[vr::k_unMaxTrackedDeviceCount];
 
-    /* Which device are we using to simulate mouse events? */
-    uint32_t mouseDevice = vr::k_unTrackedDeviceIndexInvalid;
+    /* Track which mouse buttons are in what state according to the simulated events. */
     Qt::MouseButtons mouseButtonsDown;
     bool wasLastHitValid = false;
 
@@ -74,13 +73,56 @@ class DV_VRDriver_OpenVR : public DV_VRDriver {
 
     QVector3D panTrackingVector;
 
-    typedef void (DVInputInterface::*Action)();
+    struct DigitalAction {
+        DigitalAction(const char* action, void (DVInputInterface::*ii_call)() = nullptr) : call(ii_call), a(action) {
+            auto result = vr::VRInput()->GetActionHandle(action, &handle);
 
-    enum AxisAsButton { PositiveX, NegativeX, PositiveY, NegativeY, AxisAsButton_Max };
+            if (result != vr::VRInputError_None)
+                qDebug("Error %i setting up input \"%s\"", result, action);
+        }
+        DigitalAction() = default;
 
-    /* First index = input more, second index = whether the device is the mouse device, third index = the button. */
-    Action buttonActions[3][2][vr::k_EButton_Max];
-    Action axisActions[3][2][AxisAsButton_Max];
+        vr::VRActionHandle_t handle;
+
+        void (DVInputInterface::*call)();
+
+        vr::InputDigitalActionData_t current;
+
+        const char* a;
+
+        void update(DVInputInterface* input) {
+            vr::VRInput()->GetDigitalActionData(handle, &current, sizeof(vr::InputDigitalActionData_t), vr::k_ulInvalidInputValueHandle);
+
+            if (call != nullptr && current.bChanged && current.bState)
+                (input->*call)();
+        }
+    };
+    struct PoseAction {
+        PoseAction(const char* action) : a(action) {
+            auto result = vr::VRInput()->GetActionHandle(action, &handle);
+            if (result != vr::VRInputError_None)
+                qDebug("Error %i setting up input \"%s\"", result, action);
+        }
+        PoseAction() = default;
+
+        vr::VRActionHandle_t handle;
+
+        vr::InputPoseActionData_t current;
+
+        const char* a;
+
+        void update() {
+            vr::VRInput()->GetPoseActionData(handle, vr::TrackingUniverseSeated, 0.0f, &current,
+                                             sizeof(vr::InputPoseActionData_t), vr::k_ulInvalidInputValueHandle);
+        }
+    };
+
+    /* array index = input mode. */
+    QList<DigitalAction> inputActions[3];
+    vr::VRActionSetHandle_t inputActionSets[3];
+    vr::VRActionSetHandle_t mouseActionSet;
+    DigitalAction mouseClickAction, mousePanAction;
+    PoseAction mousePose;
 
 public:
     DV_VRDriver_OpenVR(DVRenderer* w, DVVirtualScreenManager* m);
@@ -89,9 +131,7 @@ public:
 
     bool initVRSystem(QOpenGLExtraFunctions* f);
 
-    RayHit deviceScreenPoint(vr::TrackedDeviceIndex_t dev);
-
-    QBitArray getAxisAsButtons(vr::TrackedDeviceIndex_t device, int axis, const vr::VRControllerState_t& newState, float threshold);
+    RayHit poseScreenPoint(vr::TrackedDevicePose_t pose);
 
     void sendMousePress(const QPointF& point, Qt::MouseButton button, DVInputInterface* input);
 

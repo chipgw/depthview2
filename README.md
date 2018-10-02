@@ -24,7 +24,7 @@ Dependencies
 ------------
 * [Qt] 5.8 or newer.
 * [QtAV]
-* [OpenVR] \(Optional for VR support\)
+* [OpenVR] v1.0.16 \(Optional for VR support\)
 
 Building
 --------

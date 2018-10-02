@@ -28,47 +28,6 @@ DV_VRDriver_OpenVR::DV_VRDriver_OpenVR(DVRenderer* w, DVVirtualScreenManager* m)
 
     lineTexture = new QOpenGLTexture(QImage(":/images/vrline.png"));
 
-    /* Make sure any unmapped buttons are null, because garbage would cause a crash. */
-    memset(buttonActions, 0, sizeof buttonActions); memset(axisActions, 0, sizeof axisActions);
-
-    /* Image viewer primary device mappings. */
-    buttonActions[DVInputMode::ImageViewer][true][vr::k_EButton_A] =                { &DVInputInterface::zoomFit };
-    buttonActions[DVInputMode::ImageViewer][true][vr::k_EButton_ApplicationMenu] =  { &DVInputInterface::zoomActual };
-
-    /* Image viewer secondary device mappings. */
-    buttonActions[DVInputMode::ImageViewer][false][vr::k_EButton_ApplicationMenu] = { &DVInputInterface::openFileBrowser };
-    buttonActions[DVInputMode::ImageViewer][false][vr::k_EButton_Grip] =            { &DVInputInterface::fileInfo };
-    axisActions[DVInputMode::ImageViewer][false][PositiveX] =                       { &DVInputInterface::nextFile };
-    axisActions[DVInputMode::ImageViewer][false][NegativeX] =                       { &DVInputInterface::previousFile };
-
-    /* Video player primary device mappings. */
-    buttonActions[DVInputMode::VideoPlayer][true][vr::k_EButton_A] =                { &DVInputInterface::playPauseVideo };
-    buttonActions[DVInputMode::VideoPlayer][true][vr::k_EButton_ApplicationMenu] =  { &DVInputInterface::mute };
-    axisActions[DVInputMode::VideoPlayer][true][PositiveX] =                        { &DVInputInterface::seekForward };
-    axisActions[DVInputMode::VideoPlayer][true][NegativeX] =                        { &DVInputInterface::seekBack };
-    axisActions[DVInputMode::VideoPlayer][true][PositiveY] =                        { &DVInputInterface::volumeUp };
-    axisActions[DVInputMode::VideoPlayer][true][NegativeY] =                        { &DVInputInterface::volumeDown };
-
-    /* Video player secondary device mappings. */
-    buttonActions[DVInputMode::VideoPlayer][false][vr::k_EButton_Grip] =            { &DVInputInterface::fileInfo };
-    buttonActions[DVInputMode::VideoPlayer][false][vr::k_EButton_ApplicationMenu] = { &DVInputInterface::openFileBrowser };
-    buttonActions[DVInputMode::VideoPlayer][false][vr::k_EButton_A]               = { &DVInputInterface::takeSnapshot };
-    axisActions[DVInputMode::VideoPlayer][false][PositiveX] =                       { &DVInputInterface::nextFile };
-    axisActions[DVInputMode::VideoPlayer][false][NegativeX] =                       { &DVInputInterface::previousFile };
-
-    /* File browser primary device mappings. */
-    axisActions[DVInputMode::FileBrowser][true][PositiveX] =                        { &DVInputInterface::goForward };
-    axisActions[DVInputMode::FileBrowser][true][NegativeX] =                        { &DVInputInterface::goBack };
-    axisActions[DVInputMode::FileBrowser][true][PositiveY] =                        { &DVInputInterface::goUp };
-
-    /* File browser secondary device mappings. */
-    buttonActions[DVInputMode::FileBrowser][false][vr::k_EButton_A] =               { &DVInputInterface::accept };
-    buttonActions[DVInputMode::FileBrowser][false][vr::k_EButton_ApplicationMenu] = { &DVInputInterface::cancel };
-    axisActions[DVInputMode::FileBrowser][false][PositiveX] =                       { &DVInputInterface::right };
-    axisActions[DVInputMode::FileBrowser][false][NegativeX] =                       { &DVInputInterface::left };
-    axisActions[DVInputMode::FileBrowser][false][PositiveY] =                       { &DVInputInterface::up };
-    axisActions[DVInputMode::FileBrowser][false][NegativeY] =                       { &DVInputInterface::down };
-
     qDebug("OpenVR inited.");
 }
 
@@ -133,44 +92,64 @@ bool DV_VRDriver_OpenVR::initVRSystem(QOpenGLExtraFunctions* f) {
     /* Load the models for attached devices. */
     for (uint32_t i = 0; i < vr::k_unMaxTrackedDeviceCount; ++i) setupDeviceModel(i, f);
 
+    /* Set up the input actions. */
+    vr::VRInput()->SetActionManifestPath((qApp->applicationDirPath() + "/openvr_actionmanifest.json").toLocal8Bit());
+
+    vr::VRInput()->GetActionSetHandle("/actions/image", &inputActionSets[DVInputMode::ImageViewer]);
+    vr::VRInput()->GetActionSetHandle("/actions/video", &inputActionSets[DVInputMode::VideoPlayer]);
+    vr::VRInput()->GetActionSetHandle("/actions/file",  &inputActionSets[DVInputMode::FileBrowser]);
+
+    inputActions[DVInputMode::ImageViewer] += DigitalAction("/actions/image/in/zoomfit",    &DVInputInterface::zoomFit);
+    inputActions[DVInputMode::ImageViewer] += DigitalAction("/actions/image/in/zoomactual", &DVInputInterface::zoomActual);
+    inputActions[DVInputMode::ImageViewer] += DigitalAction("/actions/image/in/browser",    &DVInputInterface::openFileBrowser);
+    inputActions[DVInputMode::ImageViewer] += DigitalAction("/actions/image/in/fileinfo",   &DVInputInterface::fileInfo);
+    inputActions[DVInputMode::ImageViewer] += DigitalAction("/actions/image/in/next",       &DVInputInterface::nextFile);
+    inputActions[DVInputMode::ImageViewer] += DigitalAction("/actions/image/in/prev",       &DVInputInterface::previousFile);
+
+    inputActions[DVInputMode::VideoPlayer] += DigitalAction("/actions/video/in/playpause",  &DVInputInterface::playPauseVideo);
+    inputActions[DVInputMode::VideoPlayer] += DigitalAction("/actions/video/in/play",       &DVInputInterface::playVideo);
+    inputActions[DVInputMode::VideoPlayer] += DigitalAction("/actions/video/in/pause",      &DVInputInterface::pauseVideo);
+    inputActions[DVInputMode::VideoPlayer] += DigitalAction("/actions/video/in/mute",       &DVInputInterface::mute);
+    inputActions[DVInputMode::VideoPlayer] += DigitalAction("/actions/video/in/volup",      &DVInputInterface::volumeUp);
+    inputActions[DVInputMode::VideoPlayer] += DigitalAction("/actions/video/in/voldown",    &DVInputInterface::volumeDown);
+    inputActions[DVInputMode::VideoPlayer] += DigitalAction("/actions/video/in/seekfwd",    &DVInputInterface::seekForward);
+    inputActions[DVInputMode::VideoPlayer] += DigitalAction("/actions/video/in/seekback",   &DVInputInterface::seekBack);
+    inputActions[DVInputMode::VideoPlayer] += DigitalAction("/actions/video/in/takesnap",   &DVInputInterface::takeSnapshot);
+    inputActions[DVInputMode::VideoPlayer] += DigitalAction("/actions/video/in/browser",    &DVInputInterface::openFileBrowser);
+    inputActions[DVInputMode::VideoPlayer] += DigitalAction("/actions/video/in/fileinfo",   &DVInputInterface::fileInfo);
+    inputActions[DVInputMode::VideoPlayer] += DigitalAction("/actions/video/in/next",       &DVInputInterface::nextFile);
+    inputActions[DVInputMode::VideoPlayer] += DigitalAction("/actions/video/in/prev",       &DVInputInterface::previousFile);
+
+    inputActions[DVInputMode::FileBrowser] += DigitalAction("/actions/file/in/forward",     &DVInputInterface::goForward);
+    inputActions[DVInputMode::FileBrowser] += DigitalAction("/actions/file/in/back",        &DVInputInterface::goBack);
+    inputActions[DVInputMode::FileBrowser] += DigitalAction("/actions/file/in/goup",        &DVInputInterface::goUp);
+    inputActions[DVInputMode::FileBrowser] += DigitalAction("/actions/file/in/accept",      &DVInputInterface::accept);
+    inputActions[DVInputMode::FileBrowser] += DigitalAction("/actions/file/in/cancel",      &DVInputInterface::cancel);
+    inputActions[DVInputMode::FileBrowser] += DigitalAction("/actions/file/in/left",        &DVInputInterface::left);
+    inputActions[DVInputMode::FileBrowser] += DigitalAction("/actions/file/in/right",       &DVInputInterface::right);
+    inputActions[DVInputMode::FileBrowser] += DigitalAction("/actions/file/in/up",          &DVInputInterface::up);
+    inputActions[DVInputMode::FileBrowser] += DigitalAction("/actions/file/in/down",        &DVInputInterface::down);
+
+    vr::VRInput()->GetActionSetHandle("/actions/cursor", &mouseActionSet);
+    mouseClickAction = DigitalAction("/actions/cursor/in/leftbtn");
+    mousePanAction = DigitalAction("/actions/cursor/in/pan");
+    mousePose = PoseAction("/actions/cursor/in/point");
+
     return vrSystem != nullptr;
 }
 
-DV_VRDriver::RayHit DV_VRDriver_OpenVR::deviceScreenPoint(vr::TrackedDeviceIndex_t dev) {
-    if (dev >= vr::k_unMaxTrackedDeviceCount) return RayHit();
-
-    const vr::TrackedDevicePose_t& pose = trackedDevicePose[dev];
-
+DV_VRDriver::RayHit DV_VRDriver_OpenVR::poseScreenPoint(vr::TrackedDevicePose_t pose) {
     /* The tracking data isn't valid, we can't do anything. */
     if (!pose.bPoseIsValid) return RayHit();
 
     QMatrix4x4 deviceToTracking = QMatrix4x4(QMatrix4x3(*pose.mDeviceToAbsoluteTracking.m));
-    QMatrix4x4 aimToTracking = deviceToTracking * getComponentMatrix(dev, vr::k_pch_Controller_Component_Tip, false);
+    QMatrix4x4 aimToTracking = deviceToTracking ;//* getComponentMatrix(dev, vr::k_pch_Controller_Component_Tip, false);
 
     Ray ray;
     ray.origin = aimToTracking * QVector3D();
     ray.direction = (aimToTracking * QVector4D(0.0f, 0.0f, -0.1f, 0.0f)).toVector3D();
 
     return screenTrace(ray);
-}
-
-QBitArray DV_VRDriver_OpenVR::getAxisAsButtons(vr::TrackedDeviceIndex_t device, int axis, const vr::VRControllerState_t& newState, float threshold) {
-    QBitArray arr(AxisAsButton_Max);
-
-#define positive(x) x
-#define negative(x) -x
-#define get_axis(coord, negate) (negate(newState.rAxis[axis].coord) > threshold && negate(controllerStates[device].rAxis[axis].coord) <= threshold)
-
-    arr.setBit(PositiveX, get_axis(x, positive));
-    arr.setBit(NegativeX, get_axis(x, negative));
-    arr.setBit(PositiveY, get_axis(y, positive));
-    arr.setBit(NegativeY, get_axis(y, negative));
-
-#undef positive
-#undef negative
-#undef get_axis
-
-    return arr;
 }
 
 void DV_VRDriver_OpenVR::sendMousePress(const QPointF& point, Qt::MouseButton button, DVInputInterface* input) {
@@ -200,7 +179,20 @@ void DV_VRDriver_OpenVR::sendMouseMove(const QPointF& point, DVInputInterface* i
 void DV_VRDriver_OpenVR::handleVREvents(QOpenGLExtraFunctions* f, DVInputInterface* input) {
     vr::VRCompositor()->WaitGetPoses(trackedDevicePose, vr::k_unMaxTrackedDeviceCount, nullptr, 0);
 
-    RayHit mouseHit = deviceScreenPoint(mouseDevice);
+    vr::VRActiveActionSet_t active[2] {
+        { inputActionSets[input->inputMode()], vr::k_ulInvalidInputValueHandle, 0 },
+        { mouseActionSet, vr::k_ulInvalidInputValueHandle, 0 },
+    };
+    vr::VRInput()->UpdateActionState(active, sizeof(vr::VRActiveActionSet_t), 2);
+
+    for (auto& action : inputActions[input->inputMode()]) {
+        action.update(input);
+    }
+    mouseClickAction.update(input);
+    mousePanAction.update(input);
+    mousePose.update();
+
+    RayHit mouseHit = poseScreenPoint(mousePose.current.pose);
     QPointF mousePoint = mouseHit.isValid ? manager->pointFromScreenUV(mouseHit.uvCoord) : QPointF();
 
     if (mouseHit.isValid)
@@ -225,28 +217,19 @@ void DV_VRDriver_OpenVR::handleVREvents(QOpenGLExtraFunctions* f, DVInputInterfa
         panTrackingVector = mouseHit.ray.direction;
     }
 
-    for (vr::TrackedDeviceIndex_t device = 0; device < vr::k_unMaxTrackedDeviceCount; ++device) {
-        if (vrSystem->GetTrackedDeviceClass(device) != vr::TrackedDeviceClass_Controller)
-            continue;
+    if (mouseClickAction.current.bChanged && mouseHit.isValid) {
+        if  (mouseClickAction.current.bState)
+            sendMousePress(mousePoint, Qt::LeftButton, input);
+        else
+            sendMouseRelease(mousePoint, Qt::LeftButton, input);
+    }
 
-        /* Get the current state of the controller. */
-        vr::VRControllerState_t controllerState;
-        vrSystem->GetControllerState(device, &controllerState, sizeof(controllerState));
-
-        for (int axis = 0; axis < 5; ++axis) {
-            switch (vrSystem->GetInt32TrackedDeviceProperty(device, static_cast<vr::ETrackedDeviceProperty>(vr::Prop_Axis0Type_Int32 + axis))) {
-            case vr::k_eControllerAxis_Joystick:
-                QBitArray bits = getAxisAsButtons(device, axis, controllerState, 0.5f);
-
-                for (int i = 0; i < bits.size(); ++i)
-                    if (bits.testBit(i) && axisActions[input->inputMode()][device == mouseDevice][i] != nullptr)
-                        (input->*(axisActions[input->inputMode()][device == mouseDevice][i]))();
-
-                break;
-            }
-        }
-
-        controllerStates[device] = controllerState;
+    if (mousePanAction.current.bChanged) {
+        if (mousePanAction.current.bState && input->inputMode() != DVInputMode::FileBrowser)
+            panTrackingVector = mouseHit.ray.direction;
+        else
+            /* Set it to a null vector to stop panning. */
+            panTrackingVector = QVector3D();
     }
 
     /* Handle events from OpenVR. */
@@ -256,34 +239,6 @@ void DV_VRDriver_OpenVR::handleVREvents(QOpenGLExtraFunctions* f, DVInputInterfa
         case vr::VREvent_TrackedDeviceActivated:
             /* Load the model for the newly attached device. */
             setupDeviceModel(e.trackedDeviceIndex, f);
-
-            /* If this is the first controller activated use it as the mouse device. */
-            if (mouseDevice == vr::k_unTrackedDeviceIndexInvalid && vrSystem->GetTrackedDeviceClass(e.trackedDeviceIndex) == vr::TrackedDeviceClass_Controller)
-                mouseDevice = e.trackedDeviceIndex;
-            break;
-        case vr::VREvent_ButtonPress:
-            /* If this is the first controller to have a button pressed use it as the mouse device. */
-            if (mouseDevice == vr::k_unTrackedDeviceIndexInvalid && vrSystem->GetTrackedDeviceClass(e.trackedDeviceIndex) == vr::TrackedDeviceClass_Controller)
-                mouseDevice = e.trackedDeviceIndex;
-
-            switch (e.data.controller.button) {
-            case vr::k_EButton_SteamVR_Trigger:
-                if (e.trackedDeviceIndex == mouseDevice && mouseHit.isValid)
-                    sendMousePress(mousePoint, Qt::LeftButton, input);
-                break;
-            case vr::k_EButton_Grip:
-                if (e.trackedDeviceIndex == mouseDevice && input->inputMode() != DVInputMode::FileBrowser)
-                    panTrackingVector = mouseHit.ray.direction;
-            }
-            break;
-        case vr::VREvent_ButtonUnpress:
-            if (e.data.controller.button == vr::k_EButton_SteamVR_Trigger && e.trackedDeviceIndex == mouseDevice && mouseHit.isValid)
-                sendMouseRelease(mousePoint, Qt::LeftButton, input);
-            else if (e.data.controller.button == vr::k_EButton_Grip && e.trackedDeviceIndex == mouseDevice)
-                /* Set it to a null vector to stop panning. */
-                panTrackingVector = QVector3D();
-            else if (buttonActions[input->inputMode()][e.trackedDeviceIndex == mouseDevice][e.data.controller.button] != nullptr)
-                (input->*(buttonActions[input->inputMode()][e.trackedDeviceIndex == mouseDevice][e.data.controller.button]))();
             break;
         }
     }
@@ -396,6 +351,31 @@ void DV_VRDriver_OpenVR::renderEyeScene(vr::EVREye eye, const QMatrix4x4& head, 
     /* Don't use blending for tracked models. */
     f->glDisable(GL_BLEND);
 
+    /* Draw a line from the mouse controller to the screen where it's aiming. */
+    if (mousePose.current.pose.bPoseIsValid) {
+        QMatrix4x4 point_mat = QMatrix4x4(QMatrix4x3(*mousePose.current.pose.mDeviceToAbsoluteTracking.m));
+
+        Ray ray;
+        ray.origin = point_mat * QVector3D();
+        ray.direction = (point_mat * QVector4D(0.f, 0.f, -1.f, 0.f)).toVector3D();
+
+        const RayHit hit = screenTrace(ray);
+
+        /* Line is rendered in world space. */
+        vrSceneShader.setUniformValue("cameraMatrix", eyeMat);
+
+        /* If the hit isn't valid we just draw a line one unit out in the aim direction. */
+        QVector3D line[] = { ray.origin, hit.isValid ? hit.hitPoint : (ray.origin + ray.direction) };
+        QVector2D lineUV[] = { QVector2D(0.0f, 0.0f), QVector2D(1.0f, 1.0f) };
+
+        vrSceneShader.setAttributeArray(0, line);
+        vrSceneShader.setAttributeArray(1, lineUV);
+
+        lineTexture->bind();
+
+        f->glDrawArrays(GL_LINES, 0, sizeof(line) / sizeof(*line));
+    }
+
     for (vr::TrackedDeviceIndex_t device = 0; device < vr::k_unMaxTrackedDeviceCount; ++device) {
         /* Only render valid devices of the controller class. */
         if (!renderModels.contains(modelForDevice[device]) || vrSystem->GetTrackedDeviceClass(device) != vr::TrackedDeviceClass_Controller)
@@ -407,31 +387,6 @@ void DV_VRDriver_OpenVR::renderEyeScene(vr::EVREye eye, const QMatrix4x4& head, 
 
         QMatrix4x4 deviceToTracking = QMatrix4x4(QMatrix4x3(*pose.mDeviceToAbsoluteTracking.m));
         QMatrix4x4 deviceToEye = eyeMat * deviceToTracking;
-
-        /* Draw a line from the mouse controller to the screen where it's aiming. */
-        if (device == mouseDevice) {
-            QMatrix4x4 aimToTracking = deviceToTracking * getComponentMatrix(device, vr::k_pch_Controller_Component_Tip, false);
-
-            Ray ray;
-            ray.origin = aimToTracking * QVector3D();
-            ray.direction = (aimToTracking * QVector4D(0.f, 0.f, -1.f, 0.f)).toVector3D();
-
-            const RayHit hit = screenTrace(ray);
-
-            /* Line is rendered in world space. */
-            vrSceneShader.setUniformValue("cameraMatrix", eyeMat);
-
-            /* If the hit isn't valid we just draw a line one unit out in the aim direction. */
-            QVector3D line[] = { ray.origin, hit.isValid ? hit.hitPoint : (ray.origin + ray.direction) };
-            QVector2D lineUV[] = { QVector2D(0.0f, 0.0f), QVector2D(1.0f, 1.0f) };
-
-            vrSceneShader.setAttributeArray(0, line);
-            vrSceneShader.setAttributeArray(1, lineUV);
-
-            lineTexture->bind();
-
-            f->glDrawArrays(GL_LINES, 0, sizeof(line) / sizeof(*line));
-        }
 
         const auto& componentsByName = renderModels[modelForDevice[device]];
 

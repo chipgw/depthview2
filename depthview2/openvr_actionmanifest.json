@@ -1,0 +1,196 @@
+{
+   "action_sets" : [
+      {
+         "name" : "/actions/file",
+         "usage" : "leftright"
+      },
+      {
+         "name" : "/actions/image",
+         "usage" : "leftright"
+      },
+      {
+         "name" : "/actions/video",
+         "usage" : "leftright"
+      },
+      {
+         "name" : "/actions/cursor",
+         "usage" : "leftright"
+      }
+   ],
+   "actions" : [
+      {
+         "name" : "/actions/file/in/forward",
+         "type" : "boolean"
+      },
+      {
+         "name" : "/actions/file/in/back",
+         "type" : "boolean"
+      },
+      {
+         "name" : "/actions/file/in/goup",
+         "type" : "boolean"
+      },
+      {
+         "name" : "/actions/file/in/accept",
+         "type" : "boolean"
+      },
+      {
+         "name" : "/actions/file/in/cancel",
+         "type" : "boolean"
+      },
+      {
+         "name" : "/actions/file/in/left",
+         "type" : "boolean"
+      },
+      {
+         "name" : "/actions/file/in/right",
+         "type" : "boolean"
+      },
+      {
+         "name" : "/actions/file/in/up",
+         "type" : "boolean"
+      },
+      {
+         "name" : "/actions/file/in/down",
+         "type" : "boolean"
+      },
+      {
+         "name" : "/actions/image/in/zoomfit",
+         "type" : "boolean"
+      },
+      {
+         "name" : "/actions/image/in/zoomactual",
+         "type" : "boolean"
+      },
+      {
+         "name" : "/actions/image/in/browser",
+         "type" : "boolean"
+      },
+      {
+         "name" : "/actions/image/in/fileinfo",
+         "type" : "boolean"
+      },
+      {
+         "name" : "/actions/image/in/next",
+         "type" : "boolean"
+      },
+      {
+         "name" : "/actions/image/in/prev",
+         "type" : "boolean"
+      },
+      {
+         "name" : "/actions/video/in/playpause",
+         "type" : "boolean"
+      },
+      {
+         "name" : "/actions/video/in/play",
+         "type" : "boolean"
+      },
+      {
+         "name" : "/actions/video/in/pause",
+         "type" : "boolean"
+      },
+      {
+         "name" : "/actions/video/in/mute",
+         "type" : "boolean"
+      },
+      {
+         "name" : "/actions/video/in/volup",
+         "type" : "boolean"
+      },
+      {
+         "name" : "/actions/video/in/voldown",
+         "type" : "boolean"
+      },
+      {
+         "name" : "/actions/video/in/seekfwd",
+         "type" : "boolean"
+      },
+      {
+         "name" : "/actions/video/in/seekback",
+         "type" : "boolean"
+      },
+      {
+         "name" : "/actions/video/in/takesnap",
+         "type" : "boolean"
+      },
+      {
+         "name" : "/actions/video/in/browser",
+         "type" : "boolean"
+      },
+      {
+         "name" : "/actions/video/in/fileinfo",
+         "type" : "boolean"
+      },
+      {
+         "name" : "/actions/video/in/next",
+         "type" : "boolean"
+      },
+      {
+         "name" : "/actions/video/in/prev",
+         "type" : "boolean"
+      },
+      {
+         "name" : "/actions/cursor/in/point",
+         "type" : "pose"
+      },
+      {
+         "name" : "/actions/cursor/in/leftbtn",
+         "type" : "boolean"
+      },
+      {
+         "name" : "/actions/cursor/in/pan",
+         "type" : "boolean"
+      },
+      {
+         "name" : "/actions/cursor/out/dummy",
+         "type" : "vibration"
+      }
+   ],
+   "default_bindings" : [
+      {
+         "binding_url" : "openvr_binding_oculus_touch.json",
+         "controller_type" : "oculus_touch"
+      }
+   ],
+   "localization" : [
+      {
+         "/actions/cursor" : "Mouse Input (All Modes)",
+         "/actions/cursor/in/leftbtn" : "Mouse Left Button",
+         "/actions/cursor/in/pan" : "Pan",
+         "/actions/cursor/in/point" : "Mouse Pointer",
+         "/actions/file" : "File Browser",
+         "/actions/file/in/accept" : "Accept",
+         "/actions/file/in/back" : "Go Back",
+         "/actions/file/in/cancel" : "Cancel",
+         "/actions/file/in/down" : "Down",
+         "/actions/file/in/forward" : "Go Forward",
+         "/actions/file/in/goup" : "Go Up",
+         "/actions/file/in/left" : "Left",
+         "/actions/file/in/right" : "Right",
+         "/actions/file/in/up" : "Up",
+         "/actions/image" : "Image Viewer",
+         "/actions/image/in/browser" : "Open File Browser",
+         "/actions/image/in/fileinfo" : "Show File Info",
+         "/actions/image/in/next" : "Next File",
+         "/actions/image/in/prev" : "Previous File",
+         "/actions/image/in/zoomactual" : "Actual Size",
+         "/actions/image/in/zoomfit" : "Zoom to Fit",
+         "/actions/video" : "Video Player",
+         "/actions/video/in/browser" : "Open File Browser",
+         "/actions/video/in/fileinfo" : "Show File Info",
+         "/actions/video/in/mute" : "Mute",
+         "/actions/video/in/next" : "Next File",
+         "/actions/video/in/pause" : "Pause",
+         "/actions/video/in/play" : "Play",
+         "/actions/video/in/playpause" : "Play/Pause",
+         "/actions/video/in/prev" : "Previous File",
+         "/actions/video/in/seekback" : "Seek Backward",
+         "/actions/video/in/seekfwd" : "Seek Forward",
+         "/actions/video/in/takesnap" : "Take Snapshot",
+         "/actions/video/in/voldown" : "Volume Down",
+         "/actions/video/in/volup" : "Volume Up",
+         "language_tag" : "en"
+      }
+   ]
+}
