@@ -143,27 +143,18 @@ public:
 
     QMatrix4x4 getComponentMatrix(uint32_t device, const char* componentName, bool render = true);
 
-    void calculateEyeDistortion(vr::EVREye eye, QVector<QVector2D>& verts, QVector<GLushort>& indexes, GLushort offset);
-
     void renderEyeScene(vr::EVREye eye, const QMatrix4x4& head, QSGTexture* imgTexture, QRectF imgRect, qreal imgPan, bool isBackground, QOpenGLExtraFunctions* f);
-
-    bool renderEyeDistortion(vr::EVREye eye, QOpenGLExtraFunctions* f);
 
     bool render(QOpenGLExtraFunctions* f, DVInputInterface* input);
 
     void frameSwapped();
 
     QOpenGLFramebufferObject* renderFBO[2];
-    QOpenGLFramebufferObject* resolveFBO[2];
-
-    QOpenGLBuffer distortionVBO;
-    QOpenGLBuffer distortionIBO;
-    GLsizei distortionNumIndexes;
+    vr::Texture_t eyeTextures[2];
 
     vr::IVRSystem* vrSystem = nullptr;
 
     QOpenGLShaderProgram vrSceneShader;
-    QOpenGLShaderProgram distortionShader;
 
     /* Get a tracked device property string. */
     QByteArray getTrackedDeviceString(vr::TrackedDeviceIndex_t deviceIndex, vr::TrackedDeviceProperty prop);

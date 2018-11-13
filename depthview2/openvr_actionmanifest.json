@@ -151,6 +151,10 @@
       {
          "binding_url" : "openvr_binding_oculus_touch.json",
          "controller_type" : "oculus_touch"
+      },
+      {
+         "binding_url" : "openvr_binding_vive_wands.json",
+         "controller_type" : "vive_controller"
       }
    ],
    "localization" : [

@@ -1,7 +1,6 @@
 #include "dv_vrdriver_openvr.hpp"
 
-DV_VRDriver_OpenVR::DV_VRDriver_OpenVR(DVRenderer* w, DVVirtualScreenManager* m) : DV_VRDriver(w, m),
-    distortionVBO(QOpenGLBuffer::VertexBuffer), distortionIBO(QOpenGLBuffer::IndexBuffer) {
+DV_VRDriver_OpenVR::DV_VRDriver_OpenVR(DVRenderer* w, DVVirtualScreenManager* m) : DV_VRDriver(w, m) {
     if (!vr::VR_IsHmdPresent()) {
         setError("No HMD detected.");
         return;
@@ -11,20 +10,6 @@ DV_VRDriver_OpenVR::DV_VRDriver_OpenVR(DVRenderer* w, DVVirtualScreenManager* m)
     vrSceneShader.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/glsl/openvrscene.fsh");
 
     vrSceneShader.link();
-
-    distortionShader.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/glsl/openvrdistortion.vsh");
-    distortionShader.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/glsl/openvrdistortion.fsh");
-
-    /* Make sure the attributes are bound correctly. */
-    distortionShader.bindAttributeLocation("position",     0);
-    distortionShader.bindAttributeLocation("uvRedIn",      1);
-    distortionShader.bindAttributeLocation("uvGreenIn",    2);
-    distortionShader.bindAttributeLocation("uvBlueIn",     3);
-
-    distortionShader.link();
-
-    /* Bind so we set the texture sampler uniform values. */
-    distortionShader.bind();
 
     lineTexture = new QOpenGLTexture(QImage(":/images/vrline.png"));
 
@@ -38,7 +23,6 @@ DV_VRDriver_OpenVR::~DV_VRDriver_OpenVR() {
     if (vrSystem == nullptr) return;
 
     delete renderFBO[0]; delete renderFBO[1];
-    delete resolveFBO[0]; delete resolveFBO[1];
 
     /* Delete all loaded render models. */
     for (ModelComponent* m : loadedComponents) delete m;
@@ -66,28 +50,20 @@ bool DV_VRDriver_OpenVR::initVRSystem(QOpenGLExtraFunctions* f) {
     /* Set up an FBO for each eye. */
     renderFBO[0] = new QOpenGLFramebufferObject(int(renderWidth), int(renderHeight), QOpenGLFramebufferObject::Depth);
     renderFBO[1] = new QOpenGLFramebufferObject(int(renderWidth), int(renderHeight), QOpenGLFramebufferObject::Depth);
-    resolveFBO[0] = new QOpenGLFramebufferObject(int(renderWidth), int(renderHeight));
-    resolveFBO[1] = new QOpenGLFramebufferObject(int(renderWidth), int(renderHeight));
+
+    eyeTextures[vr::Eye_Left] = {
+        reinterpret_cast<void*>(static_cast<intptr_t>(renderFBO[vr::Eye_Left]->texture())),
+        vr::TextureType_OpenGL,
+        vr::ColorSpace_Gamma
+    };
+    eyeTextures[vr::Eye_Right] = {
+        reinterpret_cast<void*>(static_cast<intptr_t>(renderFBO[vr::Eye_Right]->texture())),
+        vr::TextureType_OpenGL,
+        vr::ColorSpace_Gamma
+    };
 
     QVector<QVector2D> verts;
     QVector<GLushort> indexes;
-
-    /* Calculate the left eye's distortion verts. */
-    calculateEyeDistortion(vr::Eye_Left, verts, indexes, 0);
-    /* Indexes for the right eye must be offset by how many verts there were for the left eye. */
-    calculateEyeDistortion(vr::Eye_Right, verts, indexes, GLushort(verts.size()) / 4);
-
-    /* Upload the distortion verts to the GPU. */
-    distortionVBO.create();
-    distortionVBO.bind();
-    distortionVBO.allocate(verts.data(), verts.size() * int(sizeof(QVector2D)));
-    /* Upload the distortion indexes to the GPU. */
-    distortionIBO.create();
-    distortionIBO.bind();
-    distortionIBO.allocate(indexes.data(), indexes.size() * int(sizeof(GLushort)));
-
-    /* Store the number of indexes for rendering. */
-    distortionNumIndexes = indexes.size();
 
     /* Load the models for attached devices. */
     for (uint32_t i = 0; i < vr::k_unMaxTrackedDeviceCount; ++i) setupDeviceModel(i, f);
@@ -259,50 +235,6 @@ QMatrix4x4 DV_VRDriver_OpenVR::getComponentMatrix(uint32_t device, const char* c
     return QMatrix4x4(QMatrix4x3(render ? *componentState.mTrackingToComponentRenderModel.m : *componentState.mTrackingToComponentLocal.m));
 }
 
-void DV_VRDriver_OpenVR::calculateEyeDistortion(vr::EVREye eye, QVector<QVector2D>& verts, QVector<GLushort>& indexes, GLushort offset) {
-    /* How many verts in each direction. */
-    constexpr GLushort lensGridSegmentCount = 43;
-
-    constexpr float w = 1.0f/(lensGridSegmentCount-1);
-    constexpr float h = 1.0f/(lensGridSegmentCount-1);
-
-    for (GLushort y = 0; y < lensGridSegmentCount; ++y) {
-        for (GLushort x = 0; x < lensGridSegmentCount; ++x) {
-            /* Calculate the undistorted UV coordinates for the vertex. */
-            float u = x * w;
-            float v = y * h;
-
-            /* Place a vertex, taking the UV and mapping from [0, 1] to [-1, 1]. */
-            verts.push_back(QVector2D(2.0f*u-1.0f, 2.0f*v-1.0f));
-
-            vr::DistortionCoordinates_t distorted;
-            /* Get the distortion coordinates from OpenVR. Invert v because of how OpenGL handles textures. */
-            if (!vrSystem->ComputeDistortion(eye, u, 1.0f-v, &distorted))
-                qWarning("Error getting distortion coordinates!");
-
-            /* Put the distortion coordinate into the list, inverting v back into OpenGL land. */
-            verts.push_back(QVector2D(distorted.rfRed[0], 1.0f - distorted.rfRed[1]));
-            verts.push_back(QVector2D(distorted.rfGreen[0], 1.0f - distorted.rfGreen[1]));
-            verts.push_back(QVector2D(distorted.rfBlue[0], 1.0f - distorted.rfBlue[1]));
-
-            /* No indexes for the last element in either x or y. */
-            if (y == lensGridSegmentCount-1 || x == lensGridSegmentCount-1) continue;
-
-            /* Calculate the index of the current vertex. */
-            GLushort current = lensGridSegmentCount * y + x + offset;
-
-            /* Add a quad as a pair of triangles with the current vertex at the corner. */
-            indexes.push_back(current);
-            indexes.push_back(current + 1);
-            indexes.push_back(current + lensGridSegmentCount + 1);
-
-            indexes.push_back(current);
-            indexes.push_back(current + lensGridSegmentCount + 1);
-            indexes.push_back(current + lensGridSegmentCount);
-        }
-    }
-}
-
 void DV_VRDriver_OpenVR::renderEyeScene(vr::EVREye eye, const QMatrix4x4& head, QSGTexture* imgTexture, QRectF imgRect, qreal imgPan, bool isBackground, QOpenGLExtraFunctions* f) {
     /* A matrix for each eye, to tell where it is relative to the user's head. */
     const vr::HmdMatrix34_t& eyeMatrix = vrSystem->GetEyeToHeadTransform(eye);
@@ -413,24 +345,6 @@ void DV_VRDriver_OpenVR::renderEyeScene(vr::EVREye eye, const QMatrix4x4& head, 
     renderFBO[eye]->release();
 }
 
-bool DV_VRDriver_OpenVR::renderEyeDistortion(vr::EVREye eye, QOpenGLExtraFunctions* f) {
-    resolveFBO[eye]->bind();
-    f->glClear(GL_COLOR_BUFFER_BIT);
-
-    f->glBindTexture(GL_TEXTURE_2D, renderFBO[eye]->texture());
-    f->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    /* First half = left lens, second half = right lens. */
-    f->glDrawElements(GL_TRIANGLES, distortionNumIndexes/2, GL_UNSIGNED_SHORT, reinterpret_cast<const void*>(distortionNumIndexes * eye));
-
-    resolveFBO[eye]->release();
-
-    vr::Texture_t eyeTexture = { reinterpret_cast<void*>(static_cast<intptr_t>(resolveFBO[eye]->texture())), vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
-    if (vr::VRCompositor()->Submit(eye, &eyeTexture) != vr::VRCompositorError_None)
-        return setError("Error submitting texture to OpenVR.");
-
-    return true;
-}
-
 bool DV_VRDriver_OpenVR::render(QOpenGLExtraFunctions* f, DVInputInterface* input) {
     /* Init VR system on first use. We can't render if VR doesn't init correctly. */
     if (vrSystem == nullptr && !initVRSystem(f)) return false;
@@ -479,22 +393,13 @@ bool DV_VRDriver_OpenVR::render(QOpenGLExtraFunctions* f, DVInputInterface* inpu
     renderEyeScene(vr::Eye_Left, head, currentTexture, currentTextureLeft, currentTexturePan, isBackground, f);
     renderEyeScene(vr::Eye_Right, head, currentTexture, currentTextureRight, currentTexturePan, isBackground, f);
 
-    /* Get ready to render distortion. */
-    distortionShader.bind();
-    distortionVBO.bind();
-    distortionIBO.bind();
-    f->glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
+    /* Submit the textures to OpenVR. */
+    if (vr::VRCompositor()->Submit(vr::Eye_Left, &eyeTextures[vr::Eye_Left]) != vr::VRCompositorError_None)
+        return setError("Error submitting texture to OpenVR.");
+    if (vr::VRCompositor()->Submit(vr::Eye_Right, &eyeTextures[vr::Eye_Right]) != vr::VRCompositorError_None)
+        return setError("Error submitting texture to OpenVR.");
 
-    /* Set up vertex buffers for distortion rendering. */
-    f->glEnableVertexAttribArray(2);
-    f->glEnableVertexAttribArray(3);
-    distortionShader.setAttributeBuffer(0, GL_FLOAT, 0,                     2, sizeof(QVector2D) * 4);
-    distortionShader.setAttributeBuffer(1, GL_FLOAT, sizeof(QVector2D),     2, sizeof(QVector2D) * 4);
-    distortionShader.setAttributeBuffer(2, GL_FLOAT, sizeof(QVector2D) * 2, 2, sizeof(QVector2D) * 4);
-    distortionShader.setAttributeBuffer(3, GL_FLOAT, sizeof(QVector2D) * 3, 2, sizeof(QVector2D) * 4);
-
-    /* Render the distortion for both eyes and submit. */
-    return renderEyeDistortion(vr::Eye_Left, f) && renderEyeDistortion(vr::Eye_Right, f);
+    return true;
 }
 
 void DV_VRDriver_OpenVR::frameSwapped() {

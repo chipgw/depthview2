@@ -1,0 +1,201 @@
+{
+   "app_key" : "system.generated.depthview2.exe",
+   "bindings" : {
+      "/actions/file": {
+            "sources": [
+               {
+                  "path": "/user/hand/left/input/trackpad",
+                  "mode": "dpad",
+                  "parameters": {
+                        "sub_mode": "click"
+                  },
+                  "inputs": {
+                        "north": {
+                           "output": "/actions/file/in/goup"
+                        },
+                        "east": {
+                           "output": "/actions/file/in/forward"
+                        },
+                        "west": {
+                           "output": "/actions/file/in/back"
+                        }
+                  }
+               },
+               {
+                  "path": "/user/hand/right/input/trackpad",
+                  "mode": "dpad",
+                  "parameters": {
+                        "sub_mode": "click"
+                  },
+                  "inputs": {
+                        "north": {
+                           "output": "/actions/file/in/up"
+                        },
+                        "east": {
+                           "output": "/actions/file/in/right"
+                        },
+                        "south": {
+                           "output": "/actions/file/in/down"
+                        },
+                        "west": {
+                           "output": "/actions/file/in/left"
+                        }
+                  }
+               },
+               {
+                  "path": "/user/hand/right/input/application_menu",
+                  "mode": "button",
+                  "inputs": {
+                        "click": {
+                           "output": "/actions/file/in/accept"
+                        }
+                  }
+               },
+               {
+                  "path": "/user/hand/right/input/grip",
+                  "mode": "button",
+                  "inputs": {
+                        "click": {
+                           "output": "/actions/file/in/cancel"
+                        }
+                  }
+               }
+            ]
+      },
+      "/actions/cursor": {
+            "poses" : [
+               {
+               "output" : "/actions/cursor/in/point",
+               "path" : "/user/hand/left/pose/tip"
+               }
+            ],
+            "sources": [
+               {
+                  "path": "/user/hand/left/input/trigger",
+                  "mode": "button",
+                  "inputs": {
+                        "click": {
+                           "output": "/actions/cursor/in/leftbtn"
+                        }
+                  }
+               },
+               {
+                  "path": "/user/hand/left/input/grip",
+                  "mode": "button",
+                  "inputs": {
+                        "click": {
+                           "output": "/actions/cursor/in/pan"
+                        }
+                  }
+               }
+            ]
+      },
+      "/actions/image": {
+            "sources": [
+               {
+                  "path": "/user/hand/right/input/application_menu",
+                  "mode": "button",
+                  "inputs": {
+                        "click": {
+                           "output": "/actions/image/in/browser"
+                        }
+                  }
+               },
+               {
+                  "path": "/user/hand/right/input/grip",
+                  "mode": "button",
+                  "inputs": {
+                        "click": {
+                           "output": "/actions/image/in/fileinfo"
+                        }
+                  }
+               },
+               {
+                  "path": "/user/hand/right/input/trackpad",
+                  "mode": "dpad",
+                  "parameters": {
+                        "sub_mode": "click"
+                  },
+                  "inputs": {
+                        "east": {
+                           "output": "/actions/image/in/next"
+                        },
+                        "west": {
+                           "output": "/actions/image/in/prev"
+                        }
+                  }
+               }
+            ]
+      },
+      "/actions/video": {
+            "sources": [
+               {
+                  "path": "/user/hand/left/input/application_menu",
+                  "mode": "button",
+                  "inputs": {
+                        "click": {
+                           "output": "/actions/video/in/playpause"
+                        }
+                  }
+               },
+               {
+                  "path": "/user/hand/right/input/application_menu",
+                  "mode": "button",
+                  "inputs": {
+                        "click": {
+                           "output": "/actions/video/in/browser"
+                        }
+                  }
+               },
+               {
+                  "path": "/user/hand/left/input/trackpad",
+                  "mode": "dpad",
+                  "parameters": {
+                        "sub_mode": "click"
+                  },
+                  "inputs": {
+                        "north": {
+                           "output": "/actions/video/in/volup"
+                        },
+                        "south": {
+                           "output": "/actions/video/in/voldown"
+                        },
+                        "east": {
+                           "output": "/actions/video/in/seekfwd"
+                        },
+                        "west": {
+                           "output": "/actions/video/in/seekback"
+                        }
+                  }
+               },
+               {
+                  "path": "/user/hand/right/input/grip",
+                  "mode": "button",
+                  "inputs": {
+                        "click": {
+                           "output": "/actions/video/in/fileinfo"
+                        }
+                  }
+               },
+               {
+                  "path": "/user/hand/right/input/trackpad",
+                  "mode": "dpad",
+                  "parameters": {
+                        "sub_mode": "click"
+                  },
+                  "inputs": {
+                        "east": {
+                           "output": "/actions/video/in/next"
+                        },
+                        "west": {
+                           "output": "/actions/video/in/prev"
+                        }
+                  }
+               }
+            ]
+      }
+   },
+   "controller_type" : "vive_controller",
+   "description" : "The default DepthView2 Vive controller bindings.",
+   "name" : "DepthView2 configuration for the Vive"
+}
