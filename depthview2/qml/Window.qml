@@ -235,6 +235,7 @@ Window {
         id: vrBackground
         source: VRManager.backgroundImage
         visible: false
+        asynchronous: true
         Connections {
             /* Give C++ access to the texture for the currently open image or video. */
             target: VRManager
