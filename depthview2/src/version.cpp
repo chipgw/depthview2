@@ -2,7 +2,7 @@
 
 namespace version {
 
-const QVersionNumber number = QVersionNumber(2, 0);
+const QVersionNumber number = QVersionNumber::fromString(VERSION);
 
 #ifdef NDEBUG
 const char* build_type = "Release";

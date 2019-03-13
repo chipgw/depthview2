@@ -98,6 +98,10 @@ DVWindowHook::DVWindowHook(QQmlApplicationEngine* engine) : QObject(engine), set
     connect(player->videoCapture(), &QtAV::VideoCapture::saved, this, &DVWindowHook::imageCaptured, Qt::DirectConnection);
     connect(folderListing, &DVFolderListing::snapshotDirChanged, player->videoCapture(), &QtAV::VideoCapture::setCaptureDir);
 
+    window->installEventFilter(this);
+
+    window->show();
+
     /* The setGeometry() and setState() calls may try to set the qmlRoot geometry,
      * which means this needs to be done after QML is all set up. */
     if (settings.childGroups().contains("Window")) {
@@ -107,10 +111,6 @@ DVWindowHook::DVWindowHook(QQmlApplicationEngine* engine) : QObject(engine), set
         window->setWindowState(Qt::WindowState(settings.value("State").toInt()));
         settings.endGroup();
     }
-
-    window->installEventFilter(this);
-
-    window->show();
 }
 
 DVWindowHook::~DVWindowHook() {

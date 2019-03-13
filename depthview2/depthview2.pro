@@ -68,4 +68,8 @@ DISTFILES += \
 
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
 
-RC_FILE = depthview2.rc
+RC_ICONS = icons/logo.ico
+
+QMAKE_TARGET_DESCRIPTION = "3D Image and Video Player."
+QMAKE_TARGET_COPYRIGHT = "\xa9 2015-2019 chipgw, released under the MIT license"
+QMAKE_TARGET_PRODUCT = "DepthView"
